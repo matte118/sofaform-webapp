@@ -63,6 +63,7 @@ export class ProductService {
   }
 
   setSelectedProduct(product: ProductModel) {
+    console.log('Setting selected product:', product); // Debug log
     this.selectedProduct.next(product);
   }
 

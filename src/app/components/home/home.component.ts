@@ -20,7 +20,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private router: Router,
     private productService: ProductService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.productService.getProducts().subscribe(products => {
@@ -32,11 +32,7 @@ export class HomeComponent implements OnInit {
     return item.nome;
   }
 
-  goToModificaProdotto(product: ProductModel) {
-    this.router.navigate(['/edit-product'], {
-      state: { product }
-    });
-  }
+
 
   generaListino(product: ProductModel) {
     console.log('Generazione listino in corso...');

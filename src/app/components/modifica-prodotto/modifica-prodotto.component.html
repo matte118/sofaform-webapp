@@ -1,4 +1,19 @@
-<div>
-  <button (click)="backToHome()">Torna alla Homepage</button>
+<div class="modifica-prodotto">
+  <h1>Seleziona Prodotto da Modificare</h1>
+
+  <div class="p-grid">
+    <div class="p-col-12 p-md-4" *ngFor="let product of products">
+      <p-card [header]="product.nome">
+        <ng-template pTemplate="content">
+          <p>Prezzo: {{ product.prezzo | currency:'EUR' }}</p>
+          <p>Componenti: {{ product.componenti.length }}</p>
+        </ng-template>
+        <ng-template pTemplate="footer">
+          <p-button label="Modifica" (onClick)="editProduct(product)"></p-button>
+        </ng-template>
+      </p-card>
+    </div>
+  </div>
+
+
 </div>
-<p>modifica-prodotto works!</p>
