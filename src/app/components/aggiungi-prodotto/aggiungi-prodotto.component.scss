@@ -1,55 +1,70 @@
-/* src/app/aggiungi-prodotto/aggiungi-prodotto.component.scss */
 .add-product-container {
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-}
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
 
-.form-group {
-  margin-bottom: 1rem;
-
-  label {
-    display: block;
-    margin-bottom: .25rem;
-    font-weight: 500;
+  .p-field {
+    margin-bottom: 2rem;
   }
-}
 
-.components-section {
-  margin-top: 2rem;
+  .p-grid {
+    row-gap: 1.5rem;
+  }
 
   h3 {
-    margin-bottom: 1rem;
+    margin: 2rem 0;
   }
 
   .component-form {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: 1fr;
+    margin-bottom: 3rem;
   }
 
-  .components-list {
-    margin-top: 1.5rem;
+  p-table {
+    margin-top: 2rem;
+  }
 
-    ul {
-      list-style: none;
-      padding: 0;
-    }
+  .p-divider {
+    margin: 2rem 0;
+  }
 
-    li {
-      padding: .5rem 0;
-      border-bottom: 1px solid #e0e0e0;
-    }
-
-    .total-price {
-      margin-top: 1rem;
-      font-weight: 600;
-      text-align: right;
-    }
+  .total-price {
+    margin-top: 2rem;
   }
 }
 
-.actions {
-  margin-top: 2rem;
-  text-align: right;
+/* Card spacing */
+.p-card {
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  box-shadow: var(--p-shadow-4);
+}
+
+/* Form grid adjustments */
+.component-form-row {
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.add-btn-col {
+  display: flex;
+  justify-content: center;
+}
+
+/* Table styling */
+.components-table {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Total price alignment */
+.total-price {
+  font-size: 1.1rem;
+}
+
+/* Navigation buttons spacing */
+.navigation-row {
+  margin-top: 1.5rem;
+}
+.nav-buttons :global(.p-button) {
+  min-width: 6rem;
 }
