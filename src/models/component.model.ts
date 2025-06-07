@@ -1,20 +1,18 @@
-// src/app/models/component.model.ts  // Fixed comment
+import { Category }  from './component-category.model'; // Importazione opzionale per evitare errori di tipo
 
-/** Rappresenta un prodotto nel catalogo */
+
 export interface Component {
-  nome: string;           // obbligatorio
-  variante?: string;      // opzionale
-  prezzo: number;         // obbligatorio
-  fornitore: string;      // obbligatorio
-  quantita: number;       // default a 1 se non definita
+  nome: string;      
+  categoria: Category;
+  variante?: string;      
+  prezzo: number;      
+  fornitore: string;      
+  quantita: number;
 }
 
-/**
- * Classe concreta che implementa Product,
- * con gestione del default a 1 per quantita.
- */
 export class ComponentModel implements Component {
   nome: string;
+  categoria: Category;
   variante?: string;
   prezzo: number;
   fornitore: string;
@@ -30,12 +28,15 @@ export class ComponentModel implements Component {
     if (!data.fornitore) {
       throw new Error('Il campo "fornitore" è obbligatorio');
     }
+    if (!data.categoria) {
+      throw new Error('Il campo "categoria" è obbligatorio');
+    }
 
     this.nome = data.nome;
+    this.categoria = data.categoria;
     this.variante = data.variante;
     this.prezzo = data.prezzo;
     this.fornitore = data.fornitore;
-    // se data.quantita è undefined o null, mettiamo 1
     this.quantita = data.quantita ?? 1;
   }
 }

@@ -1,8 +1,9 @@
-<div class="layout">
-  <aside class="layout-sidebar">
-    <p-panelMenu [model]="items" [style]="{ width: '250px' }"></p-panelMenu>
+<div class="app-layout">
+  <aside class="sidebar">
+    <p-panelMenu [model]="items" styleClass="menu-panel"></p-panelMenu>
   </aside>
-  <main class="layout-content">
+  <main class="content">
+    <!-- Qui Angular monterà i componenti in base alla rotta -->
     <router-outlet></router-outlet>
   </main>
 </div>

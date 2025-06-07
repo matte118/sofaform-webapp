@@ -45,4 +45,6 @@ export class ProductModel implements Product {
     this.prezzo     = data.prezzo;
     this.foto       = data.foto;
   }
+
+  
 }

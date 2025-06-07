@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
+import { ModificaProdottoComponent } from './modifica-prodotto/modifica-prodotto.component';
 import { AggiungiProdottoComponent } from './aggiungi-prodotto/aggiungi-prodotto.component';
-// import { SettingsComponent } from './features/settings/settings.component';  // se hai già creato Settings
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'products', component: AggiungiProdottoComponent },
-//   { path: 'settings', component: SettingsComponent },
-  { path: '**', redirectTo: '' }    // catch-all
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: 'home', component: HomeComponent },
+  { path: 'modifica-prodotto', component: ModificaProdottoComponent },
+  { path: 'aggiungi-prodotto', component: AggiungiProdottoComponent },
+  { path: '**', redirectTo: 'home' }
 ];
