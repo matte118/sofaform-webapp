@@ -1,9 +1,22 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
-
+// src/app/app.config.ts
+import { ApplicationConfig, importProvidersFrom } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterModule } from '@angular/router';
+import { PanelMenuModule } from 'primeng/panelmenu';
 import { routes } from './app.routes';
-import { provideClientHydration } from '@angular/platform-browser';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes), provideClientHydration()]
+  providers: [
+    // abilita il router con le tue rotte
+    importProvidersFrom(
+      RouterModule.forRoot(routes, {
+        scrollPositionRestoration: 'enabled',
+        initialNavigation: 'enabledBlocking'
+      })
+    ),
+    // animations necessarie per molti componenti PrimeNG
+    importProvidersFrom(BrowserAnimationsModule),
+    // importa il modulo PrimeNG che ti serve
+    importProvidersFrom(PanelMenuModule)
+  ]
 };

@@ -1,13 +1,25 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { PanelMenuModule } from 'primeng/panelmenu';
+import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [
+    RouterModule,       // per il router-outlet
+    PanelMenuModule     // per il sidebar menu
+  ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'sofaform-webapp';
+  items!: MenuItem[];
+
+  ngOnInit() {
+    this.items = [
+      { label: 'Home', icon: 'pi pi-home', routerLink: '/' },
+      { label: 'Aggiungi Prodotto', icon: 'pi pi-box', routerLink: '/products' },
+    ];
+  }
 }

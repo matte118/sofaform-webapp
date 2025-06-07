@@ -1,0 +1,16 @@
+.layout {
+  display: flex;
+  height: 100vh;
+
+  .layout-sidebar {
+    background: var(--surface-d);
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    overflow: auto;
+  }
+
+  .layout-content {
+    flex: 1;
+    padding: 1.5rem;
+    background: var(--surface-a);
+  }
+}
