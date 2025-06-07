@@ -19,24 +19,11 @@ export class ComponentModel implements Component {
   quantita: number;
 
   constructor(data: Partial<ComponentModel>) {
-    if (!data.nome) {
-      throw new Error('Il campo "nome" è obbligatorio');
-    }
-    if (data.prezzo == null) {
-      throw new Error('Il campo "prezzo" è obbligatorio');
-    }
-    if (!data.fornitore) {
-      throw new Error('Il campo "fornitore" è obbligatorio');
-    }
-    if (!data.categoria) {
-      throw new Error('Il campo "categoria" è obbligatorio');
-    }
-
-    this.nome = data.nome;
-    this.categoria = data.categoria;
+    this.nome = data.nome ?? '';
     this.variante = data.variante;
-    this.prezzo = data.prezzo;
-    this.fornitore = data.fornitore;
+    this.prezzo = data.prezzo ?? 0;
+    this.fornitore = data.fornitore ?? '';
     this.quantita = data.quantita ?? 1;
+    this.categoria = data.categoria ?? Category.Bedroom;
   }
 }

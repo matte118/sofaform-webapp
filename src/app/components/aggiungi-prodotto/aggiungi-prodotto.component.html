@@ -1,0 +1,126 @@
+<div class="add-product-container">
+  <p-card header="Aggiungi Nuovo Prodotto">
+    <!-- Nome Prodotto -->
+    <div class="form-group">
+      <label for="productName">Nome Prodotto</label>
+      <input
+        id="productName"
+        type="text"
+        pInputText
+        [(ngModel)]="newProductData.nome"
+        (ngModelChange)="newProduct && (newProduct.nome = newProductData.nome)"
+        placeholder="Inserisci il nome del prodotto"
+      />
+    </div>
+
+    <!-- Sezione Aggiungi Componente -->
+    <div class="components-section">
+      <h3>Aggiungi Componente</h3>
+      <div class="component-form">
+        <div class="form-group">
+          <label for="componentName">Nome Componente</label>
+          <input
+            id="componentName"
+            type="text"
+            pInputText
+            [(ngModel)]="newComponent.nome"
+            placeholder="Inserisci il nome del componente"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="componentVariant">Variante</label>
+          <input
+            id="componentVariant"
+            type="text"
+            pInputText
+            [(ngModel)]="newComponent.variante"
+            placeholder="Inserisci la variante (opzionale)"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="price">Prezzo</label>
+          <p-inputNumber
+            id="price"
+            [(ngModel)]="newComponent.prezzo"
+            mode="currency"
+            currency="EUR"
+            [minFractionDigits]="2"
+          ></p-inputNumber>
+        </div>
+
+        <div class="form-group">
+          <label for="supplier">Fornitore</label>
+          <input
+            id="supplier"
+            type="text"
+            pInputText
+            [(ngModel)]="newComponent.fornitore"
+            placeholder="Inserisci il fornitore"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="quantity">Quantità</label>
+          <p-inputNumber
+            id="quantity"
+            [(ngModel)]="newComponent.quantita"
+            [showButtons]="true"
+            [min]="1"
+          ></p-inputNumber>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Categoria</label>
+          <select
+            id="category"
+            [(ngModel)]="newComponent.categoria"
+            pInputText
+          >
+            <option
+              *ngFor="let entry of Categoria | keyvalue"
+              [value]="entry.value"
+            >
+              {{ entry.key }}
+            </option>
+          </select>
+        </div>
+
+        <p-button
+          label="Aggiungi Componente"
+          (onClick)="addComponent()"
+          [disabled]="!newComponent.nome"
+        ></p-button>
+      </div>
+
+      <!-- Lista dei componenti inseriti -->
+      <div class="components-list" *ngIf="newProduct">
+        <h3>Componenti Aggiunti</h3>
+        <ul>
+          <li *ngFor="let c of newProduct.componenti">
+            {{ c.nome }} – {{ c.prezzo | currency:'EUR':'symbol' }} ×
+            {{ c.quantita }} ({{ c.categoria }})
+          </li>
+        </ul>
+        <div class="total-price">
+          <strong>Prezzo Totale:</strong>
+          {{ newProduct.prezzo | currency:'EUR':'symbol' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Salvataggio Prodotto -->
+    <div class="actions">
+      <p-button
+        label="Salva Prodotto"
+        (onClick)="saveProduct()"
+        [disabled]="
+          !newProduct ||
+          !newProduct.nome.trim() ||
+          newProduct.componenti.length === 0
+        "
+      ></p-button>
+    </div>
+  </p-card>
+</div>

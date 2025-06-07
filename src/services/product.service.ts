@@ -69,4 +69,9 @@ export class ProductService {
   getSelectedProduct(): Observable<ProductModel | null> {
     return this.selectedProduct.asObservable();
   }
+
+  addProduct(newProduct: ProductModel) {
+    const currentProducts = this.products.getValue();
+    this.products.next([...currentProducts, newProduct]);
+  }
 }

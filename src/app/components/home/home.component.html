@@ -1,0 +1,33 @@
+<div class="home">
+  <h1>Il nostro catalogo</h1>
+
+  <div class="p-grid p-align-start p-mt-4">
+    <div class="p-col-12 p-sm-6 p-md-4" *ngFor="let p of products">
+      <p-card
+        [header]="p.nome"
+        [subheader]="'Prezzo: € ' + p.prezzo.toFixed(2)"
+        styleClass="product-card"
+      >
+        <ng-template pTemplate="content">
+          <ul class="components-list">
+            <li *ngFor="let c of p.componenti">
+              <div class="component-info">
+                <span class="component-name">{{ c.nome }}</span>
+                <small *ngIf="c.variante">({{ c.variante }})</small>
+              </div>
+              <div class="component-meta">
+                <span class="component-price">€ {{ c.prezzo.toFixed(2) }}</span>
+                <small class="component-qty">×{{ c.quantita }}</small>
+              </div>
+            </li>
+          </ul>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+          <button pButton type="button" label="Modifica Prodotto" (click)="goToModificaProdotto(p)"></button>
+          <button pButton type="button" label="Genera Listino" (click)="generaListino(p)"></button>
+        </ng-template>
+      </p-card>
+    </div>
+  </div>
+</div>
