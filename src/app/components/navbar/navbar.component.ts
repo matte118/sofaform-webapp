@@ -11,7 +11,6 @@ import { Router } from '@angular/router';
       <ul>
         <li><a (click)="navigateTo('home')">Home</a></li>
         <li><a (click)="navigateTo('aggiungi-prodotto')">Aggiungi Prodotto</a></li>
-        <li><a (click)="navigateTo('modifica-prodotto')">Modifica Prodotto</a></li>
       </ul>
     </nav>
   `

@@ -1,19 +1,132 @@
 <div class="modifica-prodotto">
-  <h1>Seleziona Prodotto da Modificare</h1>
+  <h1>Modifica Prodotto</h1>
 
-  <div class="p-grid">
+  <!-- Product Selection -->
+  <div class="p-grid" *ngIf="!selectedProduct">
     <div class="p-col-12 p-md-4" *ngFor="let product of products">
-      <p-card [header]="product.nome">
+      <p-card [header]="product.nome" styleClass="product-card">
         <ng-template pTemplate="content">
-          <p>Prezzo: {{ product.prezzo | currency:'EUR' }}</p>
-          <p>Componenti: {{ product.componenti.length }}</p>
+          <ul class="components-list">
+            <li *ngFor="let comp of product.componenti">
+              <div class="component-info">
+                <span class="component-name">{{ comp.nome }}</span>
+                <small *ngIf="comp.variante">({{ comp.variante }})</small>
+              </div>
+              <div class="component-meta">
+                <span class="component-price">{{ comp.prezzo | currency:'EUR':'symbol' }}</span>
+                <small class="component-qty">×{{ comp.quantita }}</small>
+              </div>
+            </li>
+          </ul>
+          <div class="total-price p-mt-2">
+            <strong>Prezzo Totale:</strong>
+            {{ product.prezzo | currency:'EUR':'symbol' }}
+          </div>
         </ng-template>
         <ng-template pTemplate="footer">
-          <p-button label="Modifica" (onClick)="editProduct(product)"></p-button>
+          <button pButton type="button" label="Modifica" (click)="editProduct(product)"></button>
         </ng-template>
       </p-card>
     </div>
   </div>
 
+  <!-- Edit Form -->
+  <div class="edit-form" *ngIf="selectedProduct">
+    <p-card styleClass="product-card">
+      <div class="p-fluid">
+        <!-- Nome Prodotto -->
+        <div class="p-field">
+          <label for="productName">Nome Prodotto</label>
+          <input id="productName" pInputText [(ngModel)]="selectedProduct.nome" />
+        </div>
 
+        <!-- Componenti Table -->
+        <div class="p-field p-mt-4">
+          <h3>Componenti</h3>
+          <p-table [value]="selectedProduct.componenti" scrollable="true" scrollHeight="250px">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Nome</th>
+                <th>Prezzo</th>
+                <th>Quantità</th>
+                <th>Categoria</th>
+                <th>Azioni</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-comp let-i="index">
+              <tr>
+                <td>
+                  <input pInputText [(ngModel)]="comp.nome" />
+                </td>
+                <td>
+                  <p-inputNumber
+                    [(ngModel)]="comp.prezzo"
+                    mode="currency"
+                    currency="EUR"
+                    (onInput)="calculateTotalPrice()"
+                  ></p-inputNumber>
+                </td>
+                <td>
+                  <p-inputNumber
+                    [(ngModel)]="comp.quantita"
+                    [showButtons]="true"
+                    [min]="1"
+                    (onInput)="calculateTotalPrice()"
+                  ></p-inputNumber>
+                </td>
+                <td>{{ comp.categoria }}</td>
+                <td>
+                  <button
+                    pButton
+                    type="button"
+                    icon="pi pi-trash"
+                    styleClass="p-button-danger p-button-text"
+                    (click)="deleteComponent(i)"
+                  ></button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        <!-- Prezzo Totale -->
+        <div class="total-price p-mt-3">
+          <strong>Prezzo Totale:</strong>
+          {{ selectedProduct.prezzo | currency:'EUR':'symbol' }}
+        </div>
+
+        <!-- Azioni -->
+        <div class="p-grid p-mt-4">
+          <div class="p-col-6">
+            <button
+              pButton
+              type="button"
+              label="Annulla"
+              styleClass="p-button-secondary"
+              (click)="backToHome()"
+            ></button>
+          </div>
+          <div class="p-col-6 text-right">
+            <button pButton type="button" label="Salva Modifiche" (click)="saveProduct()"></button>
+          </div>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <p-dialog 
+    [(visible)]="showSaveDialog" 
+    header="Salva Modifiche" 
+    [modal]="true" 
+    [style]="{width: '450px'}">
+    <p>Come vuoi salvare le modifiche?</p>
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Sovrascrivi" (click)="overwriteProduct()"></button>
+      <button pButton type="button" label="Salva come nuovo" (click)="saveAsNewProduct()"></button>
+      <button pButton type="button" label="Annulla" (click)="cancelSave()" 
+        class="p-button"></button>
+    </ng-template>
+  </p-dialog>
+
+  <p-confirmDialog></p-confirmDialog>
 </div>

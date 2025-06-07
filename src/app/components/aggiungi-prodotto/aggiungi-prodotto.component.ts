@@ -44,7 +44,7 @@ export class AggiungiProdottoComponent {
   readonly Categoria = Category;
 
   steps = [
-    { label: 'Dettagli' },
+    { label: 'Prodotto' },
     { label: 'Componenti' }
   ];
   currentStep = 0;

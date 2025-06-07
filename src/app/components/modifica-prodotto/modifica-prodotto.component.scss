@@ -1,19 +1,145 @@
 .modifica-prodotto {
-  padding: 2rem;
+  padding: 1rem;
 
   h1 {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     text-align: center;
+    font-size: 2rem;
+    color: #333;
   }
 
   .p-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1rem;
-    margin-bottom: 2rem;
+  }
+
+  ::ng-deep {
+    .p-card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .p-card-header {
+        background: #f8f9fa;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #edf2f7;
+      }
+
+      .p-card-body {
+        .p-card-title {
+          font-size: 1.4rem;
+          color: #1e293b;
+          margin: 0;
+        }
+
+        .p-card-subtitle {
+          font-size: 1rem;
+          color: #2196f3;
+          margin-top: 0.25rem;
+        }
+      }
+
+      .p-card-content {
+        flex: 1;
+        padding: 1.5rem;
+      }
+
+      .p-card-footer {
+        background: #ffffff;
+        padding: 1.5rem;
+        border-top: 1px solid #f1f5f9;
+        text-align: center;
+
+        button {
+          font-weight: 600;
+          padding: 0.75rem 1.5rem;
+          background: #2196f3;
+          transition: background-color 0.3s ease;
+
+          &:hover {
+            background: #1976d2;
+          }
+        }
+      }
+    }
   }
 
   .actions {
     text-align: center;
   }
+
+  .edit-form {
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .p-field {
+      margin-bottom: 1.5rem;
+    }
+
+    .total-price {
+      text-align: right;
+      font-size: 1.2rem;
+      margin: 1rem 0;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+  }
+}
+
+.components-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .component-info {
+      .component-name {
+        font-weight: 500;
+      }
+
+      small {
+        color: #666;
+        margin-left: 0.5rem;
+      }
+    }
+
+    .component-meta {
+      text-align: right;
+
+      .component-price {
+        font-weight: 600;
+        color: #2196f3;
+      }
+
+      .component-qty {
+        color: #666;
+        margin-left: 0.5rem;
+      }
+    }
+  }
+}
+
+.total-price {
+  text-align: right;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e0e0e0;
 }
