@@ -30,3 +30,35 @@
     </div>
   </div>
 </div>
+
+<p-dialog 
+  [(visible)]="showMarkupDialog" 
+  header="Configura Ricarico" 
+  [modal]="true" 
+  [style]="{width: '450px'}">
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="markup">Percentuale di Ricarico</label>
+      <p-inputNumber 
+        id="markup" 
+        [(ngModel)]="markupPercentage" 
+        mode="decimal" 
+        [showButtons]="true"
+        [min]="0" 
+        [max]="100" 
+        suffix="%">
+      </p-inputNumber>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button 
+      label="Annulla" 
+      (onClick)="cancelMarkup()" 
+      styleClass="p-button-text">
+    </p-button>
+    <p-button 
+      label="Genera" 
+      (onClick)="generateWithMarkup()">
+    </p-button>
+  </ng-template>
+</p-dialog>
