@@ -75,4 +75,10 @@ export class ProductService {
     const currentProducts = this.products.getValue();
     this.products.next([...currentProducts, newProduct]);
   }
+
+  deleteProduct(productName: string) {
+    const currentProducts = this.products.getValue();
+    const filteredProducts = currentProducts.filter(p => p.nome !== productName);
+    this.products.next(filteredProducts);
+  }
 }

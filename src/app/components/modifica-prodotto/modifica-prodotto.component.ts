@@ -140,4 +140,13 @@ export class ModificaProdottoComponent implements OnInit {
   backToHome() {
     this.router.navigate(['/home']);
   }
+
+  deleteProduct(product: ProductModel) {
+    this.confirmationService.confirm({
+      message: 'Sei sicuro di voler eliminare questo prodotto?',
+      accept: () => {
+        this.productService.deleteProduct(product.nome);
+      }
+    });
+  }
 }

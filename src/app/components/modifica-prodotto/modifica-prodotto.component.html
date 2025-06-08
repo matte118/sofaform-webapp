@@ -5,6 +5,11 @@
   <div class="p-grid" *ngIf="!selectedProduct">
     <div class="p-col-12 p-md-4" *ngFor="let product of products">
       <p-card [header]="product.nome" styleClass="product-card">
+        <button pButton 
+          class="delete-button p-button-rounded p-button-danger p-button-text" 
+          icon="pi pi-trash"
+          (click)="deleteProduct(product)">
+        </button>
         <ng-template pTemplate="content">
           <ul class="components-list">
             <li *ngFor="let comp of product.componenti">

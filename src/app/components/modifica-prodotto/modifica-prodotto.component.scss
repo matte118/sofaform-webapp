@@ -20,6 +20,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
 
       &:hover {
         transform: translateY(-5px);
@@ -67,6 +68,19 @@
             background: #1976d2;
           }
         }
+      }
+
+      .delete-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+      }
+
+      &:hover .delete-button {
+        opacity: 1;
       }
     }
   }
