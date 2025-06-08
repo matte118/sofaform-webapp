@@ -8,6 +8,16 @@
         [subheader]="'Prezzo: € ' + p.prezzo.toFixed(2)"
         styleClass="product-card"
       >
+        <div class="card-actions">
+          <button pButton class="p-button-rounded p-button-text" 
+            icon="pi pi-pencil"
+            (click)="editProduct(p)">
+          </button>
+          <button pButton class="p-button-rounded p-button-danger p-button-text" 
+            icon="pi pi-trash"
+            (click)="deleteProduct($event, p)">
+          </button>
+        </div>
         <ng-template pTemplate="content">
           <ul class="components-list">
             <li *ngFor="let c of p.componenti">
@@ -62,3 +72,5 @@
     </p-button>
   </ng-template>
 </p-dialog>
+
+<p-confirmDialog></p-confirmDialog>

@@ -18,7 +18,33 @@
       <!-- Step 2: Componenti -->
       <ng-container *ngIf="currentStep === 1">
         <div class="p-field p-col-12">
-          <h3>Aggiungi Componente</h3>
+          <!-- Add this section before the manual component addition form -->
+          <div class="existing-components p-mb-4">
+            <h3>Seleziona Componente Esistente</h3>
+            <div class="p-grid p-nogutter p-align-end">
+              <div class="p-field p-col-12 p-md-8">
+                <p-dropdown [options]="availableComponents" [(ngModel)]="selectedExistingComponent"
+                  optionLabel="nome" [filter]="true" filterBy="nome"
+                  placeholder="Seleziona un componente esistente"
+                  [showClear]="true" name="existingComponent">
+                  <ng-template pTemplate="item" let-comp>
+                    {{ comp.nome }} - {{ comp.prezzo | currency:'EUR' }}
+                    <small>({{ comp.categoria }})</small>
+                  </ng-template>
+                </p-dropdown>
+              </div>
+              <div class="p-field p-col-12 p-md-4">
+                <p-button label="Aggiungi Componente" 
+                  (onClick)="addExistingComponent()"
+                  [disabled]="!selectedExistingComponent">
+                </p-button>
+              </div>
+            </div>
+          </div>
+
+          <p-divider></p-divider>
+
+          <h3>Aggiungi Nuovo Componente</h3>
           <div class="p-grid p-align-center p-justify-between p-mb-3">
             <div class="p-grid p-nogutter p-align-end">
               <div class="p-field p-col-12 p-md-4">
@@ -64,7 +90,7 @@
                 <p-button [icon]="editingComponent ? 'pi pi-check' : 'pi pi-plus'"
                   [label]="editingComponent ? 'Aggiorna' : 'Aggiungi'"
                   (onClick)="editingComponent ? updateComponent() : addComponent()"
-                  [disabled]="!newComponent.nome?.trim()">
+                  [disabled]="!newComponent.nome.trim()">
                 </p-button>
               </div>
             </div>
@@ -113,15 +139,18 @@
 
 
           <!-- Mostra “Avanti” se non sei all’ultimo step -->
-          <p-button *ngIf="currentStep < steps.length - 1" label="Avanti" (onClick)="nextStep()" [disabled]="
-              currentStep === 0 && !newProductData.nome?.trim()
-            "></p-button>
+          <p-button *ngIf="currentStep < steps.length - 1" 
+            label="Avanti" 
+            (onClick)="nextStep()" 
+            [disabled]="currentStep === 0 && !newProductData.nome.trim()">
+          </p-button>
 
           <!-- Mostra “Salva Prodotto” solo all’ultimo step -->
-          <p-button *ngIf="currentStep === steps.length - 1" label="Salva Prodotto" type="submit" [disabled]="
-              !newProductData.nome?.trim() ||
-              newProductData.componenti.length === 0
-            "></p-button>
+          <p-button *ngIf="currentStep === steps.length - 1" 
+            label="Salva Prodotto" 
+            type="submit" 
+            [disabled]="!newProductData.nome.trim() || newProductData.componenti.length === 0">
+          </p-button>
         </div>
       </div>
     </form>

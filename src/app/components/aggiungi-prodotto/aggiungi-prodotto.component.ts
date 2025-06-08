@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -16,6 +16,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ProductModel } from '../../../models/product.model';
 import { ComponentModel } from '../../../models/component.model';
 import { ProductService } from '../../../services/product.service';
+import { ComponentService } from '../../../services/component.service';
 import { Router } from '@angular/router';
 import { Category } from '../../../models/component-category.model';
 
@@ -40,7 +41,7 @@ import { Category } from '../../../models/component-category.model';
   templateUrl: './aggiungi-prodotto.component.html',
   styleUrls: ['./aggiungi-prodotto.component.scss']
 })
-export class AggiungiProdottoComponent {
+export class AggiungiProdottoComponent implements OnInit {
   readonly Categoria = Category;
 
   steps = [
@@ -71,11 +72,21 @@ export class AggiungiProdottoComponent {
     value
   }));
 
+  availableComponents: ComponentModel[] = [];
+  selectedExistingComponent?: ComponentModel;
+
   constructor(
     private productService: ProductService,
+    private componentService: ComponentService,
     private router: Router,
     private confirmationService: ConfirmationService
   ) {}
+
+  ngOnInit() {
+    this.componentService.getComponents().subscribe(components => {
+      this.availableComponents = components;
+    });
+  }
 
   prevStep(): void {
     if (this.currentStep > 0) {
@@ -177,5 +188,32 @@ export class AggiungiProdottoComponent {
       quantita: 1,
       categoria: Category.Bedroom
     });
+  }
+
+  addExistingComponent() {
+    if (this.selectedExistingComponent) {
+      const comp = new ComponentModel({
+        ...this.selectedExistingComponent,
+        quantita: 1  // Reset quantity to 1 for new addition
+      });
+      
+      this.newProductData.componenti.push(comp);
+
+      if (!this.newProduct) {
+        this.newProduct = new ProductModel({
+          nome: this.newProductData.nome,
+          componenti: this.newProductData.componenti,
+          prezzo: this.calculateTotalPrice(),
+          foto: this.newProductData.foto.length
+            ? this.newProductData.foto
+            : ['https://via.placeholder.com/300x200?text=Nuovo+Prodotto']
+        });
+      } else {
+        this.newProduct.componenti = [...this.newProductData.componenti];
+        this.newProduct.prezzo = this.calculateTotalPrice();
+      }
+
+      this.selectedExistingComponent = undefined;
+    }
   }
 }

@@ -9,7 +9,9 @@ import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { FormsModule } from '@angular/forms';
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';  // <-- import funzionale
+import { ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-home',
@@ -20,8 +22,10 @@ import autoTable from 'jspdf-autotable';
     ButtonModule,
     DialogModule,
     InputNumberModule,
-    FormsModule
+    FormsModule,
+    ConfirmDialogModule
   ],
+  providers: [ConfirmationService],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -34,7 +38,8 @@ export class HomeComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private productService: ProductService
+    private productService: ProductService,
+    private confirmationService: ConfirmationService
   ) { }
 
   ngOnInit(): void {
@@ -54,12 +59,10 @@ export class HomeComponent implements OnInit {
 
   generateWithMarkup() {
     if (this.selectedProduct) {
-      // Genera ed esporta il PDF
       this.exportPdf(this.selectedProduct, this.markupPercentage);
     }
     this.showMarkupDialog = false;
   }
-
 
   cancelMarkup() {
     this.showMarkupDialog = false;
@@ -67,6 +70,7 @@ export class HomeComponent implements OnInit {
 
   private exportPdf(product: ProductModel, markupPerc: number) {
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    
     doc.setFontSize(18);
     doc.text(`Listino: ${product.nome}`, 40, 20);
 
@@ -84,17 +88,17 @@ export class HomeComponent implements OnInit {
 
     const head = [['Componente', 'Quantità', 'Prezzo cad.', 'Subtotale']];
 
-    // Genera la tabella (ritorna void)
+    // Chiamata “funzionale” al plugin
     autoTable(doc, {
-      startY: 30,
       head,
       body: rows,
+      startY: 30,
       theme: 'striped',
       headStyles: { fillColor: [33, 150, 243] },
       margin: { left: 40, right: 40 }
     });
 
-    // Prendi la coordinata Y in fondo alla tabella
+    // Recupera la coordinata Y in fondo alla tabella
     const finalY = (doc as any).lastAutoTable?.finalY ?? 50;
 
     // Calcola e scrivi il totale
@@ -106,5 +110,19 @@ export class HomeComponent implements OnInit {
     doc.text(`Totale: € ${totale.toFixed(2)}`, 40, finalY + 20);
 
     doc.save(`Listino_${product.nome.replace(/\s+/g, '_')}.pdf`);
+  }
+
+  editProduct(product: ProductModel) {
+    this.router.navigate(['/modifica-prodotto', product.nome]);
+  }
+
+  deleteProduct(event: Event, product: ProductModel) {
+    event.stopPropagation();
+    this.confirmationService.confirm({
+      message: 'Sei sicuro di voler eliminare questo prodotto?',
+      accept: () => {
+        this.productService.deleteProduct(product.nome);
+      }
+    });
   }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ProductModel } from '../../../models/product.model';
 import { ComponentModel } from '../../../models/component.model';
 import { ProductService } from '../../../services/product.service';
@@ -40,13 +40,23 @@ export class ModificaProdottoComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private productService: ProductService,
     private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit() {
+    const productName = this.route.snapshot.paramMap.get('nome');
+    
     this.productService.getProducts().subscribe(products => {
       this.products = products;
+      
+      if (productName) {
+        const product = products.find(p => p.nome === productName);
+        if (product) {
+          this.editProduct(product);
+        }
+      }
     });
   }
 
