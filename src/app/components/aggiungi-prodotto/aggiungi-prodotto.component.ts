@@ -73,6 +73,7 @@ export class AggiungiProdottoComponent implements OnInit {
   }));
 
   availableComponents: ComponentModel[] = [];
+  groupedComponents: { [category: string]: ComponentModel[] } = {};
   selectedExistingComponent?: ComponentModel;
 
   constructor(
@@ -85,6 +86,18 @@ export class AggiungiProdottoComponent implements OnInit {
   ngOnInit() {
     this.componentService.getComponents().subscribe(components => {
       this.availableComponents = components;
+      this.groupComponentsByCategory();
+    });
+  }
+
+  private groupComponentsByCategory() {
+    this.groupedComponents = {};
+    this.availableComponents.forEach(component => {
+      const categoryKey = component.categoria;
+      if (!this.groupedComponents[categoryKey]) {
+        this.groupedComponents[categoryKey] = [];
+      }
+      this.groupedComponents[categoryKey].push(component);
     });
   }
 
@@ -137,6 +150,9 @@ export class AggiungiProdottoComponent implements OnInit {
       this.newProduct.nome.trim() &&
       this.newProduct.componenti.length > 0
     ) {
+      // Update the product price before saving
+      this.newProduct.prezzo = this.calculateTotalPrice();
+      
       this.productService.addProduct(this.newProduct);
       this.router.navigate(['/home']);
     }

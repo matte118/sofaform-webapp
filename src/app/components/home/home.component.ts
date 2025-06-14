@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -9,7 +9,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { FormsModule } from '@angular/forms';
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';  // <-- import funzionale
+import autoTable from 'jspdf-autotable';
 import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
@@ -39,12 +39,14 @@ export class HomeComponent implements OnInit {
   constructor(
     private router: Router,
     private productService: ProductService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.productService.getProducts().subscribe(products => {
       this.products = products;
+      this.cdr.detectChanges();
     });
   }
 
@@ -88,7 +90,6 @@ export class HomeComponent implements OnInit {
 
     const head = [['Componente', 'Quantità', 'Prezzo cad.', 'Subtotale']];
 
-    // Chiamata “funzionale” al plugin
     autoTable(doc, {
       head,
       body: rows,
@@ -98,10 +99,8 @@ export class HomeComponent implements OnInit {
       margin: { left: 40, right: 40 }
     });
 
-    // Recupera la coordinata Y in fondo alla tabella
     const finalY = (doc as any).lastAutoTable?.finalY ?? 50;
 
-    // Calcola e scrivi il totale
     const totale = rows
       .map(r => parseFloat(r[3]))
       .reduce((sum, val) => sum + val, 0);

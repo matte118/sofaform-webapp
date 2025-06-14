@@ -20,7 +20,7 @@ export class ComponentModel implements Component {
 
   constructor(data: Partial<ComponentModel>) {
     this.nome = data.nome ?? '';
-    this.variante = data.variante;
+    this.variante = data.variante ?? undefined; // Change from null to undefined
     this.prezzo = data.prezzo ?? 0;
     this.fornitore = data.fornitore ?? '';
     this.quantita = data.quantita ?? 1;

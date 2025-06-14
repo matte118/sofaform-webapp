@@ -53,6 +53,8 @@ export class GestioneComponentiComponent implements OnInit {
   });
 
   editingComponent?: ComponentModel;
+  originalEditingComponent?: ComponentModel; // Add this to track original
+
   categoryOptions = Object.entries(Category).map(([label, value]) => ({
     label,
     value
@@ -89,8 +91,8 @@ export class GestioneComponentiComponent implements OnInit {
   }
 
   saveComponent() {
-    if (this.editingComponent) {
-      this.componentService.updateComponent(this.newComponent);
+    if (this.editingComponent && this.originalEditingComponent) {
+      this.componentService.updateComponentByOriginal(this.originalEditingComponent, this.newComponent);
     } else {
       this.componentService.addComponent(this.newComponent);
     }
@@ -99,6 +101,7 @@ export class GestioneComponentiComponent implements OnInit {
 
   editComponent(component: ComponentModel) {
     this.editingComponent = component;
+    this.originalEditingComponent = { ...component }; // Store original reference
     this.newComponent = new ComponentModel({ ...component });
   }
 
@@ -113,6 +116,7 @@ export class GestioneComponentiComponent implements OnInit {
 
   resetForm() {
     this.editingComponent = undefined;
+    this.originalEditingComponent = undefined; // Reset original reference
     this.newComponent = new ComponentModel({
       nome: '',
       prezzo: 0,

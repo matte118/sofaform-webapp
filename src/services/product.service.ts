@@ -3,67 +3,52 @@ import { ProductModel } from '../models/product.model';
 import { ComponentModel } from '../models/component.model';
 import { Category } from '../models/component-category.model';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { RealtimeDbService } from './realtime-db.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private products = new BehaviorSubject<ProductModel[]>([
-    new ProductModel({
-      nome: 'Sofa A',
-      componenti: [
-        new ComponentModel({
-          nome: 'Sofa A',
-          prezzo: 599,
-          fornitore: 'SofaCo',
-          quantita: 1,
-          categoria: Category.Bedroom,
-        }),
-        new ComponentModel({
-          nome: 'Cuscino Deluxe',
-          variante: 'Rosso',
-          prezzo: 49,
-          fornitore: 'HomeDeco',
-          quantita: 2,
-          categoria: Category.Bedroom,
-        })
-      ],
-      prezzo: 599 + 2 * 49,
-      foto: ['https://via.placeholder.com/300x200?text=Sofa+A']
-    }),
-    new ProductModel({
-      nome: 'Sofa B',
-      componenti: [
-        new ComponentModel({
-          nome: 'Sofa B',
-          prezzo: 799,
-          fornitore: 'ComfortLtd',
-          quantita: 1,
-          categoria: Category.Bedroom,
-        })
-      ],
-      prezzo: 799,
-      foto: ['https://via.placeholder.com/300x200?text=Sofa+B']
-    })
-  ]);
-
+  private products = new BehaviorSubject<ProductModel[]>([]);
   private selectedProduct = new BehaviorSubject<ProductModel | null>(null);
+  private productIds = new Map<string, string>(); // Maps product name to Firebase ID
+
+  constructor(private realtimeDbService: RealtimeDbService) {
+    this.loadProductsFromDb();
+  }
+
+  private loadProductsFromDb() {
+    this.realtimeDbService.getProducts((productsFromDb) => {
+      const products = productsFromDb.map(item => {
+        const product = new ProductModel(item.data);
+        // Store the mapping between product name and Firebase ID
+        this.productIds.set(product.nome, item.id);
+        return product;
+      });
+      this.products.next(products);
+    });
+  }
 
   getProducts(): Observable<ProductModel[]> {
     return this.products.asObservable();
   }
 
   updateProduct(updatedProduct: ProductModel) {
-    const currentProducts = this.products.getValue();
-    const index = currentProducts.findIndex(p => p.nome === updatedProduct.nome);
-    if (index !== -1) {
-      currentProducts[index] = updatedProduct;
-      this.products.next([...currentProducts]);
+    const firebaseId = this.productIds.get(updatedProduct.nome);
+    
+    if (firebaseId) {
+      this.realtimeDbService.updateProduct(firebaseId, updatedProduct).then(() => {
+        console.log('Product updated successfully in database');
+      }).catch((error: any) => {
+        console.error('Error updating product in database:', error);
+      });
+    } else {
+      console.error('Product ID not found for update:', updatedProduct.nome);
     }
   }
 
   setSelectedProduct(product: ProductModel) {
-    console.log('Setting selected product:', product); // Debug log
+    console.log('Setting selected product:', product);
     this.selectedProduct.next(product);
   }
 
@@ -72,13 +57,24 @@ export class ProductService {
   }
 
   addProduct(newProduct: ProductModel) {
-    const currentProducts = this.products.getValue();
-    this.products.next([...currentProducts, newProduct]);
+    this.realtimeDbService.addProduct(newProduct).then(() => {
+    }).catch(error => {
+      console.error('Error adding product:', error);
+    });
   }
 
   deleteProduct(productName: string) {
-    const currentProducts = this.products.getValue();
-    const filteredProducts = currentProducts.filter(p => p.nome !== productName);
-    this.products.next(filteredProducts);
+    const firebaseId = this.productIds.get(productName);
+    
+    if (firebaseId) {
+      this.realtimeDbService.deleteProduct(firebaseId).then(() => {
+        this.productIds.delete(productName);
+        console.log('Product deleted successfully from database');
+      }).catch(error => {
+        console.error('Error deleting product from database:', error);
+      });
+    } else {
+      console.error('Product ID not found for deletion:', productName);
+    }
   }
 }
