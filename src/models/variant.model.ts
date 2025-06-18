@@ -6,7 +6,7 @@ export class Variant {
     public sofaId: string,
     public code: string,
     public longName: string,
-    public basePrice: number,
+    public price: number,
     public components: Component[] = [],
     public seatsCount?: number,
     public mattressWidth?: number

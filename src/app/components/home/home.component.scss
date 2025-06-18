@@ -14,9 +14,31 @@
     gap: 1rem;
   }
 
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 2rem auto;
+    max-width: 500px;
+
+    i {
+      font-size: 4rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    p {
+      font-size: 1.2rem;
+      color: #666;
+      margin: 0;
+    }
+  }
+
   ::ng-deep {
     .p-card {
-      position: relative; // Add this
+      position: relative;
       background: #ffffff;
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -51,7 +73,22 @@
         flex: 1;
         padding: 1.5rem;
 
-        .components-list {
+        .product-description {
+          color: #666;
+          margin-bottom: 1.5rem;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+
+        .variants-title {
+          font-size: 1.1rem;
+          color: #333;
+          margin: 1rem 0 0.5rem;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 0.5rem;
+        }
+
+        .variants-list {
           margin: 0;
           padding: 0;
           list-style: none;
@@ -67,11 +104,11 @@
               border-bottom: none;
             }
 
-            .component-info {
+            .variant-info {
               display: flex;
               align-items: baseline;
 
-              .component-name {
+              .variant-name {
                 font-weight: 500;
                 color: #334155;
                 margin-right: 0.5rem;
@@ -83,16 +120,16 @@
               }
             }
 
-            .component-meta {
+            .variant-meta {
               text-align: right;
 
-              .component-price {
+              .variant-price {
                 font-weight: 600;
                 color: #2196f3;
                 margin-right: 0.5rem;
               }
 
-              .component-qty {
+              .variant-seats {
                 font-size: 0.9rem;
                 color: #64748b;
               }

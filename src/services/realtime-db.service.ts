@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Database, ref, set, push, onValue, remove } from '@angular/fire/database';
-import { ComponentModel } from '../models/component.model';
-import { ProductModel } from '../models/product.model';
+import { SofaProduct } from '../models/sofa-product.model';
+import { Variant } from '../models/variant.model';
+import { Supplier } from '../models/supplier.model';
+import { Component } from '../models/component.model';
+import { Rivestimento } from '../models/rivestimento.model';
 
 @Injectable({ providedIn: 'root' })
 export class RealtimeDbService {
@@ -29,57 +32,143 @@ export class RealtimeDbService {
     return obj;
   }
 
-  addComponent(component: ComponentModel): Promise<void> {
+  // SofaProduct methods
+  addSofaProduct(product: SofaProduct): Promise<void> {
+    const refPath = ref(this.db, 'sofaProducts');
+    const newRef = push(refPath);
+    const sanitizedProduct = this.sanitizeData(product);
+    return set(newRef, sanitizedProduct);
+  }
+
+  getSofaProducts(callback: (products: { id: string; data: SofaProduct }[]) => void) {
+    const refPath = ref(this.db, 'sofaProducts');
+    onValue(refPath, (snapshot) => {
+      const raw = snapshot.val();
+      const parsed = raw
+        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as SofaProduct }))
+        : [];
+      callback(parsed);
+    });
+  }
+
+  updateSofaProduct(id: string, product: SofaProduct): Promise<void> {
+    const sanitizedProduct = this.sanitizeData(product);
+    return set(ref(this.db, `sofaProducts/${id}`), sanitizedProduct);
+  }
+
+  deleteSofaProduct(id: string): Promise<void> {
+    return remove(ref(this.db, `sofaProducts/${id}`));
+  }
+
+  // Variant methods
+  addVariant(variant: Variant): Promise<void> {
+    const refPath = ref(this.db, 'variants');
+    const newRef = push(refPath);
+    const sanitizedVariant = this.sanitizeData(variant);
+    return set(newRef, sanitizedVariant);
+  }
+
+  getVariants(callback: (variants: { id: string; data: Variant }[]) => void) {
+    const refPath = ref(this.db, 'variants');
+    onValue(refPath, (snapshot) => {
+      const raw = snapshot.val();
+      const parsed = raw
+        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as Variant }))
+        : [];
+      callback(parsed);
+    });
+  }
+
+  updateVariant(id: string, variant: Variant): Promise<void> {
+    const sanitizedVariant = this.sanitizeData(variant);
+    return set(ref(this.db, `variants/${id}`), sanitizedVariant);
+  }
+
+  deleteVariant(id: string): Promise<void> {
+    return remove(ref(this.db, `variants/${id}`));
+  }
+
+  // Supplier methods
+  addSupplier(supplier: Supplier): Promise<void> {
+    const refPath = ref(this.db, 'suppliers');
+    const newRef = push(refPath);
+    const sanitizedSupplier = this.sanitizeData(supplier);
+    return set(newRef, sanitizedSupplier);
+  }
+
+  getSuppliers(callback: (suppliers: { id: string; data: Supplier }[]) => void) {
+    const refPath = ref(this.db, 'suppliers');
+    onValue(refPath, (snapshot) => {
+      const raw = snapshot.val();
+      const parsed = raw
+        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as Supplier }))
+        : [];
+      callback(parsed);
+    });
+  }
+
+  updateSupplier(id: string, supplier: Supplier): Promise<void> {
+    const sanitizedSupplier = this.sanitizeData(supplier);
+    return set(ref(this.db, `suppliers/${id}`), sanitizedSupplier);
+  }
+
+  deleteSupplier(id: string): Promise<void> {
+    return remove(ref(this.db, `suppliers/${id}`));
+  }
+
+  // Rivestimento methods
+  addRivestimento(rivestimento: Rivestimento): Promise<void> {
+    const refPath = ref(this.db, 'rivestimenti');
+    const newRef = push(refPath);
+    const sanitizedRivestimento = this.sanitizeData(rivestimento);
+    return set(newRef, sanitizedRivestimento);
+  }
+
+  getRivestimenti(callback: (rivestimenti: { id: string; data: Rivestimento }[]) => void) {
+    const refPath = ref(this.db, 'rivestimenti');
+    onValue(refPath, (snapshot) => {
+      const raw = snapshot.val();
+      const parsed = raw
+        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as Rivestimento }))
+        : [];
+      callback(parsed);
+    });
+  }
+
+  updateRivestimento(id: string, rivestimento: Rivestimento): Promise<void> {
+    const sanitizedRivestimento = this.sanitizeData(rivestimento);
+    return set(ref(this.db, `rivestimenti/${id}`), sanitizedRivestimento);
+  }
+
+  deleteRivestimento(id: string): Promise<void> {
+    return remove(ref(this.db, `rivestimenti/${id}`));
+  }
+
+  // Component methods
+  addComponent(component: Component): Promise<void> {
     const refPath = ref(this.db, 'components');
     const newRef = push(refPath);
     const sanitizedComponent = this.sanitizeData(component);
     return set(newRef, sanitizedComponent);
   }
 
-  getComponents(callback: (components: { id: string; data: ComponentModel }[]) => void) {
+  getComponents(callback: (components: { id: string; data: Component }[]) => void) {
     const refPath = ref(this.db, 'components');
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
       const parsed = raw
-        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as ComponentModel }))
+        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as Component }))
         : [];
       callback(parsed);
     });
   }
 
-  deleteComponent(id: string): Promise<void> {
-    return remove(ref(this.db, `components/${id}`));
-  }
-
-  updateComponent(id: string, component: ComponentModel): Promise<void> {
+  updateComponent(id: string, component: Component): Promise<void> {
     const sanitizedComponent = this.sanitizeData(component);
     return set(ref(this.db, `components/${id}`), sanitizedComponent);
   }
 
-  addProduct(product: ProductModel): Promise<void> {
-    const refPath = ref(this.db, 'products');
-    const newRef = push(refPath);
-    const sanitizedProduct = this.sanitizeData(product);
-    return set(newRef, sanitizedProduct);
-  }
-
-  getProducts(callback: (products: { id: string; data: ProductModel }[]) => void) {
-    const refPath = ref(this.db, 'products');
-    onValue(refPath, (snapshot) => {
-      const raw = snapshot.val();
-      const parsed = raw
-        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as ProductModel }))
-        : [];
-      callback(parsed);
-    });
-  }
-
-  deleteProduct(id: string): Promise<void> {
-    return remove(ref(this.db, `products/${id}`));
-  }
-
-  updateProduct(id: string, product: ProductModel): Promise<void> {
-    const sanitizedProduct = this.sanitizeData(product);
-    return set(ref(this.db, `products/${id}`), sanitizedProduct);
+  deleteComponent(id: string): Promise<void> {
+    return remove(ref(this.db, `components/${id}`));
   }
 }

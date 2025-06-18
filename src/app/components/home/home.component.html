@@ -1,40 +1,52 @@
 <div class="home">
   <h1>Il nostro catalogo</h1>
 
-  <div class="p-grid p-align-start p-mt-4">
-    <div class="p-col-12 p-sm-6 p-md-4" *ngFor="let p of products">
+  <div *ngIf="products.length === 0" class="empty-state">
+    <i class="pi pi-inbox"></i>
+    <p>Nessun prodotto aggiunto.</p>
+  </div>
+
+  <div class="p-grid p-align-start p-mt-4" *ngIf="products.length > 0">
+    <div class="p-col-12 p-sm-6 p-md-4" *ngFor="let product of products; trackBy: trackById">
       <p-card
-        [header]="p.nome"
-        [subheader]="'Prezzo: € ' + p.prezzo.toFixed(2)"
+        [header]="product.name"
+        [subheader]="'Prezzo medio: € ' + getTotalPrice(product.id).toFixed(2)"
         styleClass="product-card"
       >
         <div class="card-actions">
           <button pButton class="p-button-rounded p-button-text" 
             icon="pi pi-pencil"
-            (click)="editProduct(p)">
+            (click)="editProduct(product)">
           </button>
           <button pButton class="p-button-rounded p-button-danger p-button-text" 
             icon="pi pi-trash"
-            (click)="deleteProduct($event, p)">
+            (click)="deleteProduct($event, product)">
           </button>
         </div>
         <ng-template pTemplate="content">
-          <ul class="components-list">
-            <li *ngFor="let c of p.componenti">
-              <div class="component-info">
-                <span class="component-name">{{ c.nome }}</span>
-                <small *ngIf="c.variante">({{ c.variante }})</small>
+          <p *ngIf="product.description" class="product-description">
+            {{ product.description }}
+          </p>
+          
+          <h4 class="variants-title">Varianti</h4>
+          <ul class="variants-list">
+            <li *ngFor="let variant of getProductVariants(product.id)">
+              <div class="variant-info">
+                <span class="variant-name">{{ variant.longName }}</span>
+                <small *ngIf="variant.code">({{ variant.code }})</small>
               </div>
-              <div class="component-meta">
-                <span class="component-price">€ {{ c.prezzo.toFixed(2) }}</span>
-                <small class="component-qty">×{{ c.quantita }}</small>
+              <div class="variant-meta">
+                <span class="variant-price">€ {{ variant.price.toFixed(2) }}</span>
+                <small *ngIf="variant.seatsCount" class="variant-seats">
+                  {{ variant.seatsCount }} posti
+                </small>
               </div>
             </li>
           </ul>
         </ng-template>
 
         <ng-template pTemplate="footer">
-          <button pButton type="button" label="Genera Listino" (click)="generaListino(p)"></button>
+          <button pButton type="button" label="Genera Listino" (click)="generaListino(product)"></button>
         </ng-template>
       </p-card>
     </div>

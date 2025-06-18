@@ -2,9 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
-import { ProductModel } from '../../../models/product.model';
 import { Router } from '@angular/router';
-import { ProductService } from '../../../services/product.service';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +10,10 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { SofaProduct } from '../../../models/sofa-product.model';
+import { SofaProductService } from '../../../services/sofa-product.service';
+import { VariantService } from '../../../services/variant.service';
+import { Variant } from '../../../models/variant.model';
 
 @Component({
   selector: 'app-home',
@@ -31,37 +33,66 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent implements OnInit {
-  products: ProductModel[] = [];
+  products: SofaProduct[] = [];
+  productVariants: Map<string, Variant[]> = new Map();
   showMarkupDialog = false;
-  selectedProduct?: ProductModel;
+  selectedProduct?: SofaProduct;
   markupPercentage = 30;
 
   constructor(
     private router: Router,
-    private productService: ProductService,
+    private sofaProductService: SofaProductService,
+    private variantService: VariantService,
     private confirmationService: ConfirmationService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
-    this.productService.getProducts().subscribe(products => {
+    this.loadProducts();
+  }
+
+  loadProducts(): void {
+    this.sofaProductService.getSofaProducts().subscribe(products => {
       this.products = products;
+      
+      // Load variants for each product
+      products.forEach(product => {
+        this.variantService.getVariantsBySofaId(product.id).subscribe(variants => {
+          this.productVariants.set(product.id, variants);
+          this.cdr.detectChanges();
+        });
+      });
+      
       this.cdr.detectChanges();
     });
   }
 
-  trackByName(_: number, item: ProductModel) {
-    return item.nome;
+  trackById(_: number, item: SofaProduct) {
+    return item.id;
   }
 
-  generaListino(product: ProductModel) {
+  getProductVariants(productId: string): Variant[] {
+    return this.productVariants.get(productId) || [];
+  }
+
+  getTotalPrice(productId: string): number {
+    const variants = this.productVariants.get(productId) || [];
+    if (variants.length === 0) return 0;
+    
+    // Return average price of variants as an example
+    const total = variants.reduce((sum, variant) => sum + variant.price, 0);
+    return total / variants.length;
+  }
+
+  generaListino(product: SofaProduct) {
     this.selectedProduct = product;
     this.showMarkupDialog = true;
   }
 
   generateWithMarkup() {
     if (this.selectedProduct) {
-      this.exportPdf(this.selectedProduct, this.markupPercentage);
+      const variants = this.productVariants.get(this.selectedProduct.id) || [];
+      this.exportPdf(this.selectedProduct, variants, this.markupPercentage);
     }
     this.showMarkupDialog = false;
   }
@@ -70,22 +101,48 @@ export class HomeComponent implements OnInit {
     this.showMarkupDialog = false;
   }
 
-  private exportPdf(product: ProductModel, markupPerc: number) {
+  private exportPdf(product: SofaProduct, variants: Variant[], markupPerc: number) {
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     
     doc.setFontSize(18);
-    doc.text(`Listino: ${product.nome}`, 40, 20);
+    doc.text(`Listino: ${product.name}`, 40, 20);
 
     const markup = markupPerc / 100;
-    const rows = product.componenti.map(c => {
-      const prezzoRicalcolato = c.prezzo * (1 + markup);
-      const subtotal = prezzoRicalcolato * c.quantita;
-      return [
-        c.nome + (c.variante ? ` (${c.variante})` : ''),
-        c.quantita.toString(),
-        prezzoRicalcolato.toFixed(2),
-        subtotal.toFixed(2)
-      ];
+    
+    // Create rows for each variant
+    const rows: string[][] = [];
+    
+    variants.forEach(variant => {
+      // Add variant header
+      rows.push([
+        `Variante: ${variant.longName}`,
+        '',
+        '',
+        ''
+      ]);
+      
+      // Add components
+      variant.components.forEach(component => {
+        const componentPrice = component.price * (1 + markup);
+        rows.push([
+          component.name,
+          '1', // Quantity is always 1 in this model
+          componentPrice.toFixed(2),
+          componentPrice.toFixed(2)
+        ]);
+      });
+      
+      // Add variant total
+      const variantTotal = variant.price;
+      rows.push([
+        'Totale variante',
+        '',
+        '',
+        variantTotal.toFixed(2)
+      ]);
+      
+      // Add spacer
+      rows.push(['', '', '', '']);
     });
 
     const head = [['Componente', 'Quantità', 'Prezzo cad.', 'Subtotale']];
@@ -101,26 +158,28 @@ export class HomeComponent implements OnInit {
 
     const finalY = (doc as any).lastAutoTable?.finalY ?? 50;
 
-    const totale = rows
-      .map(r => parseFloat(r[3]))
-      .reduce((sum, val) => sum + val, 0);
+    // Calculate grand total across all variants
+    const grandTotal = variants.reduce((sum, variant) => sum + variant.price, 0);
 
     doc.setFontSize(14);
-    doc.text(`Totale: € ${totale.toFixed(2)}`, 40, finalY + 20);
+    doc.text(`Totale Prodotto: € ${grandTotal.toFixed(2)}`, 40, finalY + 20);
 
-    doc.save(`Listino_${product.nome.replace(/\s+/g, '_')}.pdf`);
+    doc.save(`Listino_${product.name.replace(/\s+/g, '_')}.pdf`);
   }
 
-  editProduct(product: ProductModel) {
-    this.router.navigate(['/modifica-prodotto', product.nome]);
+  editProduct(product: SofaProduct) {
+    this.router.navigate(['/modifica-prodotto', product.id]);
   }
 
-  deleteProduct(event: Event, product: ProductModel) {
+  deleteProduct(event: Event, product: SofaProduct) {
     event.stopPropagation();
     this.confirmationService.confirm({
       message: 'Sei sicuro di voler eliminare questo prodotto?',
       accept: () => {
-        this.productService.deleteProduct(product.nome);
+        this.sofaProductService.deleteSofaProduct(product.id).subscribe(() => {
+          this.products = this.products.filter(p => p.id !== product.id);
+          this.cdr.detectChanges();
+        });
       }
     });
   }
