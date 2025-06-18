@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -38,29 +39,43 @@ export class HomeComponent implements OnInit {
   showMarkupDialog = false;
   selectedProduct?: SofaProduct;
   markupPercentage = 30;
+  isBrowser: boolean;
 
   constructor(
     private router: Router,
     private sofaProductService: SofaProductService,
     private variantService: VariantService,
     private confirmationService: ConfirmationService,
-    private cdr: ChangeDetectorRef
-  ) { }
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   ngOnInit(): void {
-    this.loadProducts();
+    // Only load data on the browser
+    if (this.isBrowser) {
+      this.loadProducts();
+    }
   }
 
   loadProducts(): void {
     this.sofaProductService.getSofaProducts().subscribe(products => {
+      console.log('Loaded products:', products); // Debug output
       this.products = products;
       
       // Load variants for each product
       products.forEach(product => {
-        this.variantService.getVariantsBySofaId(product.id).subscribe(variants => {
-          this.productVariants.set(product.id, variants);
-          this.cdr.detectChanges();
-        });
+        // Use the components array as a variant ID list
+        if (Array.isArray(product.components)) {
+          // Convert the component IDs to variant IDs
+          product.components.forEach(variantId => {
+            this.variantService.getVariantsBySofaId(product.id).subscribe(variants => {
+              this.productVariants.set(product.id, variants);
+              this.cdr.detectChanges();
+            });
+          });
+        }
       });
       
       this.cdr.detectChanges();
@@ -77,7 +92,15 @@ export class HomeComponent implements OnInit {
 
   getTotalPrice(productId: string): number {
     const variants = this.productVariants.get(productId) || [];
-    if (variants.length === 0) return 0;
+    if (variants.length === 0) {
+      // Try to get a price from the database structure
+      const product = this.products.find(p => p.id === productId);
+      if (product && product.components && Array.isArray(product.components)) {
+        // For now, return 0 but we'll populate from variants later
+        return 0;
+      }
+      return 0;
+    }
     
     // Return average price of variants as an example
     const total = variants.reduce((sum, variant) => sum + variant.price, 0);

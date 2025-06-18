@@ -32,16 +32,30 @@ export class RealtimeDbService {
     return obj;
   }
 
+  // Generic method to get data from any path
+  getProductsFromPath(path: string, callback: (products: { id: string; data: any }[]) => void) {
+    const refPath = ref(this.db, path);
+    onValue(refPath, (snapshot) => {
+      const raw = snapshot.val();
+      const parsed = raw
+        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as any }))
+        : [];
+      callback(parsed);
+    });
+  }
+
   // SofaProduct methods
   addSofaProduct(product: SofaProduct): Promise<void> {
-    const refPath = ref(this.db, 'sofaProducts');
+    // Use 'products' path to match the database structure
+    const refPath = ref(this.db, 'products');
     const newRef = push(refPath);
     const sanitizedProduct = this.sanitizeData(product);
     return set(newRef, sanitizedProduct);
   }
 
   getSofaProducts(callback: (products: { id: string; data: SofaProduct }[]) => void) {
-    const refPath = ref(this.db, 'sofaProducts');
+    // Use 'products' path to match the database structure
+    const refPath = ref(this.db, 'products');
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
       const parsed = raw
@@ -52,12 +66,14 @@ export class RealtimeDbService {
   }
 
   updateSofaProduct(id: string, product: SofaProduct): Promise<void> {
+    // Use 'products' path to match the database structure
     const sanitizedProduct = this.sanitizeData(product);
-    return set(ref(this.db, `sofaProducts/${id}`), sanitizedProduct);
+    return set(ref(this.db, `products/${id}`), sanitizedProduct);
   }
 
   deleteSofaProduct(id: string): Promise<void> {
-    return remove(ref(this.db, `sofaProducts/${id}`));
+    // Use 'products' path to match the database structure
+    return remove(ref(this.db, `products/${id}`));
   }
 
   // Variant methods

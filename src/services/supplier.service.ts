@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Observable, from } from 'rxjs';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
+import { Observable, from, of } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 import { RealtimeDbService } from './realtime-db.service';
 import { Supplier } from '../models/supplier.model';
 
@@ -7,17 +8,35 @@ import { Supplier } from '../models/supplier.model';
   providedIn: 'root'
 })
 export class SupplierService {
-  constructor(private dbService: RealtimeDbService) {}
+  private isBrowser: boolean;
+
+  constructor(
+    private dbService: RealtimeDbService,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   addSupplier(supplier: Supplier): Observable<void> {
+    if (!this.isBrowser) {
+      return of(void 0);
+    }
     return from(this.dbService.addSupplier(supplier));
   }
 
   getSuppliers(): Observable<Supplier[]> {
+    if (!this.isBrowser) {
+      return of([]);
+    }
+    
     return new Observable(observer => {
       this.dbService.getSuppliers(suppliers => {
         const mappedSuppliers = suppliers.map(s => 
-          new Supplier(s.id, s.data.name, s.data.contact)
+          new Supplier(
+            s.id, 
+            s.data.name, 
+            s.data.contact
+          )
         );
         observer.next(mappedSuppliers);
       });
@@ -25,10 +44,16 @@ export class SupplierService {
   }
 
   updateSupplier(id: string, supplier: Supplier): Observable<void> {
+    if (!this.isBrowser) {
+      return of(void 0);
+    }
     return from(this.dbService.updateSupplier(id, supplier));
   }
 
   deleteSupplier(id: string): Observable<void> {
+    if (!this.isBrowser) {
+      return of(void 0);
+    }
     return from(this.dbService.deleteSupplier(id));
   }
 }

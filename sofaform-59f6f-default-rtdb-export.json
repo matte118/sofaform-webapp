@@ -1,0 +1,279 @@
+{
+  "componentTypes": {
+    "type_001": {
+      "id": "type_001",
+      "name": "Struttura"
+    },
+    "type_002": {
+      "id": "type_002",
+      "name": "Imbottitura"
+    },
+    "type_003": {
+      "id": "type_003",
+      "name": "Rivestimento"
+    },
+    "type_004": {
+      "id": "type_004",
+      "name": "Meccanismo"
+    },
+    "type_005": {
+      "id": "type_005",
+      "name": "Accessorio"
+    }
+  },
+  "components": {
+    "comp_001": {
+      "componentModels": [
+        "type_001"
+      ],
+      "id": "comp_001",
+      "name": "Struttura Base Standard",
+      "price": 300,
+      "suppliers": [
+        "supp_001",
+        "supp_002"
+      ]
+    },
+    "comp_002": {
+      "componentModels": [
+        "type_002"
+      ],
+      "id": "comp_002",
+      "name": "Imbottitura Memory Foam",
+      "price": 150,
+      "suppliers": [
+        "supp_003"
+      ]
+    },
+    "comp_003": {
+      "componentModels": [
+        "type_003"
+      ],
+      "id": "comp_003",
+      "name": "Rivestimento Pelle Premium",
+      "price": 400,
+      "suppliers": [
+        "supp_004"
+      ]
+    },
+    "comp_004": {
+      "componentModels": [
+        "type_004"
+      ],
+      "id": "comp_004",
+      "name": "Meccanismo Reclinabile",
+      "price": 200,
+      "suppliers": [
+        "supp_001"
+      ]
+    },
+    "comp_005": {
+      "componentModels": [
+        "type_005"
+      ],
+      "id": "comp_005",
+      "name": "Piedini Cromati",
+      "price": 80,
+      "suppliers": [
+        "supp_002",
+        "supp_005"
+      ]
+    }
+  },
+  "products": {
+    "prod_001": {
+      "components": [
+        "var_001_001",
+        "var_001_002"
+      ],
+      "description": "Divano moderno a 3 posti con design contemporaneo",
+      "id": "prod_001",
+      "name": "Divano Moderno Milano"
+    },
+    "prod_002": {
+      "components": [
+        "var_002_001"
+      ],
+      "description": "Poltrona relax con meccanismo reclinabile",
+      "id": "prod_002",
+      "name": "Poltrona Relax Roma"
+    },
+    "prod_003": {
+      "components": [
+        "var_003_001",
+        "var_003_002",
+        "var_003_003"
+      ],
+      "description": "Divano angolare componibile per soggiorno",
+      "id": "prod_003",
+      "name": "Divano Angolare Torino"
+    },
+    "prod_004": {
+      "components": [
+        "var_004_001"
+      ],
+      "description": "Divano letto con materasso estraibile",
+      "id": "prod_004",
+      "name": "Divano Letto Firenze"
+    },
+    "prod_005": {
+      "components": [
+        "var_005_001"
+      ],
+      "description": "Chaise longue elegante per zone relax",
+      "id": "prod_005",
+      "name": "Chaise Longue Venezia"
+    }
+  },
+  "rivestimenti": {
+    "riv_001": {
+      "code": "TES_001",
+      "id": "riv_001",
+      "mtPrice": 25,
+      "type": "TESSUTO"
+    },
+    "riv_002": {
+      "code": "PEL_001",
+      "id": "riv_002",
+      "mtPrice": 45,
+      "type": "PELLE"
+    },
+    "riv_003": {
+      "code": "MIC_001",
+      "id": "riv_003",
+      "mtPrice": 30,
+      "type": "MICROFIBRA"
+    },
+    "riv_004": {
+      "code": "TES_PRE",
+      "id": "riv_004",
+      "mtPrice": 35,
+      "type": "TESSUTO"
+    },
+    "riv_005": {
+      "code": "PEL_PRE",
+      "id": "riv_005",
+      "mtPrice": 60,
+      "type": "PELLE"
+    }
+  },
+  "suppliers": {
+    "supp_001": {
+      "id": "supp_001",
+      "name": "Mobilificio Italiano SRL"
+    },
+    "supp_002": {
+      "id": "supp_002",
+      "name": "Componenti Design SpA"
+    },
+    "supp_003": {
+      "id": "supp_003",
+      "name": "Memory Foam Solutions"
+    },
+    "supp_004": {
+      "id": "supp_004",
+      "name": "Pelletteria Toscana"
+    },
+    "supp_005": {
+      "id": "supp_005",
+      "name": "Metalli & Cromature"
+    }
+  },
+  "variants": {
+    "var_001_001": {
+      "code": "MIL_3P_TES",
+      "components": [
+        "comp_001",
+        "comp_002"
+      ],
+      "id": "var_001_001",
+      "longName": "Milano 3 Posti Tessuto",
+      "price": 1200,
+      "seatsCount": 3,
+      "sofaId": "prod_001"
+    },
+    "var_001_002": {
+      "code": "MIL_3P_PEL",
+      "components": [
+        "comp_001",
+        "comp_003"
+      ],
+      "id": "var_001_002",
+      "longName": "Milano 3 Posti Pelle",
+      "price": 1800,
+      "seatsCount": 3,
+      "sofaId": "prod_001"
+    },
+    "var_002_001": {
+      "code": "ROM_REL_TES",
+      "components": [
+        "comp_004"
+      ],
+      "id": "var_002_001",
+      "longName": "Roma Relax Tessuto",
+      "price": 800,
+      "seatsCount": 1,
+      "sofaId": "prod_002"
+    },
+    "var_003_001": {
+      "code": "TOR_ANG_DX",
+      "components": [
+        "comp_001",
+        "comp_005"
+      ],
+      "id": "var_003_001",
+      "longName": "Torino Angolare Destro",
+      "price": 2200,
+      "seatsCount": 5,
+      "sofaId": "prod_003"
+    },
+    "var_003_002": {
+      "code": "TOR_ANG_SX",
+      "components": [
+        "comp_001",
+        "comp_005"
+      ],
+      "id": "var_003_002",
+      "longName": "Torino Angolare Sinistro",
+      "price": 2200,
+      "seatsCount": 5,
+      "sofaId": "prod_003"
+    },
+    "var_003_003": {
+      "code": "TOR_ANG_PEL",
+      "components": [
+        "comp_001",
+        "comp_003"
+      ],
+      "id": "var_003_003",
+      "longName": "Torino Angolare Pelle",
+      "price": 3000,
+      "seatsCount": 5,
+      "sofaId": "prod_003"
+    },
+    "var_004_001": {
+      "code": "FIR_LET_140",
+      "components": [
+        "comp_002",
+        "comp_004"
+      ],
+      "id": "var_004_001",
+      "longName": "Firenze Letto 140cm",
+      "mattressWidth": 140,
+      "price": 1500,
+      "seatsCount": 3,
+      "sofaId": "prod_004"
+    },
+    "var_005_001": {
+      "code": "VEN_CHA_MIC",
+      "components": [
+        "comp_002"
+      ],
+      "id": "var_005_001",
+      "longName": "Venezia Chaise Microfibra",
+      "price": 900,
+      "seatsCount": 1,
+      "sofaId": "prod_005"
+    }
+  }
+}

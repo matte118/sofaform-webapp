@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -15,6 +16,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { DialogModule } from 'primeng/dialog';
 
 import { SofaProduct } from '../../../models/sofa-product.model';
 import { Variant } from '../../../models/variant.model';
@@ -54,7 +56,8 @@ interface LanguageFields {
     ConfirmDialogModule,
     DropdownModule,
     InputTextareaModule,
-    ToastModule
+    ToastModule,
+    DialogModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './aggiungi-prodotto.component.html',
@@ -111,6 +114,12 @@ export class AggiungiProdottoComponent implements OnInit {
   
   rivestimentoTypes = Object.values(RivestimentoType);
 
+  // Supplier dialog
+  showAddSupplierDialog = false;
+  newSupplier: Supplier = new Supplier('', '', '');
+
+  isBrowser: boolean;
+
   constructor(
     private sofaProductService: SofaProductService,
     private variantService: VariantService,
@@ -119,11 +128,17 @@ export class AggiungiProdottoComponent implements OnInit {
     private rivestimentoService: RivestimentoService,
     private router: Router,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
-  ) {}
+    private messageService: MessageService,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   ngOnInit() {
-    this.loadInitialData();
+    // Only load data on the browser
+    if (this.isBrowser) {
+      this.loadInitialData();
+    }
   }
 
   loadInitialData() {
@@ -469,6 +484,62 @@ export class AggiungiProdottoComponent implements OnInit {
           detail: 'Errore durante il salvataggio del prodotto'
         });
         console.error('Error saving product:', error);
+      }
+    );
+  }
+
+  // Supplier management
+  openAddSupplierDialog(): void {
+    this.newSupplier = new Supplier('', '', '');
+    this.showAddSupplierDialog = true;
+  }
+  
+  cancelAddSupplier(): void {
+    this.showAddSupplierDialog = false;
+  }
+  
+  saveSupplier(): void {
+    if (!this.newSupplier.name.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'Il nome del fornitore è obbligatorio'
+      });
+      return;
+    }
+    
+    this.supplierService.addSupplier(this.newSupplier).subscribe(
+      () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Successo',
+          detail: 'Fornitore aggiunto con successo'
+        });
+        
+        // Reload suppliers and add the new one to the selected list
+        this.supplierService.getSuppliers().subscribe(suppliers => {
+          this.availableSuppliers = suppliers;
+          
+          // Find the newly added supplier (it should be the one with the same name)
+          const addedSupplier = suppliers.find(s => s.name === this.newSupplier.name);
+          if (addedSupplier) {
+            // Add to selected suppliers if any
+            if (!this.selectedSuppliers) {
+              this.selectedSuppliers = [];
+            }
+            this.selectedSuppliers.push(addedSupplier);
+          }
+        });
+        
+        this.showAddSupplierDialog = false;
+      },
+      error => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Errore durante il salvataggio del fornitore'
+        });
+        console.error('Error saving supplier:', error);
       }
     );
   }

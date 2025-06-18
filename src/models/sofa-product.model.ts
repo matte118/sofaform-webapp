@@ -6,5 +6,6 @@ export class SofaProduct {
     public name: string,
     public description?: string,
     public components: Variant[] = [],
+    public photoUrl?: string,
   ) {}
 }

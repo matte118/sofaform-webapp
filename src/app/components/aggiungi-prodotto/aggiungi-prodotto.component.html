@@ -139,18 +139,29 @@
                   </p-floatLabel>
                 </div>
                 
-                <div class="p-field p-col-12 p-md-4">
+                <div class="p-field p-col-12 p-md-3">
                   <p-floatLabel>
-                    <p-dropdown [options]="availableSuppliers" [(ngModel)]="selectedSuppliers" 
-                      optionLabel="name" [filter]="true" filterBy="name"
-                      name="suppliers" placeholder="Seleziona fornitori">
-                    </p-dropdown>
-                    <label>Fornitori</label>
+                    <p-inputNumber id="componentPrice" [(ngModel)]="newComponent.price" name="compPrice" 
+                      mode="currency" currency="EUR" [minFractionDigits]="2"></p-inputNumber>
+                    <label>Prezzo</label>
                   </p-floatLabel>
                 </div>
                 
                 <div class="p-field p-col-12 p-md-4">
-                  <p-button label="Crea Componente" 
+                  <div class="p-d-flex p-ai-center">
+                    <p-dropdown [options]="availableSuppliers" [(ngModel)]="selectedSuppliers" 
+                      optionLabel="name" [filter]="true" filterBy="name"
+                       name="suppliers" placeholder="Seleziona fornitori"
+                      class="p-mr-2 p-w-100">
+                    </p-dropdown>
+                    <p-button icon="pi pi-plus" styleClass="p-button-rounded p-button-text" 
+                      pTooltip="Aggiungi nuovo fornitore" (onClick)="openAddSupplierDialog()">
+                    </p-button>
+                  </div>
+                </div>
+                
+                <div class="p-field p-col-12 p-md-1">
+                  <p-button label="Crea" 
                     (onClick)="createComponent()"
                     [disabled]="!newComponent.name.trim()">
                   </p-button>
@@ -164,6 +175,7 @@
               <ng-template pTemplate="header">
                 <tr>
                   <th>Nome</th>
+                  <th>Prezzo</th>
                   <th>Fornitori</th>
                   <th>Azioni</th>
                 </tr>
@@ -171,6 +183,7 @@
               <ng-template pTemplate="body" let-comp let-i="rowIndex">
                 <tr>
                   <td>{{ comp.name }}</td>
+                  <td>{{ comp.price | currency:'EUR' }}</td>
                   <td>
                     <span *ngFor="let supplier of comp.suppliers; let last = last">
                       {{ supplier.name }}{{ !last ? ', ' : '' }}
@@ -345,6 +358,38 @@
       </div>
     </form>
   </p-card>
+  
+  <!-- Add Supplier Dialog -->
+  <p-dialog [(visible)]="showAddSupplierDialog" 
+    header="Aggiungi Nuovo Fornitore" 
+    [modal]="true" 
+    [style]="{width: '450px'}">
+    
+    <div class="p-fluid">
+      <div class="p-field">
+        <label for="supplierName">Nome Fornitore</label>
+        <input id="supplierName" type="text" pInputText [(ngModel)]="newSupplier.name" required />
+        <small *ngIf="!newSupplier.name?.trim()" class="p-error">Campo obbligatorio</small>
+      </div>
+      
+      <div class="p-field">
+        <label for="supplierContact">Contatto</label>
+        <input id="supplierContact" type="text" pInputText [(ngModel)]="newSupplier.contact" />
+        <small>Email o telefono del fornitore</small>
+      </div>
+    </div>
+    
+    <ng-template pTemplate="footer">
+      <p-button icon="pi pi-times" label="Annulla" 
+        (onClick)="cancelAddSupplier()" 
+        styleClass="p-button-text">
+      </p-button>
+      <p-button icon="pi pi-check" label="Salva" 
+        (onClick)="saveSupplier()" 
+        [disabled]="!newSupplier.name.trim()">
+      </p-button>
+    </ng-template>
+  </p-dialog>
   
   <p-confirmDialog header="Conferma" icon="pi pi-exclamation-triangle"></p-confirmDialog>
 </div>
