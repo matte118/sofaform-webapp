@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { RouterModule }     from '@angular/router';
-import { PanelMenuModule }  from 'primeng/panelmenu';
-import { MenuItem }         from 'primeng/api';
+import { RouterModule } from '@angular/router';
+import { PanelMenuModule } from 'primeng/panelmenu';
+import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +21,9 @@ export class AppComponent implements OnInit {
     this.items = [
       { label: 'Home', icon: 'pi pi-home', routerLink: '/home' },
       { label: 'Aggiungi Prodotto', icon: 'pi pi-plus', routerLink: '/aggiungi-prodotto' },
-      { label: 'Gestione Componenti', icon: 'pi pi-cog', routerLink: '/gestione-componenti' }
+      { label: 'Gestione Componenti', icon: 'pi pi-cog', routerLink: '/gestione-componenti' },
+      { label: 'Gestione Tessuti', icon: 'pi pi-tags', routerLink: '/gestione-tessuti' }
+
     ];
   }
 }

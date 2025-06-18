@@ -1,29 +1,12 @@
-import { Category }  from './component-category.model'; // Importazione opzionale per evitare errori di tipo
+import { ComponentType } from "./component-type.model";
+import { Supplier } from "./supplier.model";
 
-
-export interface Component {
-  nome: string;      
-  categoria: Category;
-  variante?: string;      
-  prezzo: number;      
-  fornitore: string;      
-  quantita: number;
-}
-
-export class ComponentModel implements Component {
-  nome: string;
-  categoria: Category;
-  variante?: string;
-  prezzo: number;
-  fornitore: string;
-  quantita: number;
-
-  constructor(data: Partial<ComponentModel>) {
-    this.nome = data.nome ?? '';
-    this.variante = data.variante ?? undefined; // Change from null to undefined
-    this.prezzo = data.prezzo ?? 0;
-    this.fornitore = data.fornitore ?? '';
-    this.quantita = data.quantita ?? 1;
-    this.categoria = data.categoria ?? Category.Bedroom;
-  }
+export class Component {
+  constructor(
+    public id: string,
+    public categoryId: string,
+    public name: string,
+    public suppliers: Supplier[] = [],
+    public componentModels: ComponentType[] = []
+  ) {}
 }
