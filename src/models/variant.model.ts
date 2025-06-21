@@ -1,10 +1,9 @@
-import { Component } from "./component.model";
+import { Component } from './component.model';
 
 export class Variant {
   constructor(
     public id: string,
     public sofaId: string,
-    public code: string,
     public longName: string,
     public price: number,
     public components: Component[] = [],

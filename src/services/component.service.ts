@@ -4,7 +4,7 @@ import { RealtimeDbService } from './realtime-db.service';
 import { Component } from '../models/component.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ComponentService {
   constructor(private dbService: RealtimeDbService) {}
@@ -14,16 +14,17 @@ export class ComponentService {
   }
 
   getComponents(): Observable<Component[]> {
-    return new Observable(observer => {
-      this.dbService.getComponents(components => {
-        const mappedComponents = components.map(c => 
-          new Component(
-            c.id, 
-            c.data.name, 
-            c.data.price,
-            c.data.suppliers || [], 
-            c.data.componentModels || []
-          )
+    return new Observable((observer) => {
+      this.dbService.getComponents((components) => {
+        const mappedComponents = components.map(
+          (c) =>
+            new Component(
+              c.id,
+              c.data.name,
+              c.data.price,
+              c.data.suppliers || [],
+              c.data.type
+            )
         );
         observer.next(mappedComponents);
       });

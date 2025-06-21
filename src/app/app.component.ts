@@ -7,20 +7,25 @@ import { MenuItem } from 'primeng/api';
   selector: 'app-root',
   standalone: true,
   imports: [
-    RouterModule,       // per routerLink e router-outlet
-    PanelMenuModule     // per il sidebar menu
+    RouterModule, // per routerLink e router-outlet
+    PanelMenuModule, // per il sidebar menu
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
+  title = 'sofaform-webapp';
   items!: MenuItem[];
 
   ngOnInit() {
     this.items = [
       { label: 'Home', icon: 'pi pi-home', routerLink: '/home' },
-      { label: 'Aggiungi Prodotto', icon: 'pi pi-plus', routerLink: '/aggiungi-prodotto' },
+      {
+        label: 'Aggiungi Prodotto',
+        icon: 'pi pi-plus',
+        routerLink: '/aggiungi-prodotto',
+      },
     ];
   }
 }

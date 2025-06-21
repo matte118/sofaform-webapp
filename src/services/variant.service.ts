@@ -6,7 +6,7 @@ import { RealtimeDbService } from './realtime-db.service';
 import { Variant } from '../models/variant.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class VariantService {
   private isBrowser: boolean;
@@ -23,19 +23,19 @@ export class VariantService {
   }
 
   getVariants(): Observable<Variant[]> {
-    return new Observable(observer => {
-      this.dbService.getVariants(variants => {
-        const mappedVariants = variants.map(v => 
-          new Variant(
-            v.id, 
-            v.data.sofaId, 
-            v.data.code, 
-            v.data.longName, 
-            v.data.price, 
-            v.data.components || [],
-            v.data.seatsCount,
-            v.data.mattressWidth
-          )
+    return new Observable((observer) => {
+      this.dbService.getVariants((variants) => {
+        const mappedVariants = variants.map(
+          (v) =>
+            new Variant(
+              v.id,
+              v.data.sofaId,
+              v.data.longName,
+              v.data.price,
+              v.data.components || [],
+              v.data.seatsCount,
+              v.data.mattressWidth
+            )
         );
         observer.next(mappedVariants);
       });
@@ -46,21 +46,21 @@ export class VariantService {
     if (!this.isBrowser) {
       return of([]);
     }
-    return new Observable(observer => {
-      this.dbService.getProductsFromPath('variants', variants => {
+    return new Observable((observer) => {
+      this.dbService.getProductsFromPath('variants', (variants) => {
         const mappedVariants = variants
-          .filter(v => v.data.sofaId === sofaId)
-          .map(v => 
-            new Variant(
-              v.id, 
-              v.data.sofaId, 
-              v.data.code, 
-              v.data.longName, 
-              v.data.price, 
-              v.data.components || [],
-              v.data.seatsCount,
-              v.data.mattressWidth
-            )
+          .filter((v) => v.data.sofaId === sofaId)
+          .map(
+            (v) =>
+              new Variant(
+                v.id,
+                v.data.sofaId,
+                v.data.longName,
+                v.data.price,
+                v.data.components || [],
+                v.data.seatsCount,
+                v.data.mattressWidth
+              )
           );
         observer.next(mappedVariants);
       });

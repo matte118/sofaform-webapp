@@ -1,5 +1,5 @@
-import { ComponentType } from "./component-type.model";
-import { Supplier } from "./supplier.model";
+import { ComponentType } from './component-type.model';
+import { Supplier } from './supplier.model';
 
 export class Component {
   constructor(
@@ -7,6 +7,6 @@ export class Component {
     public name: string,
     public price: number,
     public suppliers: Supplier[] = [],
-    public componentModels: ComponentType[] = []
+    public type?: ComponentType
   ) {}
 }

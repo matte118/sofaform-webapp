@@ -7,36 +7,44 @@
   </div>
 
   <div class="p-grid p-align-start p-mt-4" *ngIf="products.length > 0">
-    <div class="p-col-12 p-sm-6 p-md-4" *ngFor="let product of products; trackBy: trackById">
+    <div
+      class="p-col-12 p-sm-6 p-md-4"
+      *ngFor="let product of products; trackBy: trackById"
+    >
       <p-card
         [header]="product.name"
         [subheader]="'Prezzo medio: € ' + getTotalPrice(product.id).toFixed(2)"
         styleClass="product-card"
       >
         <div class="card-actions">
-          <button pButton class="p-button-rounded p-button-text" 
+          <button
+            pButton
+            class="p-button-rounded p-button-text"
             icon="pi pi-pencil"
-            (click)="editProduct(product)">
-          </button>
-          <button pButton class="p-button-rounded p-button-danger p-button-text" 
+            (click)="editProduct(product)"
+          ></button>
+          <button
+            pButton
+            class="p-button-rounded p-button-danger p-button-text"
             icon="pi pi-trash"
-            (click)="deleteProduct($event, product)">
-          </button>
+            (click)="deleteProduct($event, product)"
+          ></button>
         </div>
         <ng-template pTemplate="content">
           <p *ngIf="product.description" class="product-description">
             {{ product.description }}
           </p>
-          
+
           <h4 class="variants-title">Varianti</h4>
           <ul class="variants-list">
             <li *ngFor="let variant of getProductVariants(product.id)">
               <div class="variant-info">
                 <span class="variant-name">{{ variant.longName }}</span>
-                <small *ngIf="variant.code">({{ variant.code }})</small>
               </div>
               <div class="variant-meta">
-                <span class="variant-price">€ {{ variant.price.toFixed(2) }}</span>
+                <span class="variant-price"
+                  >€ {{ variant.price.toFixed(2) }}</span
+                >
                 <small *ngIf="variant.seatsCount" class="variant-seats">
                   {{ variant.seatsCount }} posti
                 </small>
@@ -46,43 +54,129 @@
         </ng-template>
 
         <ng-template pTemplate="footer">
-          <button pButton type="button" label="Genera Listino" (click)="generaListino(product)"></button>
+          <button
+            pButton
+            type="button"
+            label="Genera Listino"
+            (click)="generaListino(product)"
+          ></button>
         </ng-template>
       </p-card>
     </div>
   </div>
 </div>
 
-<p-dialog 
-  [(visible)]="showMarkupDialog" 
-  header="Configura Ricarico" 
-  [modal]="true" 
-  [style]="{width: '450px'}">
+<p-dialog
+  [(visible)]="showRivestimentoDialog"
+  header="Seleziona Rivestimento"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+>
+  <div class="p-fluid">
+    <div class="p-field p-mb-3">
+      <label for="rivestimentoType" class="p-mb-2">Tipo di Rivestimento</label>
+      <p-dropdown
+        inputId="rivestimentoType"
+        [options]="rivestimentoTypes"
+        [(ngModel)]="selectedRivestimentoType"
+        placeholder="Seleziona un tipo"
+        [required]="true"
+        styleClass="w-100"
+      >
+      </p-dropdown>
+    </div>
+
+    <div class="p-field p-mb-3">
+      <label class="p-mb-2">Rivestimento</label>
+      <p-dropdown
+        [options]="availableRivestimenti"
+        [(ngModel)]="selectedRivestimento"
+        optionLabel="code"
+        [filter]="true"
+        filterBy="code"
+        placeholder="Seleziona un rivestimento"
+        [required]="true"
+        styleClass="w-100"
+      >
+        <ng-template pTemplate="item" let-riv>
+          {{ riv.code }} - {{ riv.type }} ({{
+            riv.mtPrice | currency : "EUR"
+          }}/mt)
+        </ng-template>
+      </p-dropdown>
+    </div>
+
+    <div class="p-field p-mb-3">
+      <label for="meters" class="p-mb-2">Metri di Rivestimento</label>
+      <p-inputNumber
+        inputId="meters"
+        [(ngModel)]="metersOfRivestimento"
+        [min]="0"
+        [step]="0.1"
+        [showButtons]="true"
+        [required]="true"
+        placeholder="Inserisci i metri"
+        mode="decimal"
+        styleClass="w-100"
+      >
+      </p-inputNumber>
+    </div>
+
+    <div class="p-field">
+      <label class="p-mb-2">Costo Totale Rivestimento</label>
+      <div class="p-inputgroup">
+        <span class="p-inputgroup-addon">€</span>
+        <input
+          type="text"
+          pInputText
+          [value]="calculateRivestimentoCost() | number : '1.2-2'"
+          disabled
+        />
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Annulla"
+      (onClick)="cancelRivestimento()"
+      styleClass="p-button-text"
+    >
+    </p-button>
+    <p-button label="Avanti" (onClick)="selectRivestimento()"> </p-button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="showMarkupDialog"
+  header="Configura Ricarico"
+  [modal]="true"
+  [style]="{ width: '450px' }"
+>
   <div class="p-fluid">
     <div class="p-field">
       <label for="markup">Percentuale di Ricarico</label>
-      <p-inputNumber 
-        id="markup" 
-        [(ngModel)]="markupPercentage" 
-        mode="decimal" 
+      <p-inputNumber
+        id="markup"
+        [(ngModel)]="markupPercentage"
+        mode="decimal"
         [showButtons]="true"
-        [min]="0" 
-        [max]="100" 
-        suffix="%">
+        [min]="0"
+        [max]="100"
+        suffix="%"
+      >
       </p-inputNumber>
     </div>
   </div>
   <ng-template pTemplate="footer">
-    <p-button 
-      label="Annulla" 
-      (onClick)="cancelMarkup()" 
-      styleClass="p-button-text">
+    <p-button
+      label="Annulla"
+      (onClick)="cancelMarkup()"
+      styleClass="p-button-text"
+    >
     </p-button>
-    <p-button 
-      label="Genera" 
-      (onClick)="generateWithMarkup()">
-    </p-button>
+    <p-button label="Genera" (onClick)="generateWithMarkup()"> </p-button>
   </ng-template>
 </p-dialog>
 
+<p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
