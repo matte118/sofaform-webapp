@@ -8,11 +8,10 @@ import { Component } from '../models/component.model';
 })
 export class ComponentService {
   constructor(private dbService: RealtimeDbService) {}
-
   addComponent(component: Component): Observable<void> {
+    console.log('ComponentService: Adding component', component);
     return from(this.dbService.addComponent(component));
   }
-
   getComponents(): Observable<Component[]> {
     return new Observable((observer) => {
       this.dbService.getComponents((components) => {
@@ -26,6 +25,7 @@ export class ComponentService {
               c.data.type
             )
         );
+        console.log('ComponentService: Mapped components', mappedComponents);
         observer.next(mappedComponents);
       });
     });

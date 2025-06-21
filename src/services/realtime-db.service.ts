@@ -159,12 +159,15 @@ export class RealtimeDbService {
   deleteRivestimento(id: string): Promise<void> {
     return remove(ref(this.db, `rivestimenti/${id}`));
   }
-
   // Component methods
   addComponent(component: Component): Promise<void> {
     const refPath = ref(this.db, 'components');
     const newRef = push(refPath);
     const sanitizedComponent = this.sanitizeData(component);
+    
+    // Assegna l'ID generato al componente prima di salvarlo
+    sanitizedComponent.id = newRef.key;
+    
     return set(newRef, sanitizedComponent);
   }
 
