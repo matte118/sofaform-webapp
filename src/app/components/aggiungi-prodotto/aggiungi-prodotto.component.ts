@@ -33,12 +33,6 @@ import { SupplierService } from '../../../services/supplier.service';
 import { RivestimentoService } from '../../../services/rivestimento.service';
 import { Router } from '@angular/router';
 
-interface LanguageFields {
-  it: string;
-  en: string;
-  fr: string;
-}
-
 @Component({
   selector: 'app-aggiungi-prodotto',
   standalone: true,
@@ -51,7 +45,7 @@ interface LanguageFields {
     InputNumberModule,
     ButtonModule,
     DividerModule,
-    TableModule, 
+    TableModule,
     FloatLabelModule,
     ConfirmDialogModule,
     DropdownModule,
@@ -63,55 +57,45 @@ interface LanguageFields {
   templateUrl: './aggiungi-prodotto.component.html',
   styleUrls: ['./aggiungi-prodotto.component.scss']
 })
-export class AggiungiProdottoComponent implements OnInit {
-  steps: MenuItem[] = [
+export class AggiungiProdottoComponent implements OnInit {  steps: MenuItem[] = [
     { label: 'Informazioni Prodotto' },
     { label: 'Varianti' },
     { label: 'Componenti' },
-    { label: 'Rivestimento' },
-    { label: 'Ricarico e Prezzi' },
-    { label: 'Traduzione e Conferma' }
+    { label: 'Rivestimento' }
   ];
-  
+
   currentStep = 0;
 
   // Product basic information
   newSofaProduct = new SofaProduct('', '', '');
-  
+
   // Variants management
   variants: Variant[] = [];
   newVariant: Variant = new Variant('', '', '', '', 0);
   selectedVariant?: Variant;
   editingVariantIndex: number = -1;
-  
+
   // Components management
   availableComponents: ComponentModel[] = [];
   selectedComponent?: ComponentModel;
   newComponent: ComponentModel = new ComponentModel('', '', 0, [], []);
   editingComponentIndex: number = -1;
-  
+
   // Suppliers
   availableSuppliers: Supplier[] = [];
   selectedSuppliers: Supplier[] = [];
-  
+
   // Component types
   componentTypes: ComponentType[] = [];
-  selectedComponentTypes: ComponentType[] = [];
-  
-  // Rivestimento (upholstery)
+  selectedComponentTypes: ComponentType[] = [];  // Rivestimento (upholstery)
   availableRivestimenti: Rivestimento[] = [];
   selectedRivestimento?: Rivestimento;
-  metersOfRivestimento: number = 0;
-  
+  selectedRivestimentoType: RivestimentoType | null = null;
+  metersOfRivestimento: number = 1;
   // Markup and pricing
   markupPercentage: number = 30; // Default markup
   finalPrices: Map<string, number> = new Map(); // Variant ID to final price
-  
-  // Translations
-  nameTranslations: LanguageFields = { it: '', en: '', fr: '' };
-  descriptionTranslations: LanguageFields = { it: '', en: '', fr: '' };
-  variantTranslations: Map<string, LanguageFields> = new Map(); // Variant ID to translations
-  
+
   rivestimentoTypes = Object.values(RivestimentoType);
 
   // Supplier dialog
@@ -142,23 +126,19 @@ export class AggiungiProdottoComponent implements OnInit {
   }
 
   loadInitialData() {
-    // Load components
     this.componentService.getComponents().subscribe(components => {
       this.availableComponents = components;
     });
-    
-    // Load suppliers
+
     this.supplierService.getSuppliers().subscribe(suppliers => {
       this.availableSuppliers = suppliers;
     });
-    
-    // Load rivestimenti
+
     this.rivestimentoService.getRivestimenti().subscribe(rivestimenti => {
       this.availableRivestimenti = rivestimenti;
     });
   }
 
-  // Navigation methods
   prevStep(): void {
     if (this.currentStep > 0) {
       this.currentStep--;
@@ -167,16 +147,12 @@ export class AggiungiProdottoComponent implements OnInit {
 
   nextStep(): void {
     if (this.currentStep < this.steps.length - 1) {
-      // Validation for each step
       if (!this.validateCurrentStep()) {
         return;
-      }
-      
-      // Special actions for specific steps
-      if (this.currentStep === 4) { // Before going to final step
+      }      if (this.currentStep === 3) {
         this.calculateFinalPrices();
       }
-      
+
       this.currentStep++;
     }
   }
@@ -193,7 +169,7 @@ export class AggiungiProdottoComponent implements OnInit {
           return false;
         }
         return true;
-        
+
       case 1: // Variants
         if (this.variants.length === 0) {
           this.messageService.add({
@@ -204,7 +180,7 @@ export class AggiungiProdottoComponent implements OnInit {
           return false;
         }
         return true;
-        
+
       case 2: // Components
         let allVariantsHaveComponents = true;
         this.variants.forEach(variant => {
@@ -212,7 +188,7 @@ export class AggiungiProdottoComponent implements OnInit {
             allVariantsHaveComponents = false;
           }
         });
-        
+
         if (!allVariantsHaveComponents) {
           this.messageService.add({
             severity: 'error',
@@ -221,9 +197,7 @@ export class AggiungiProdottoComponent implements OnInit {
           });
           return false;
         }
-        return true;
-        
-      case 3: // Rivestimento
+        return true;      case 3: // Rivestimento
         if (!this.selectedRivestimento) {
           this.messageService.add({
             severity: 'error',
@@ -241,31 +215,7 @@ export class AggiungiProdottoComponent implements OnInit {
           return false;
         }
         return true;
-        
-      case 4: // Markup
-        if (this.markupPercentage <= 0 || this.markupPercentage >= 100) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: 'Il ricarico deve essere tra 1% e 99%'
-          });
-          return false;
-        }
-        return true;
-        
-      case 5: // Translations
-        if (!this.nameTranslations.it.trim() || 
-            !this.nameTranslations.en.trim() || 
-            !this.nameTranslations.fr.trim()) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: 'Completa tutte le traduzioni del nome'
-          });
-          return false;
-        }
-        return true;
-        
+
       default:
         return true;
     }
@@ -281,7 +231,7 @@ export class AggiungiProdottoComponent implements OnInit {
       });
       return;
     }
-    
+
     const variant = new Variant(
       '', // ID will be generated by Firebase
       this.newSofaProduct.id || '', // Will be updated when sofa is saved
@@ -291,18 +241,13 @@ export class AggiungiProdottoComponent implements OnInit {
       [], // Components will be added later
       this.newVariant.seatsCount,
       this.newVariant.mattressWidth
-    );
-    
-    if (this.editingVariantIndex >= 0) {
+    );    if (this.editingVariantIndex >= 0) {
       this.variants[this.editingVariantIndex] = variant;
       this.editingVariantIndex = -1;
     } else {
       this.variants.push(variant);
     }
-    
-    // Initialize translations for this variant
-    this.variantTranslations.set(variant.code, { it: '', en: '', fr: '' });
-    
+
     // Reset form
     this.newVariant = new Variant('', '', '', '', 0);
   }
@@ -322,13 +267,11 @@ export class AggiungiProdottoComponent implements OnInit {
     );
   }
 
-  deleteVariant(index: number): void {
-    this.confirmationService.confirm({
+  deleteVariant(index: number): void {    this.confirmationService.confirm({
       message: 'Sei sicuro di voler eliminare questa variante?',
       accept: () => {
         const removedVariant = this.variants.splice(index, 1)[0];
-        this.variantTranslations.delete(removedVariant.code);
-        
+
         if (this.editingVariantIndex === index) {
           this.editingVariantIndex = -1;
           this.newVariant = new Variant('', '', '', '', 0);
@@ -344,9 +287,9 @@ export class AggiungiProdottoComponent implements OnInit {
 
   addComponentToVariant(component: ComponentModel): void {
     if (!this.selectedVariant) return;
-    
+
     const existingIndex = this.selectedVariant.components.findIndex(c => c.id === component.id);
-    
+
     if (existingIndex >= 0) {
       this.messageService.add({
         severity: 'warn',
@@ -355,7 +298,7 @@ export class AggiungiProdottoComponent implements OnInit {
       });
       return;
     }
-    
+
     this.selectedVariant.components.push(component);
   }
 
@@ -373,7 +316,7 @@ export class AggiungiProdottoComponent implements OnInit {
       });
       return;
     }
-    
+
     const component = new ComponentModel(
       '', // ID will be generated by Firebase
       this.newComponent.name,
@@ -381,7 +324,7 @@ export class AggiungiProdottoComponent implements OnInit {
       this.selectedSuppliers,
       this.selectedComponentTypes
     );
-    
+
     if (this.editingComponentIndex >= 0) {
       // Update existing component
       this.componentService.updateComponent(component.id, component).subscribe(() => {
@@ -404,13 +347,12 @@ export class AggiungiProdottoComponent implements OnInit {
         this.loadInitialData(); // Refresh components list
       });
     }
-    
+
     // Reset form
     this.newComponent = new ComponentModel('', '', 0, [], []);
     this.selectedSuppliers = [];
     this.selectedComponentTypes = [];
   }
-
   // Rivestimento management
   selectRivestimento(rivestimento: Rivestimento): void {
     this.selectedRivestimento = rivestimento;
@@ -428,28 +370,23 @@ export class AggiungiProdottoComponent implements OnInit {
 
   calculateFinalPrices(): void {
     this.finalPrices.clear();
-    
+
     this.variants.forEach(variant => {
       const componentCost = this.calculateComponentCost(variant);
       const rivestimentoCost = this.calculateRivestimentoCost();
       const totalCost = componentCost + rivestimentoCost;
-      
+
       // Apply markup: price = cost / ((100 - markup) / 100)
       const finalPrice = totalCost / ((100 - this.markupPercentage) / 100);
       this.finalPrices.set(variant.code, Math.round(finalPrice * 100) / 100); // Round to 2 decimals
     });
   }
-
   // Save complete product
   saveProduct(): void {
     if (!this.validateCurrentStep()) {
       return;
     }
-    
-    // Update sofa product with translations
-    this.newSofaProduct.name = this.nameTranslations.it; // Primary language
-    this.newSofaProduct.description = this.descriptionTranslations.it; // Primary language
-    
+
     // First save the sofa product
     this.sofaProductService.addSofaProduct(this.newSofaProduct).subscribe(
       () => {
@@ -459,10 +396,10 @@ export class AggiungiProdottoComponent implements OnInit {
           variant.price = this.finalPrices.get(variant.code) || 0;
           // Update sofaId with the newly created sofa
           variant.sofaId = this.newSofaProduct.id;
-          
+
           return this.variantService.addVariant(variant);
         });
-        
+
         // Wait for all variants to be saved
         Promise.all(saveVariantPromises).then(() => {
           this.messageService.add({
@@ -470,7 +407,7 @@ export class AggiungiProdottoComponent implements OnInit {
             summary: 'Successo',
             detail: 'Prodotto salvato con successo'
           });
-          
+
           // Navigate to products list
           setTimeout(() => {
             this.router.navigate(['/prodotti']);

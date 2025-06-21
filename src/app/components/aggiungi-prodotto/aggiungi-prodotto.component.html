@@ -1,6 +1,6 @@
 <div class="add-product-container">
   <p-toast></p-toast>
-  
+
   <p-card header="Aggiungi Nuovo Prodotto" class="p-mb-4">
     <p-steps [model]="steps" [(activeIndex)]="currentStep" [readonly]="true" class="p-mb-4"></p-steps>
 
@@ -15,11 +15,11 @@
             Campo obbligatorio
           </small>
         </div>
-        
+
         <div class="p-field p-col-12">
           <label for="productDescription">Descrizione</label>
-          <textarea id="productDescription" pInputTextarea [(ngModel)]="newSofaProduct.description" 
-            name="descrizione" rows="5" placeholder="Inserisci una descrizione del prodotto"></textarea>
+          <textarea id="productDescription" pInputTextarea [(ngModel)]="newSofaProduct.description" name="descrizione"
+            rows="5" placeholder="Inserisci una descrizione del prodotto"></textarea>
         </div>
       </ng-container>
 
@@ -27,7 +27,7 @@
       <ng-container *ngIf="currentStep === 1">
         <div class="p-field p-col-12">
           <h3>Varianti del Prodotto</h3>
-          
+
           <div class="p-grid p-nogutter p-align-end">
             <div class="p-field p-col-12 p-md-3">
               <p-floatLabel>
@@ -35,37 +35,37 @@
                 <label>Codice Variante</label>
               </p-floatLabel>
             </div>
-            
+
             <div class="p-field p-col-12 p-md-4">
               <p-floatLabel>
                 <input id="variantName" pInputText [(ngModel)]="newVariant.longName" name="nomeVariante" required />
                 <label>Nome Variante</label>
               </p-floatLabel>
             </div>
-            
+
             <div class="p-field p-col-12 p-md-2">
               <p-floatLabel>
                 <p-inputNumber id="seatsCount" [(ngModel)]="newVariant.seatsCount" name="postiSeduta"></p-inputNumber>
                 <label>Numero Posti</label>
               </p-floatLabel>
             </div>
-            
+
             <div class="p-field p-col-12 p-md-2">
               <p-floatLabel>
-                <p-inputNumber id="mattressWidth" [(ngModel)]="newVariant.mattressWidth" name="larghezzaMaterasso"></p-inputNumber>
+                <p-inputNumber id="mattressWidth" [(ngModel)]="newVariant.mattressWidth"
+                  name="larghezzaMaterasso"></p-inputNumber>
                 <label>Larghezza (cm)</label>
               </p-floatLabel>
             </div>
-            
+
             <div class="p-field p-col-12 p-md-1">
               <p-button [icon]="editingVariantIndex >= 0 ? 'pi pi-check' : 'pi pi-plus'"
-                [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'"
-                (onClick)="addVariant()"
+                [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'" (onClick)="addVariant()"
                 [disabled]="!newVariant.code.trim() || !newVariant.longName.trim()">
               </p-button>
             </div>
           </div>
-          
+
           <p-table [value]="variants" *ngIf="variants.length" [paginator]="true" [rows]="5" class="p-mt-3">
             <ng-template pTemplate="header">
               <tr>
@@ -83,7 +83,7 @@
                 <td>{{ variant.seatsCount || 'N/A' }}</td>
                 <td>{{ variant.mattressWidth ? variant.mattressWidth + ' cm' : 'N/A' }}</td>
                 <td>
-                  <p-button icon="pi pi-pencil" (onClick)="editVariant(i)" 
+                  <p-button icon="pi pi-pencil" (onClick)="editVariant(i)"
                     styleClass="p-button-text p-button-sm"></p-button>
                   <p-button icon="pi pi-trash" (onClick)="deleteVariant(i)"
                     styleClass="p-button-danger p-button-text p-button-sm"></p-button>
@@ -98,36 +98,33 @@
       <ng-container *ngIf="currentStep === 2">
         <div class="p-field p-col-12">
           <h3>Seleziona Variante</h3>
-          <p-dropdown [options]="variants" [(ngModel)]="selectedVariant" optionLabel="longName" 
-            name="selectedVariant" placeholder="Seleziona una variante" 
-            [showClear]="false" [required]="true">
+          <p-dropdown [options]="variants" [(ngModel)]="selectedVariant" optionLabel="longName" name="selectedVariant"
+            placeholder="Seleziona una variante" [showClear]="false" [required]="true">
           </p-dropdown>
-          
+
           <div *ngIf="selectedVariant" class="p-mt-4">
             <h3>Componenti per: {{ selectedVariant.longName }}</h3>
-            
+
             <!-- Existing components selection -->
             <div class="existing-components p-mb-4">
               <h4>Seleziona Componenti Esistenti</h4>
               <div class="p-grid p-nogutter p-align-end">
                 <div class="p-field p-col-12 p-md-8">
-                  <p-dropdown [options]="availableComponents" [(ngModel)]="selectedComponent"
-                    optionLabel="name" [filter]="true" filterBy="name"
-                    placeholder="Seleziona un componente esistente"
-                    [showClear]="true" name="existingComponent">
+                  <p-dropdown [options]="availableComponents" [(ngModel)]="selectedComponent" optionLabel="name"
+                    [filter]="true" filterBy="name" placeholder="Seleziona un componente esistente" [showClear]="true"
+                    name="existingComponent">
                   </p-dropdown>
                 </div>
                 <div class="p-field p-col-12 p-md-4">
-                  <p-button label="Aggiungi Componente" 
-                    (onClick)="addComponentToVariant(selectedComponent!)"
+                  <p-button label="Aggiungi Componente" (onClick)="addComponentToVariant(selectedComponent!)"
                     [disabled]="!selectedComponent">
                   </p-button>
                 </div>
               </div>
             </div>
-            
+
             <p-divider></p-divider>
-            
+
             <!-- Create new component -->
             <div class="p-mb-4">
               <h4>Crea Nuovo Componente</h4>
@@ -168,10 +165,10 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Components table -->
-            <p-table [value]="selectedVariant.components" *ngIf="selectedVariant.components.length" 
-              [paginator]="true" [rows]="5" class="p-mt-3">
+            <p-table [value]="selectedVariant.components" *ngIf="selectedVariant.components.length" [paginator]="true"
+              [rows]="5" class="p-mt-3">
               <ng-template pTemplate="header">
                 <tr>
                   <th>Nome</th>
@@ -190,7 +187,7 @@
                     </span>
                   </td>
                   <td>
-                    <p-button icon="pi pi-trash" 
+                    <p-button icon="pi pi-trash"
                       (onClick)="removeComponentFromVariant(variants.indexOf(selectedVariant!), i)"
                       styleClass="p-button-danger p-button-text p-button-sm">
                     </p-button>
@@ -200,40 +197,37 @@
             </p-table>
           </div>
         </div>
-      </ng-container>
-
-      <!-- Step 4: Rivestimento -->
+      </ng-container>      <!-- Step 4: Rivestimento -->
       <ng-container *ngIf="currentStep === 3">
         <div class="p-field p-col-12">
           <h3>Seleziona Rivestimento</h3>
-          
+
           <div class="p-grid">
             <div class="p-field p-col-12 p-md-6">
-              <label>Tipo di Rivestimento</label>
-              <p-dropdown [options]="rivestimentoTypes" [(ngModel)]="selectedRivestimento!.type"
-                name="rivestimentoType" placeholder="Seleziona un tipo" [required]="true">
+              <label for="rivestimentoType">Tipo di Rivestimento</label>
+              <p-dropdown inputId="rivestimentoType" [options]="rivestimentoTypes"
+                [(ngModel)]="selectedRivestimentoType" name="rivestimentoType" placeholder="Seleziona un tipo"
+                [required]="true">
               </p-dropdown>
             </div>
-            
+
             <div class="p-field p-col-12 p-md-6">
               <label>Rivestimento</label>
-              <p-dropdown [options]="availableRivestimenti" [(ngModel)]="selectedRivestimento"
-                optionLabel="code" [filter]="true" filterBy="code"
-                placeholder="Seleziona un rivestimento" [required]="true" name="rivestimento">
+              <p-dropdown [options]="availableRivestimenti" [(ngModel)]="selectedRivestimento" optionLabel="code"
+                [filter]="true" filterBy="code" placeholder="Seleziona un rivestimento" [required]="true"
+                name="rivestimento">
                 <ng-template pTemplate="item" let-riv>
                   {{ riv.code }} - {{ riv.type }} ({{ riv.mtPrice | currency:'EUR' }}/mt)
                 </ng-template>
               </p-dropdown>
             </div>
-            
+
             <div class="p-field p-col-12 p-md-6">
-              <label>Metri di Rivestimento</label>
-              <p-inputNumber [(ngModel)]="metersOfRivestimento" name="meters" 
-                [min]="0" [showButtons]="true" [required]="true">
+              <label for="meters">Metri di Rivestimento</label>
+              <p-inputNumber inputId="meters" [(ngModel)]="metersOfRivestimento" name="meters" [min]="0" [step]="0.1"
+                [showButtons]="true" [required]="true" placeholder="Inserisci i metri" mode="decimal">
               </p-inputNumber>
-            </div>
-            
-            <div class="p-field p-col-12 p-md-6">
+            </div>            <div class="p-field p-col-12 p-md-6">
               <label>Costo Totale Rivestimento</label>
               <div class="p-inputgroup">
                 <span class="p-inputgroup-addon">€</span>
@@ -241,117 +235,22 @@
               </div>
             </div>
           </div>
-        </div>
-      </ng-container>
 
-      <!-- Step 5: Ricarico e Prezzi -->
-      <ng-container *ngIf="currentStep === 4">
-        <div class="p-field p-col-12">
-          <h3>Impostazione Ricarico e Prezzi</h3>
-          
-          <div class="p-field p-mb-4">
-            <label for="markup">Percentuale di Ricarico</label>
-            <p-inputNumber id="markup" [(ngModel)]="markupPercentage" name="markup"
-              [min]="1" [max]="99" suffix="%" [required]="true" [showButtons]="true">
-            </p-inputNumber>
-            <small>Formula: Prezzo Finale = Costo / ((100 - Ricarico) / 100)</small>
-          </div>
-          
-          <p-button label="Calcola Prezzi" (onClick)="calculateFinalPrices()" class="p-mb-3"></p-button>
-          
-          <p-table [value]="variants" *ngIf="variants.length" class="p-mt-3">
-            <ng-template pTemplate="header">
-              <tr>
-                <th>Variante</th>
-                <th>Costo Componenti</th>
-                <th>Costo Rivestimento</th>
-                <th>Costo Totale</th>
-                <th>Prezzo Finale</th>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-variant>
-              <tr>
-                <td>{{ variant.longName }}</td>
-                <td>{{ calculateComponentCost(variant) | currency:'EUR' }}</td>
-                <td>{{ calculateRivestimentoCost() | currency:'EUR' }}</td>
-                <td>{{ calculateComponentCost(variant) + calculateRivestimentoCost() | currency:'EUR' }}</td>
-                <td>{{ finalPrices.get(variant.code) | currency:'EUR' }}</td>
-              </tr>
-            </ng-template>
-          </p-table>
-        </div>
-      </ng-container>
-
-      <!-- Step 6: Traduzioni e Conferma -->
-      <ng-container *ngIf="currentStep === 5">
-        <div class="p-field p-col-12">
-          <h3>Traduzioni e Conferma</h3>
-          
-          <h4>Nome Prodotto</h4>
-          <div class="p-grid">
-            <div class="p-field p-col-12 p-md-4">
-              <p-floatLabel>
-                <input id="nameIt" pInputText [(ngModel)]="nameTranslations.it" name="nameIt" required />
-                <label>Nome (Italiano)</label>
-              </p-floatLabel>
-            </div>
-            <div class="p-field p-col-12 p-md-4">
-              <p-floatLabel>
-                <input id="nameEn" pInputText [(ngModel)]="nameTranslations.en" name="nameEn" required />
-                <label>Nome (Inglese)</label>
-              </p-floatLabel>
-            </div>
-            <div class="p-field p-col-12 p-md-4">
-              <p-floatLabel>
-                <input id="nameFr" pInputText [(ngModel)]="nameTranslations.fr" name="nameFr" required />
-                <label>Nome (Francese)</label>
-              </p-floatLabel>
-            </div>
-          </div>
-          
-          <h4>Descrizione</h4>
-          <div class="p-grid">
-            <div class="p-field p-col-12 p-md-4">
-              <p-floatLabel>
-                <textarea id="descIt" pInputTextarea [(ngModel)]="descriptionTranslations.it" name="descIt" rows="3"></textarea>
-                <label>Descrizione (Italiano)</label>
-              </p-floatLabel>
-            </div>
-            <div class="p-field p-col-12 p-md-4">
-              <p-floatLabel>
-                <textarea id="descEn" pInputTextarea [(ngModel)]="descriptionTranslations.en" name="descEn" rows="3"></textarea>
-                <label>Descrizione (Inglese)</label>
-              </p-floatLabel>
-            </div>
-            <div class="p-field p-col-12 p-md-4">
-              <p-floatLabel>
-                <textarea id="descFr" pInputTextarea [(ngModel)]="descriptionTranslations.fr" name="descFr" rows="3"></textarea>
-                <label>Descrizione (Francese)</label>
-              </p-floatLabel>
-            </div>
-          </div>
-          
           <p-divider></p-divider>
-          
+
           <div class="p-text-center p-mt-4">
             <p-button label="Salva Prodotto" icon="pi pi-save" (onClick)="saveProduct()"></p-button>
           </div>
-        </div>
-      </ng-container>
+        </div>      </ng-container>
 
       <!-- Navigation buttons -->
       <div class="p-col-12">
         <p-divider class="p-mt-4"></p-divider>
         <div class="p-d-flex p-jc-between p-mt-3">
-          <p-button *ngIf="currentStep > 0" 
-            label="Indietro" 
-            (onClick)="prevStep()"
-            styleClass="p-button-outlined">
+          <p-button *ngIf="currentStep > 0" label="Indietro" (onClick)="prevStep()" styleClass="p-button-outlined">
           </p-button>
 
-          <p-button *ngIf="currentStep < steps.length - 1" 
-            label="Avanti" 
-            (onClick)="nextStep()"
+          <p-button *ngIf="currentStep < steps.length - 1" label="Avanti" (onClick)="nextStep()"
             styleClass="p-button-primary">
           </p-button>
         </div>
