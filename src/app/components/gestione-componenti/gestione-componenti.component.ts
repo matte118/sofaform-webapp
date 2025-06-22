@@ -12,10 +12,14 @@ import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Component as ComponentModel } from '../../../models/component.model';
 import { Supplier } from '../../../models/supplier.model';
+import { ComponentType } from '../../../models/component-type.model';
 import { ComponentService } from '../../../services/component.service';
+import { SupplierService } from '../../../services/supplier.service';
+import { ComponentTypeService } from '../../../services/component-type.service';
 
 @Component({
     selector: 'app-gestione-componenti',
@@ -33,9 +37,10 @@ import { ComponentService } from '../../../services/component.service';
         DividerModule,
         ToastModule,
         ConfirmDialogModule,
-        TooltipModule
+        TooltipModule,
+        MultiSelectModule,
     ],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService, ConfirmationService, SupplierService, ComponentTypeService],
     templateUrl: './gestione-componenti.component.html',
     styleUrls: ['./gestione-componenti.component.scss']
 })
@@ -43,7 +48,9 @@ export class GestioneComponentiComponent implements OnInit {
     components: ComponentModel[] = [];
     newComponent: ComponentModel = new ComponentModel('', '', 0, []);
     availableSuppliers: Supplier[] = [];
-    selectedSuppliers: Supplier[] = [];
+    selectedSupplier: Supplier | null = null;  // Cambiato da selectedSuppliers array a selectedSupplier singolo
+    availableComponentTypes: ComponentType[] = [];
+    selectedComponentType: ComponentType | null = null;
     editingIndex: number = -1;
     loading: boolean = false;
     saving: boolean = false;
@@ -52,12 +59,15 @@ export class GestioneComponentiComponent implements OnInit {
         private componentService: ComponentService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private cd: ChangeDetectorRef
+        private cd: ChangeDetectorRef,
+        private supplierService: SupplierService,
+        private componentTypeService: ComponentTypeService
     ) { }
 
     ngOnInit() {
         this.loading = true;
         this.loadSuppliers();
+        this.loadComponentTypes();
         this.loadComponents();
     }
 
@@ -82,7 +92,37 @@ export class GestioneComponentiComponent implements OnInit {
     }
 
     loadSuppliers() {
-        // Implementa in modo analogo tramite un SupplierService o usa il tuo RealtimeDbService
+        this.supplierService.getSuppliers().subscribe(
+            (suppliers: Supplier[]) => {
+                this.availableSuppliers = suppliers;
+                this.cd.detectChanges();
+            },
+            error => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Errore',
+                    detail: 'Errore caricamento fornitori'
+                });
+                console.error('Error loading suppliers:', error);
+            }
+        );
+    }
+
+    loadComponentTypes() {
+        this.componentTypeService.getComponentTypes().subscribe(
+            (types: ComponentType[]) => {
+                this.availableComponentTypes = types;
+                this.cd.detectChanges();
+            },
+            (error: any) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Errore',
+                    detail: 'Errore caricamento tipi di componente'
+                });
+                console.error('Error loading component types:', error);
+            }
+        );
     }
 
     addComponent() {
@@ -90,12 +130,16 @@ export class GestioneComponentiComponent implements OnInit {
             return;
         }
         this.saving = true;
+        
+        // Creare un array di fornitori dal singolo fornitore selezionato (se presente)
+        const suppliers = this.selectedSupplier ? [this.selectedSupplier] : [];
+        
         const component = new ComponentModel(
             this.isEditing ? this.components[this.editingIndex].id : '',
             this.newComponent.name.trim(),
             this.newComponent.price || 0,
-            [...this.selectedSuppliers],
-            
+            suppliers,
+            this.selectedComponentType || undefined
         );
         const operation = this.isEditing
             ? this.componentService.updateComponent(component.id, component)
@@ -129,8 +173,12 @@ export class GestioneComponentiComponent implements OnInit {
             component.name,
             component.price,
             component.suppliers,
+            component.type
         );
-        this.selectedSuppliers = [...component.suppliers];
+        
+        // Imposta il fornitore selezionato dal primo fornitore nell'array (se esiste)
+        this.selectedSupplier = component.suppliers?.length > 0 ? component.suppliers[0] : null;
+        this.selectedComponentType = component.type || null;
         this.editingIndex = index;
     }
 
@@ -169,7 +217,8 @@ export class GestioneComponentiComponent implements OnInit {
 
     resetForm() {
         this.newComponent = new ComponentModel('', '', 0, []);
-        this.selectedSuppliers = [];
+        this.selectedSupplier = null;  // Cambiato da selectedSuppliers a selectedSupplier
+        this.selectedComponentType = null;
         this.editingIndex = -1;
     }
 

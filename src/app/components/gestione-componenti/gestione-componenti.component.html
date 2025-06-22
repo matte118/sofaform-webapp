@@ -9,10 +9,40 @@
   <div class="component-form-card">
     <h2>{{ formTitle }}</h2>
     <form class="component-form">
-      <!-- form fields here -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="componentName">Nome</label>
+          <input pInputText id="componentName" type="text" [(ngModel)]="newComponent.name" name="name"
+            placeholder="Nome del componente" />
+        </div>
+
+        <div class="form-group">
+          <label for="componentPrice">Prezzo</label>
+          <p-inputNumber id="componentPrice" [(ngModel)]="newComponent.price" name="price" [minFractionDigits]="2"
+            [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT">
+          </p-inputNumber>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="componentSuppliers">Fornitore</label>
+          <p-dropdown id="componentSuppliers" [options]="availableSuppliers" [(ngModel)]="selectedSupplier"
+            optionLabel="name" placeholder="Seleziona fornitore" [showClear]="true" name="supplier"
+            styleClass="w-100">
+          </p-dropdown>
+        </div>
+
+        <div class="form-group">
+          <label for="componentType">Tipo di Componente</label>
+          <p-dropdown id="componentType" [options]="availableComponentTypes" [(ngModel)]="selectedComponentType"
+            optionLabel="name" placeholder="Seleziona tipo (opzionale)" [showClear]="true" name="componentType"
+            styleClass="w-100"></p-dropdown>
+        </div>
+      </div>
+
       <div class="form-actions">
-        <p-button [label]="submitButtonLabel" (onClick)="addComponent()" [disabled]="!newComponent.name.trim()"
-          styleClass="primary-button"></p-button>
+        <p-button [label]="submitButtonLabel" (onClick)="addComponent()" styleClass="primary-button"></p-button>
         <p-button *ngIf="isEditing" label="Annulla" (onClick)="resetForm()" styleClass="secondary-button"></p-button>
       </div>
     </form>

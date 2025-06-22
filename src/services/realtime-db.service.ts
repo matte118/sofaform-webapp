@@ -5,6 +5,7 @@ import { Variant } from '../models/variant.model';
 import { Supplier } from '../models/supplier.model';
 import { Component } from '../models/component.model';
 import { Rivestimento } from '../models/rivestimento.model';
+import { ComponentType } from '../models/component-type.model';
 
 @Injectable({ providedIn: 'root' })
 export class RealtimeDbService {
@@ -189,5 +190,37 @@ export class RealtimeDbService {
 
   deleteComponent(id: string): Promise<void> {
     return remove(ref(this.db, `components/${id}`));
+  }
+
+  // Component Type methods
+  addComponentType(componentType: ComponentType): Promise<void> {
+    const refPath = ref(this.db, 'componentTypes');
+    const newRef = push(refPath);
+    const sanitizedType = this.sanitizeData(componentType);
+    
+    // Assign the generated ID to the component type before saving it
+    sanitizedType.id = newRef.key;
+    
+    return set(newRef, sanitizedType);
+  }
+
+  getComponentTypes(callback: (types: { id: string; data: ComponentType }[]) => void) {
+    const refPath = ref(this.db, 'componentTypes');
+    onValue(refPath, (snapshot) => {
+      const raw = snapshot.val();
+      const parsed = raw
+        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as ComponentType }))
+        : [];
+      callback(parsed);
+    });
+  }
+
+  updateComponentType(id: string, componentType: ComponentType): Promise<void> {
+    const sanitizedType = this.sanitizeData(componentType);
+    return set(ref(this.db, `componentTypes/${id}`), sanitizedType);
+  }
+
+  deleteComponentType(id: string): Promise<void> {
+    return remove(ref(this.db, `componentTypes/${id}`));
   }
 }
