@@ -1,0 +1,266 @@
+.gestione-tessuti-container {
+  padding: 24px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+
+  // Page header
+  .page-header {
+    margin-bottom: 32px;
+    text-align: center;
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0 0 8px 0;
+    }
+
+    p {
+      font-size: 1.1rem;
+      color: #7f8c8d;
+      margin: 0;
+    }
+  }
+  
+  // Form card
+  .tessuto-form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0 0 24px 0;
+      text-align: center;
+    }
+
+    .tessuto-form {
+      .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+
+        label {
+          font-weight: 600;
+          color: #495057;
+          margin-bottom: 8px;
+          font-size: 0.95rem;
+        }
+
+        input, ::ng-deep .p-inputnumber {
+          height: 48px;
+          border: 2px solid #e9ecef;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+
+          &:focus, &:focus-within {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+          }
+        }
+
+        ::ng-deep .p-inputnumber-input {
+          height: 44px;
+          border: none;
+          padding: 0 16px;
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        ::ng-deep .p-button {
+          padding: 12px 32px;
+          border-radius: 8px;
+          font-weight: 600;
+          transition: all 0.2s ease;
+
+          &.primary-button {
+            background-color: #007bff;
+            border-color: #007bff;
+
+            &:hover {
+              background-color: #0056b3;
+              border-color: #0056b3;
+              transform: translateY(-1px);
+            }
+          }
+
+          &.secondary-button {
+            background-color: #6c757d;
+            border-color: #6c757d;
+
+            &:hover {
+              background-color: #545b62;
+              border-color: #545b62;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Table section
+  .tessuto-table-section {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0 0 24px 0;
+      text-align: center;
+    }
+
+    ::ng-deep .p-datatable {
+      .p-datatable-wrapper {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+      }
+
+      .p-datatable-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        padding: 16px 24px;
+
+        .table-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+
+          h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #495057;
+            margin: 0;
+          }
+
+          .search-container {
+            input {
+              padding: 8px 16px;
+              border: 2px solid #e9ecef;
+              border-radius: 6px;
+              min-width: 250px;
+
+              &:focus {
+                outline: none;
+                border-color: #007bff;
+              }
+            }
+          }
+        }
+      }
+
+      .p-datatable-thead > tr > th {
+        background: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        padding: 16px 20px;
+        border-bottom: 2px solid #e9ecef;
+      }
+
+      .p-datatable-tbody > tr {
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: #f8f9fa;
+        }
+
+        > td {
+          padding: 16px 20px;
+          border-bottom: 1px solid #f1f3f4;
+          vertical-align: middle;
+        }
+      }
+
+      .actions-cell button.icon-edit, .actions-cell button.icon-delete {
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: #495057;
+        font-size: 1.25rem;
+        padding: 0.25rem 0.4rem;
+        min-width: unset;
+        min-height: unset;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.18s;
+      }
+      .actions-cell button.icon-edit:hover {
+        color: #007bff;
+      }
+      .actions-cell button.icon-delete {
+        color: #c0392b;
+      }
+      .actions-cell button.icon-delete:hover {
+        color: #e74c3c;
+      }
+
+      .empty-message {
+        text-align: center;
+        color: #6c757d;
+        font-style: italic;
+        padding: 32px !important;
+      }
+    }
+
+    ::ng-deep .p-paginator {
+      border-top: 1px solid #e9ecef;
+      background: #f8f9fa;
+      padding: 16px 24px;
+      border-radius: 0 0 8px 8px;
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    padding: 16px;
+
+    .tessuto-form-card, .tessuto-table-section {
+      padding: 20px;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+    }
+
+    ::ng-deep .p-datatable .p-datatable-header .table-header {
+      flex-direction: column;
+      align-items: stretch;
+
+      .search-container input {
+        min-width: 100%;
+      }
+    }
+  }
+
+  // Toast positioning
+  :host ::ng-deep .p-toast {
+    z-index: 9999;
+  }
+}
