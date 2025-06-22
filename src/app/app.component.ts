@@ -23,6 +23,8 @@ export class AppComponent implements OnInit {
       { label: 'Home', icon: 'pi pi-home', routerLink: '/home' },
       { label: 'Aggiungi Prodotto', icon: 'pi pi-plus', routerLink: '/aggiungi-prodotto' },
       { label: 'Gestione Componenti', icon: 'pi pi-th-large', routerLink: '/gestione-componenti' },
+      { label: 'Gestione Fornitori', icon: 'pi pi-briefcase', routerLink: '/gestione-fornitori' },
+      { label: 'Gestione Tessuti', icon: 'pi pi-palette', routerLink: '/gestione-tessuti' },
     ];
   }
 }
