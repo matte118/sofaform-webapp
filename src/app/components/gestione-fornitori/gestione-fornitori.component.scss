@@ -188,7 +188,8 @@
         }
       }
 
-      .actions-cell button.icon-edit, .actions-cell button.icon-delete {
+      .actions-cell button.icon-edit,
+      .actions-cell button.icon-delete {
         background: none !important;
         border: none !important;
         box-shadow: none !important;
@@ -233,7 +234,8 @@
   @media (max-width: 768px) {
     padding: 16px;
 
-    .supplier-form-card, .supplier-table-section {
+    .supplier-form-card,
+    .supplier-table-section {
       padding: 20px;
     }
 
@@ -254,5 +256,10 @@
   // Toast positioning
   :host ::ng-deep .p-toast {
     z-index: 9999;
+  }
+
+  .required-field {
+    color: red;
+    margin-left: 2px;
   }
 }

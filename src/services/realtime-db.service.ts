@@ -1,5 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Database, ref, set, push, onValue, remove } from '@angular/fire/database';
+import {
+  Database,
+  ref,
+  set,
+  push,
+  onValue,
+  remove,
+} from '@angular/fire/database';
 import { SofaProduct } from '../models/sofa-product.model';
 import { Variant } from '../models/variant.model';
 import { Supplier } from '../models/supplier.model';
@@ -34,7 +41,10 @@ export class RealtimeDbService {
   }
 
   // Generic method to get data from any path
-  getProductsFromPath(path: string, callback: (products: { id: string; data: any }[]) => void) {
+  getProductsFromPath(
+    path: string,
+    callback: (products: { id: string; data: any }[]) => void
+  ) {
     const refPath = ref(this.db, path);
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
@@ -51,16 +61,25 @@ export class RealtimeDbService {
     const refPath = ref(this.db, 'products');
     const newRef = push(refPath);
     const sanitizedProduct = this.sanitizeData(product);
+
+    // Assign the generated ID to the product before saving it
+    sanitizedProduct.id = newRef.key;
+
     return set(newRef, sanitizedProduct);
   }
 
-  getSofaProducts(callback: (products: { id: string; data: SofaProduct }[]) => void) {
+  getSofaProducts(
+    callback: (products: { id: string; data: SofaProduct }[]) => void
+  ) {
     // Use 'products' path to match the database structure
     const refPath = ref(this.db, 'products');
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
       const parsed = raw
-        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as SofaProduct }))
+        ? Object.entries(raw).map(([id, val]) => ({
+            id,
+            data: val as SofaProduct,
+          }))
         : [];
       callback(parsed);
     });
@@ -82,6 +101,19 @@ export class RealtimeDbService {
     const refPath = ref(this.db, 'variants');
     const newRef = push(refPath);
     const sanitizedVariant = this.sanitizeData(variant);
+
+    // Assign the generated ID to the variant before saving it
+    sanitizedVariant.id = newRef.key;
+
+    // Always ensure sofaId is set from the original variant
+    // This ensures the relationship is maintained regardless of sanitization
+    if (variant.sofaId) {
+      sanitizedVariant.sofaId = variant.sofaId;
+      console.log('Saving variant with sofaId:', variant.sofaId);
+    } else {
+      console.warn('Variant being saved without sofaId!', variant);
+    }
+
     return set(newRef, sanitizedVariant);
   }
 
@@ -110,15 +142,24 @@ export class RealtimeDbService {
     const refPath = ref(this.db, 'suppliers');
     const newRef = push(refPath);
     const sanitizedSupplier = this.sanitizeData(supplier);
+
+    // Assign the generated ID to the supplier before saving it
+    sanitizedSupplier.id = newRef.key;
+
     return set(newRef, sanitizedSupplier);
   }
 
-  getSuppliers(callback: (suppliers: { id: string; data: Supplier }[]) => void) {
+  getSuppliers(
+    callback: (suppliers: { id: string; data: Supplier }[]) => void
+  ) {
     const refPath = ref(this.db, 'suppliers');
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
       const parsed = raw
-        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as Supplier }))
+        ? Object.entries(raw).map(([id, val]) => ({
+            id,
+            data: val as Supplier,
+          }))
         : [];
       callback(parsed);
     });
@@ -138,15 +179,24 @@ export class RealtimeDbService {
     const refPath = ref(this.db, 'rivestimenti');
     const newRef = push(refPath);
     const sanitizedRivestimento = this.sanitizeData(rivestimento);
+
+    // Assign the generated ID to the rivestimento before saving it
+    sanitizedRivestimento.id = newRef.key;
+
     return set(newRef, sanitizedRivestimento);
   }
 
-  getRivestimenti(callback: (rivestimenti: { id: string; data: Rivestimento }[]) => void) {
+  getRivestimenti(
+    callback: (rivestimenti: { id: string; data: Rivestimento }[]) => void
+  ) {
     const refPath = ref(this.db, 'rivestimenti');
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
       const parsed = raw
-        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as Rivestimento }))
+        ? Object.entries(raw).map(([id, val]) => ({
+            id,
+            data: val as Rivestimento,
+          }))
         : [];
       callback(parsed);
     });
@@ -165,19 +215,24 @@ export class RealtimeDbService {
     const refPath = ref(this.db, 'components');
     const newRef = push(refPath);
     const sanitizedComponent = this.sanitizeData(component);
-    
+
     // Assegna l'ID generato al componente prima di salvarlo
     sanitizedComponent.id = newRef.key;
-    
+
     return set(newRef, sanitizedComponent);
   }
 
-  getComponents(callback: (components: { id: string; data: Component }[]) => void) {
+  getComponents(
+    callback: (components: { id: string; data: Component }[]) => void
+  ) {
     const refPath = ref(this.db, 'components');
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
       const parsed = raw
-        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as Component }))
+        ? Object.entries(raw).map(([id, val]) => ({
+            id,
+            data: val as Component,
+          }))
         : [];
       callback(parsed);
     });
@@ -197,19 +252,24 @@ export class RealtimeDbService {
     const refPath = ref(this.db, 'componentTypes');
     const newRef = push(refPath);
     const sanitizedType = this.sanitizeData(componentType);
-    
+
     // Assign the generated ID to the component type before saving it
     sanitizedType.id = newRef.key;
-    
+
     return set(newRef, sanitizedType);
   }
 
-  getComponentTypes(callback: (types: { id: string; data: ComponentType }[]) => void) {
+  getComponentTypes(
+    callback: (types: { id: string; data: ComponentType }[]) => void
+  ) {
     const refPath = ref(this.db, 'componentTypes');
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
       const parsed = raw
-        ? Object.entries(raw).map(([id, val]) => ({ id, data: val as ComponentType }))
+        ? Object.entries(raw).map(([id, val]) => ({
+            id,
+            data: val as ComponentType,
+          }))
         : [];
       callback(parsed);
     });
@@ -222,5 +282,25 @@ export class RealtimeDbService {
 
   deleteComponentType(id: string): Promise<void> {
     return remove(ref(this.db, `componentTypes/${id}`));
+  }
+
+  // New methods for creating products and variants
+  createProduct(product: any): Promise<string> {
+    // Example: push to "products" collection in Firebase
+    // Return the new product's generated key
+    return new Promise((resolve) => {
+      const newId = 'generatedProductId';
+      // ... Firebase code that stores product ...
+      resolve(newId);
+    });
+  }
+
+  createVariant(variant: any): Promise<string> {
+    // Example: push to "variants" collection in Firebase
+    return new Promise((resolve) => {
+      const newId = 'generatedVariantId';
+      // ... Firebase code that stores variant ...
+      resolve(newId);
+    });
   }
 }
