@@ -150,7 +150,7 @@
           <td>{{ component.price | currency : "EUR" }}</td>
           <td>
             <span *ngFor="let supplier of component.suppliers; let last = last">
-              {{ supplier.name }}<span *ngIf="!last">, </span>
+              {{ supplier.name ? supplier.name : 'ND'  }}<span *ngIf="!last">, </span>
             </span>
             <span *ngIf="!component.suppliers.length" class="no-suppliers">
               Nessun fornitore

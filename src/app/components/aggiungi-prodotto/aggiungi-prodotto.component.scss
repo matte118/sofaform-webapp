@@ -65,6 +65,27 @@
 .navigation-row {
   margin-top: 1.5rem;
 }
+
 .nav-buttons :global(.p-button) {
   min-width: 6rem;
+}
+
+/* Button container for vertical layout with full width */
+.p-d-flex.p-jc-between {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .p-button {
+    width: 100%;
+    min-height: 3rem;
+  }
+}
+
+/* Alternative: if you want buttons centered with space between them */
+.button-navigation {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1rem;
 }

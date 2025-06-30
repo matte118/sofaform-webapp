@@ -21,6 +21,7 @@
       margin: 0;
     }
   }
+
   // Form card
   .component-form-card {
     background: white;
@@ -122,6 +123,7 @@
       }
     }
   }
+
   // Table section
   .component-table-section {
     background: white;
@@ -178,12 +180,17 @@
         }
       }
 
+      // Centra intestazione "Azioni"
       .p-datatable-thead > tr > th {
         background: #f8f9fa;
         color: #495057;
         font-weight: 600;
         padding: 16px 20px;
         border-bottom: 2px solid #e9ecef;
+
+        &:last-child {
+          text-align: center;
+        }
       }
 
       .p-datatable-tbody > tr {
@@ -216,6 +223,39 @@
         }
       }
 
+      // Flex + gap + centratura bottoni
+      .actions-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem; /* 8px di spazio */
+
+        button.icon-edit,
+        button.icon-delete {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+          color: #495057;
+          font-size: 1.25rem;
+          padding: 0.25rem 0.4rem;
+          line-height: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: color 0.18s;
+        }
+
+        button.icon-edit:hover {
+          color: #007bff;
+        }
+        button.icon-delete {
+          color: #c0392b;
+        }
+        button.icon-delete:hover {
+          color: #e74c3c;
+        }
+      }
+
       .empty-message {
         text-align: center;
         color: #6c757d;
@@ -234,24 +274,23 @@
 
   // Responsive design
   @media (max-width: 768px) {
-    .gestione-componenti-container {
-      padding: 16px;
+    padding: 16px;
 
-      .component-form-card, .component-table-section {
-        padding: 20px;
-      }
+    .component-form-card,
+    .component-table-section {
+      padding: 20px;
+    }
 
-      .page-header h1 {
-        font-size: 2rem;
-      }
+    .page-header h1 {
+      font-size: 2rem;
+    }
 
-      ::ng-deep .p-datatable .p-datatable-header .table-header {
-        flex-direction: column;
-        align-items: stretch;
+    ::ng-deep .p-datatable .p-datatable-header .table-header {
+      flex-direction: column;
+      align-items: stretch;
 
-        .search-container input {
-          min-width: 100%;
-        }
+      .search-container input {
+        min-width: 100%;
       }
     }
   }
@@ -266,10 +305,9 @@
   :host ::ng-deep .p-toast {
     z-index: 9999;
   }
-
-  
 }
 
+// Override generali
 .gestione-componenti-container {
   margin: 0 auto;
   padding: 1rem;
@@ -306,36 +344,7 @@
   padding: 0.75rem;
 }
 
-.actions-cell button {
-  margin-right: 0.5rem;
-}
-
 .no-suppliers {
   color: #999;
   font-style: italic;
-}
-
-.actions-cell button.icon-edit, .actions-cell button.icon-delete {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  color: #495057;
-  font-size: 1.25rem;
-  padding: 0.25rem 0.4rem;
-  min-width: unset;
-  min-height: unset;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.18s;
-}
-.actions-cell button.icon-edit:hover {
-  color: #007bff;
-}
-.actions-cell button.icon-delete {
-  color: #c0392b;
-}
-.actions-cell button.icon-delete:hover {
-  color: #e74c3c;
 }

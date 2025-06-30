@@ -82,14 +82,14 @@
         <tr>
           <th>Nome</th>
           <th>Contatto</th>
-          <th>Azioni</th>
+          <th>Azioni</th> 
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-supplier let-i="rowIndex">
         <tr>
           <td>{{ supplier.name }}</td>
-          <td>{{ supplier.contact }}</td>
+          <td>{{ supplier.contact ? supplier.contact : 'ND' }}</td>
           <td class="actions-cell">
             <button
               pButton

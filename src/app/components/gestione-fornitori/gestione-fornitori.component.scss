@@ -21,6 +21,7 @@
       margin: 0;
     }
   }
+
   // Form card
   .supplier-form-card {
     background: white;
@@ -110,6 +111,7 @@
       }
     }
   }
+
   // Table section
   .supplier-table-section {
     background: white;
@@ -166,12 +168,17 @@
         }
       }
 
+      // Centra l’intestazione "Azioni"
       .p-datatable-thead > tr > th {
         background: #f8f9fa;
         color: #495057;
         font-weight: 600;
         padding: 16px 20px;
         border-bottom: 2px solid #e9ecef;
+
+        &:last-child {
+          text-align: center;
+        }
       }
 
       .p-datatable-tbody > tr {
@@ -188,30 +195,39 @@
         }
       }
 
-      .actions-cell button.icon-edit,
-      .actions-cell button.icon-delete {
-        background: none !important;
-        border: none !important;
-        box-shadow: none !important;
-        color: #495057;
-        font-size: 1.25rem;
-        padding: 0.25rem 0.4rem;
-        min-width: unset;
-        min-height: unset;
-        line-height: 1;
-        display: inline-flex;
+      // Flex + gap + centratura bottoni
+      .actions-cell {
+        display: flex;
         align-items: center;
         justify-content: center;
-        transition: color 0.18s;
-      }
-      .actions-cell button.icon-edit:hover {
-        color: #007bff;
-      }
-      .actions-cell button.icon-delete {
-        color: #c0392b;
-      }
-      .actions-cell button.icon-delete:hover {
-        color: #e74c3c;
+        gap: 0.5rem; /* 8px */
+
+        button.icon-edit,
+        button.icon-delete {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+          color: #495057;
+          font-size: 1.25rem;
+          padding: 0.25rem 0.4rem;
+          min-width: unset;
+          min-height: unset;
+          line-height: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: color 0.18s;
+        }
+
+        button.icon-edit:hover {
+          color: #007bff;
+        }
+        button.icon-delete {
+          color: #c0392b;
+        }
+        button.icon-delete:hover {
+          color: #e74c3c;
+        }
       }
 
       .empty-message {
