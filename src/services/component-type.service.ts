@@ -25,9 +25,9 @@ export class ComponentTypeService {
 
   getComponentTypes(): Observable<ComponentType[]> {
     return new Observable((observer) => {
-      this.dbService.getComponentTypes((types) => {
+      this.dbService.getComponentTypes((types: { id: string; data: any }[]) => {
         const mappedTypes = types.map(
-          (t) => new ComponentType(t.id, t.data.name)
+          (t: { id: string; data: any }) => new ComponentType(t.id, t.data.name)
         );
         console.log(
           'ComponentTypeService: Mapped component types',

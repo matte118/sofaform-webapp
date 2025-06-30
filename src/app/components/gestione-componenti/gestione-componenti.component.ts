@@ -20,7 +20,10 @@ import { ComponentType } from '../../../models/component-type.model';
 import { ComponentService } from '../../../services/component.service';
 import { SupplierService } from '../../../services/supplier.service';
 import { ComponentTypeService } from '../../../services/component-type.service';
+import { VariantService } from '../../../services/variant.service';
+import { SofaProductService } from '../../../services/sofa-product.service';
 import { DialogModule } from 'primeng/dialog';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-gestione-componenti',
@@ -77,7 +80,9 @@ export class GestioneComponentiComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private cd: ChangeDetectorRef,
     private supplierService: SupplierService,
-    private componentTypeService: ComponentTypeService
+    private componentTypeService: ComponentTypeService,
+    private variantService: VariantService,
+    private sofaProductService: SofaProductService
   ) {}
 
   ngOnInit() {
@@ -203,11 +208,42 @@ export class GestioneComponentiComponent implements OnInit {
     this.editingIndex = index;
   }
 
+  private getProductsUsingComponent(componentId: string): Promise<string[]> {
+    return new Promise((resolve) => {
+      // Get all variants
+      this.variantService.getVariants().subscribe((variants) => {
+        // Find variants that use this component
+        const variantsUsingComponent = variants.filter((variant) =>
+          variant.components.some((comp) => comp.id === componentId)
+        );
+
+        if (variantsUsingComponent.length === 0) {
+          resolve([]);
+          return;
+        }
+
+        // Get all products
+        this.sofaProductService.getSofaProducts().subscribe((products) => {
+          const productNames: string[] = [];
+
+          variantsUsingComponent.forEach((variant) => {
+            const product = products.find((p) => p.id === variant.sofaId);
+            if (product && !productNames.includes(product.name)) {
+              productNames.push(product.name);
+            }
+          });
+
+          resolve(productNames);
+        });
+      });
+    });
+  }
+
   deleteComponent(component: ComponentModel) {
-    this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il componente "${component.name}"?`,
-      header: 'Conferma Eliminazione',
-      accept: () => {
+    // First check which products use this component
+    this.getProductsUsingComponent(component.id).then((productNames) => {
+      if (productNames.length === 0) {
+        // Component is not used in any products, proceed directly with deletion
         this.saving = true;
         this.componentService.deleteComponent(component.id).subscribe(
           () => {
@@ -235,7 +271,72 @@ export class GestioneComponentiComponent implements OnInit {
             this.saving = false;
           }
         );
-      },
+        return;
+      }
+
+      // Component is used in products, show confirmation dialog
+      const message = `
+        <div class="component-usage-warning">
+          <div class="warning-content">
+            <div class="warning-text">
+              Questo componente è utilizzato nei seguenti prodotti:
+            </div>
+            
+            <ul class="product-list">
+              ${productNames.map(name => `<li class="product-item">${name}</li>`).join('')}
+            </ul>
+            
+            <div class="removal-warning">
+              <i class="pi pi-info-circle info-icon"></i>
+              <span>
+                <strong>Se procedi con l'eliminazione, il componente verrà automaticamente rimosso da tutti questi prodotti.</strong>
+              </span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.confirmationService.confirm({
+        message: message,
+        header: 'Conferma Eliminazione',
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Sì',
+        rejectLabel: 'Annulla',
+        acceptButtonStyleClass: 'p-button-primary',
+        rejectButtonStyleClass: 'p-button-danger',
+        accept: () => {
+          this.saving = true;
+          this.componentService.deleteComponent(component.id).subscribe(
+            () => {
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Successo',
+                detail: `Componente eliminato con successo e rimosso da ${productNames.length} prodotto${productNames.length > 1 ? 'i' : ''}`,
+              });
+              this.loadComponents();
+              if (
+                this.editingIndex >= 0 &&
+                this.components[this.editingIndex]?.id === component.id
+              ) {
+                this.resetForm();
+              }
+              this.saving = false;
+            },
+            (error) => {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Errore',
+                detail: "Errore durante l'eliminazione del componente",
+              });
+              console.error('Error deleting component:', error);
+              this.saving = false;
+            }
+          );
+        },
+        reject: () => {
+          console.log('Eliminazione annullata');
+        },
+      });
     });
   }
 
@@ -391,3 +492,4 @@ export class GestioneComponentiComponent implements OnInit {
     this.showComponentTypeDialog = true;
   }
 }
+

@@ -247,41 +247,40 @@ export class RealtimeDbService {
     return remove(ref(this.db, `components/${id}`));
   }
 
-  // Component Type methods
-  addComponentType(componentType: ComponentType): Promise<void> {
-    const refPath = ref(this.db, 'componentTypes');
-    const newRef = push(refPath);
-    const sanitizedType = this.sanitizeData(componentType);
+  // Method to remove a component from all variants that use it
+  removeComponentFromAllVariants(componentId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.getVariants((variants) => {
+        const updatePromises: Promise<void>[] = [];
 
-    // Assign the generated ID to the component type before saving it
-    sanitizedType.id = newRef.key;
+        variants.forEach((variant) => {
+          const variantData = variant.data;
+          
+          // Check if this variant contains the component to be removed
+          if (variantData.components && variantData.components.some((comp: any) => comp.id === componentId)) {
+            // Remove the component from the variant's components array
+            variantData.components = variantData.components.filter((comp: any) => comp.id !== componentId);
+            
+            // Recalculate the variant price based on remaining components
+            variantData.price = variantData.components.reduce((sum: number, comp: any) => sum + (comp.price || 0), 0);
+            
+            // Update the variant in the database
+            const sanitizedVariant = this.sanitizeData(variantData);
+            const updatePromise = set(ref(this.db, `variants/${variant.id}`), sanitizedVariant);
+            updatePromises.push(updatePromise);
+          }
+        });
 
-    return set(newRef, sanitizedType);
-  }
-
-  getComponentTypes(
-    callback: (types: { id: string; data: ComponentType }[]) => void
-  ) {
-    const refPath = ref(this.db, 'componentTypes');
-    onValue(refPath, (snapshot) => {
-      const raw = snapshot.val();
-      const parsed = raw
-        ? Object.entries(raw).map(([id, val]) => ({
-            id,
-            data: val as ComponentType,
-          }))
-        : [];
-      callback(parsed);
+        // Wait for all updates to complete
+        if (updatePromises.length > 0) {
+          Promise.all(updatePromises)
+            .then(() => resolve())
+            .catch((error) => reject(error));
+        } else {
+          resolve();
+        }
+      });
     });
-  }
-
-  updateComponentType(id: string, componentType: ComponentType): Promise<void> {
-    const sanitizedType = this.sanitizeData(componentType);
-    return set(ref(this.db, `componentTypes/${id}`), sanitizedType);
-  }
-
-  deleteComponentType(id: string): Promise<void> {
-    return remove(ref(this.db, `componentTypes/${id}`));
   }
 
   // New methods for creating products and variants
@@ -311,4 +310,42 @@ export class RealtimeDbService {
   updateProductVariants(productId: string, variantIds: string[]): Promise<void> {
     return set(ref(this.db, `products/${productId}/variants`), variantIds);
   }
+
+  // ComponentType methods
+  addComponentType(componentType: ComponentType): Promise<void> {
+    const refPath = ref(this.db, 'component-types');
+    const newRef = push(refPath);
+    const sanitizedComponentType = this.sanitizeData(componentType);
+
+    // Assign the generated ID to the component type before saving it
+    sanitizedComponentType.id = newRef.key;
+
+    return set(newRef, sanitizedComponentType);
+  }
+
+  getComponentTypes(
+    callback: (componentTypes: { id: string; data: ComponentType }[]) => void
+  ) {
+    const refPath = ref(this.db, 'component-types');
+    onValue(refPath, (snapshot) => {
+      const raw = snapshot.val();
+      const parsed = raw
+        ? Object.entries(raw).map(([id, val]) => ({
+            id,
+            data: val as ComponentType,
+          }))
+        : [];
+      callback(parsed);
+    });
+  }
+
+  updateComponentType(id: string, componentType: ComponentType): Promise<void> {
+    const sanitizedComponentType = this.sanitizeData(componentType);
+    return set(ref(this.db, `component-types/${id}`), sanitizedComponentType);
+  }
+
+  deleteComponentType(id: string): Promise<void> {
+    return remove(ref(this.db, `component-types/${id}`));
+  }
 }
+

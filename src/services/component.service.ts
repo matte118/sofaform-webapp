@@ -36,6 +36,21 @@ export class ComponentService {
   }
 
   deleteComponent(id: string): Observable<void> {
-    return from(this.dbService.deleteComponent(id));
+    return new Observable((observer) => {
+      // First remove the component from all variants that use it
+      this.dbService
+        .removeComponentFromAllVariants(id)
+        .then(() => {
+          // Then delete the component itself
+          return this.dbService.deleteComponent(id);
+        })
+        .then(() => {
+          observer.next();
+          observer.complete();
+        })
+        .catch((error) => {
+          observer.error(error);
+        });
+    });
   }
 }

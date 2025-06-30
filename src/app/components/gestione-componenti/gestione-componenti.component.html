@@ -187,7 +187,14 @@
   </div>
 
   <!-- Dialog per conferma eliminazione -->
-  <p-confirmDialog header="Conferma"></p-confirmDialog>
+  <p-confirmDialog 
+    header="Conferma"
+    [style]="{ width: '450px' }"
+    (modal)="true"
+    [closable]="false"
+    [draggable]="false"
+    (resizable)="false">
+  </p-confirmDialog>
 
   <!-- Dialog per creazione nuovo tipo componente -->
   <p-dialog
