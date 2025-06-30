@@ -141,7 +141,7 @@ export class HomeComponent implements OnInit {
 
     // Return average price of variants as an example
     const total = variants.reduce((sum, variant) => sum + variant.price, 0);
-    return total / variants.length;
+    return total;
   }
 
   generaListino(product: SofaProduct) {
