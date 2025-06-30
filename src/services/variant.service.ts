@@ -22,12 +22,19 @@ export class VariantService {
     return from(this.dbService.addVariant(variant));
   }
 
+  createVariant(variant: Variant): Observable<string> {
+    if (!this.isBrowser) {
+      return of('');
+    }
+    return from(this.dbService.createVariant(variant));
+  }
+
   getVariants(): Observable<Variant[]> {
     return new Observable((observer) => {
       this.dbService.getVariants((variants) => {
         const mappedVariants = variants.map(
-          (v) =>
-            new Variant(
+          (v) => {
+            const variant = new Variant(
               v.id,
               v.data.sofaId,
               v.data.longName,
@@ -35,7 +42,11 @@ export class VariantService {
               v.data.components || [],
               v.data.seatsCount,
               v.data.mattressWidth
-            )
+            );
+            // Ensure price is updated based on components
+            variant.updatePrice();
+            return variant;
+          }
         );
         observer.next(mappedVariants);
       });
@@ -51,8 +62,8 @@ export class VariantService {
         const mappedVariants = variants
           .filter((v) => v.data.sofaId === sofaId)
           .map(
-            (v) =>
-              new Variant(
+            (v) => {
+              const variant = new Variant(
                 v.id,
                 v.data.sofaId,
                 v.data.longName,
@@ -60,7 +71,11 @@ export class VariantService {
                 v.data.components || [],
                 v.data.seatsCount,
                 v.data.mattressWidth
-              )
+              );
+              // Ensure price is updated based on components
+              variant.updatePrice();
+              return variant;
+            }
           );
         observer.next(mappedVariants);
       });

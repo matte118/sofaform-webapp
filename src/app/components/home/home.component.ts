@@ -63,6 +63,9 @@ export class HomeComponent implements OnInit {
   rivestimentoTypes = Object.values(RivestimentoType);
   showRivestimentoDialog = false;
 
+  // New properties for variant expansion
+  expandedVariants: Set<string> = new Set();
+
   constructor(
     private router: Router,
     private sofaProductService: SofaProductService,
@@ -283,5 +286,17 @@ export class HomeComponent implements OnInit {
         });
       },
     });
+  }
+
+  toggleVariantExpansion(variantId: string): void {
+    if (this.expandedVariants.has(variantId)) {
+      this.expandedVariants.delete(variantId);
+    } else {
+      this.expandedVariants.add(variantId);
+    }
+  }
+
+  isVariantExpanded(variantId: string): boolean {
+    return this.expandedVariants.has(variantId);
   }
 }

@@ -37,17 +37,57 @@
 
           <h4 class="variants-title">Varianti</h4>
           <ul class="variants-list">
-            <li *ngFor="let variant of getProductVariants(product.id)">
-              <div class="variant-info">
-                <span class="variant-name">{{ variant.longName }}</span>
+            <li *ngFor="let variant of getProductVariants(product.id)" class="variant-item">
+              <div class="variant-header" (click)="toggleVariantExpansion(variant.id)">
+                <div class="variant-info">
+                  <span class="variant-name">{{ variant.longName }}</span>
+                  <button 
+                    pButton 
+                    class="p-button-text p-button-sm variant-toggle"
+                    [icon]="isVariantExpanded(variant.id) ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                  ></button>
+                </div>
+                <div class="variant-meta">
+                  <span class="variant-price">€ {{ variant.price.toFixed(2) }}</span>
+                  <small *ngIf="variant.seatsCount" class="variant-seats">
+                    {{ variant.seatsCount }} posti
+                  </small>
+                </div>
               </div>
-              <div class="variant-meta">
-                <span class="variant-price"
-                  >€ {{ variant.price.toFixed(2) }}</span
-                >
-                <small *ngIf="variant.seatsCount" class="variant-seats">
-                  {{ variant.seatsCount }} posti
-                </small>
+              
+              <div class="variant-details" *ngIf="isVariantExpanded(variant.id)">
+                <div class="variant-detail-row" *ngIf="variant.seatsCount">
+                  <strong>Posti:</strong> {{ variant.seatsCount }}
+                </div>
+                <div class="variant-detail-row" *ngIf="variant.mattressWidth">
+                  <strong>Larghezza materasso:</strong> {{ variant.mattressWidth }}cm
+                </div>
+                
+                <div class="components-section" *ngIf="variant.components?.length">
+                  <h5 class="components-title">Componenti:</h5>
+                  <div class="components-list">
+                    <div 
+                      class="component-item" 
+                      *ngFor="let component of variant.components"
+                    >
+                      <div class="component-header">
+                        <span class="component-name">{{ component.name }}</span>
+                        <span class="component-price">€ {{ component.price.toFixed(2) }}</span>
+                      </div>
+                      <div class="component-details">
+                        <div class="component-detail" *ngIf="component.suppliers?.length">
+                          <strong>Fornitori:</strong> 
+                          <span *ngFor="let supplier of component.suppliers; let last = last">
+                            {{ supplier.name }}<span *ngIf="!last">, </span>
+                          </span>
+                        </div>
+                        <div class="component-detail" *ngIf="component.type">
+                          <strong>Tipo:</strong> {{ component.type.name }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </li>
           </ul>

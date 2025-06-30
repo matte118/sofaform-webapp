@@ -286,21 +286,29 @@ export class RealtimeDbService {
 
   // New methods for creating products and variants
   createProduct(product: any): Promise<string> {
-    // Example: push to "products" collection in Firebase
-    // Return the new product's generated key
-    return new Promise((resolve) => {
-      const newId = 'generatedProductId';
-      // ... Firebase code that stores product ...
-      resolve(newId);
-    });
+    const refPath = ref(this.db, 'products');
+    const newRef = push(refPath);
+    const sanitizedProduct = this.sanitizeData(product);
+
+    // Assign the generated ID to the product before saving it
+    sanitizedProduct.id = newRef.key;
+
+    return set(newRef, sanitizedProduct).then(() => newRef.key!);
   }
 
   createVariant(variant: any): Promise<string> {
-    // Example: push to "variants" collection in Firebase
-    return new Promise((resolve) => {
-      const newId = 'generatedVariantId';
-      // ... Firebase code that stores variant ...
-      resolve(newId);
-    });
+    const refPath = ref(this.db, 'variants');
+    const newRef = push(refPath);
+    const sanitizedVariant = this.sanitizeData(variant);
+
+    // Assign the generated ID to the variant before saving it
+    sanitizedVariant.id = newRef.key;
+
+    return set(newRef, sanitizedVariant).then(() => newRef.key!);
+  }
+
+  // Method to update product with variant IDs
+  updateProductVariants(productId: string, variantIds: string[]): Promise<void> {
+    return set(ref(this.db, `products/${productId}/variants`), variantIds);
   }
 }

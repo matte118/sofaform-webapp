@@ -24,6 +24,20 @@ export class SofaProductService {
     return from(this.dbService.addSofaProduct(product));
   }
 
+  createProduct(product: SofaProduct): Observable<string> {
+    if (!this.isBrowser) {
+      return of('');
+    }
+    return from(this.dbService.createProduct(product));
+  }
+
+  updateProductVariants(productId: string, variantIds: string[]): Observable<void> {
+    if (!this.isBrowser) {
+      return of(void 0);
+    }
+    return from(this.dbService.updateProductVariants(productId, variantIds));
+  }
+
   getSofaProducts(): Observable<SofaProduct[]> {
     if (!this.isBrowser) {
       return of([]);
@@ -37,7 +51,7 @@ export class SofaProductService {
             p.id, 
             p.data.name, 
             p.data.description,
-            p.data.components || []
+            p.data.variants || [] // Now this should contain variant IDs
           )
         );
         observer.next(mappedProducts);

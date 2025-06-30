@@ -93,7 +93,141 @@
           padding: 0;
           list-style: none;
 
-          li {
+          .variant-item {
+            border: 1px solid #f1f5f9;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+
+            &:hover {
+              border-color: #e2e8f0;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .variant-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 0.75rem;
+              cursor: pointer;
+              background: #fafafa;
+              transition: background-color 0.2s ease;
+
+              &:hover {
+                background: #f1f5f9;
+              }
+
+              .variant-info {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+
+                .variant-name {
+                  font-weight: 500;
+                  color: #334155;
+                }
+
+                .variant-toggle {
+                  padding: 0.25rem;
+                  min-width: auto;
+                  height: auto;
+                }
+              }
+
+              .variant-meta {
+                text-align: right;
+
+                .variant-price {
+                  font-weight: 600;
+                  color: #2196f3;
+                  margin-right: 0.5rem;
+                }
+
+                .variant-seats {
+                  font-size: 0.9rem;
+                  color: #64748b;
+                }
+              }
+            }
+
+            .variant-details {
+              padding: 1rem;
+              background: #ffffff;
+              border-top: 1px solid #f1f5f9;
+
+              .variant-detail-row {
+                margin-bottom: 0.5rem;
+                font-size: 0.9rem;
+
+                strong {
+                  color: #475569;
+                }
+              }
+
+              .components-section {
+                margin-top: 1rem;
+
+                .components-title {
+                  font-size: 1rem;
+                  color: #334155;
+                  margin: 0 0 0.75rem 0;
+                  font-weight: 600;
+                }
+
+                .components-list {
+                  .component-item {
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                    padding: 0.75rem;
+                    margin-bottom: 0.5rem;
+
+                    &:last-child {
+                      margin-bottom: 0;
+                    }
+
+                    .component-header {
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      margin-bottom: 0.5rem;
+
+                      .component-name {
+                        font-weight: 500;
+                        color: #1e293b;
+                      }
+
+                      .component-price {
+                        font-weight: 600;
+                        color: #059669;
+                      }
+                    }
+
+                    .component-details {
+                      .component-detail {
+                        font-size: 0.85rem;
+                        margin-bottom: 0.25rem;
+                        color: #64748b;
+
+                        &:last-child {
+                          margin-bottom: 0;
+                        }
+
+                        strong {
+                          color: #475569;
+                          margin-right: 0.25rem;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Legacy styles for backward compatibility
+          li:not(.variant-item) {
             display: flex;
             justify-content: space-between;
             align-items: center;

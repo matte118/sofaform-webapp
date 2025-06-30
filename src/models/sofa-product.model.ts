@@ -5,7 +5,7 @@ export class SofaProduct {
     public id: string,
     public name: string,
     public description?: string,
-    public variants: Variant[] = [],
+    public variants: string[] = [], // Store variant IDs instead of full objects
     public photoUrl?: string
   ) {}
 }

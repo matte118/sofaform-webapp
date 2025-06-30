@@ -17,6 +17,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
+import { forkJoin } from 'rxjs';
 
 import { SofaProduct } from '../../../models/sofa-product.model';
 import { Variant } from '../../../models/variant.model';
@@ -272,6 +273,8 @@ export class AggiungiProdottoComponent implements OnInit {
     }
 
     this.selectedVariant.components.push(component);
+    // Automatically update the variant price
+    this.selectedVariant.updatePrice();
   }
 
   removeComponentFromVariant(
@@ -279,6 +282,8 @@ export class AggiungiProdottoComponent implements OnInit {
     componentIndex: number
   ): void {
     this.variants[variantIndex].components.splice(componentIndex, 1);
+    // Automatically update the variant price after removing component
+    this.variants[variantIndex].updatePrice();
   }
 
   // Create new component
@@ -331,18 +336,18 @@ export class AggiungiProdottoComponent implements OnInit {
     this.selectedComponentType = undefined;
   }
   // Price calculations
+  // Update calculateComponentCost to use the variant's own method
   calculateComponentCost(variant: Variant): number {
-    return variant.components.reduce(
-      (sum, component) => sum + component.price,
-      0
-    );
+    return variant.calculatePriceFromComponents();
   }
 
   calculateFinalPrices(): void {
     this.finalPrices.clear();
 
     this.variants.forEach((variant) => {
-      const componentCost = this.calculateComponentCost(variant);
+      // Ensure variant price is up to date with its components
+      variant.updatePrice();
+      const componentCost = variant.price; // Use the calculated price directly
 
       // Apply markup: price = cost / ((100 - markup) / 100)
       const finalPrice = componentCost / ((100 - this.markupPercentage) / 100);
@@ -358,32 +363,57 @@ export class AggiungiProdottoComponent implements OnInit {
       return;
     }
 
-    // First save the sofa product
-    this.sofaProductService.addSofaProduct(this.newSofaProduct).subscribe(
-      () => {
-        // Then save each variant
-        const saveVariantPromises = this.variants.map((variant) => {
-          // Update variant with final price
+    // First create the sofa product and get its ID
+    this.sofaProductService.createProduct(this.newSofaProduct).subscribe(
+      (productId) => {
+        // Update the product ID
+        this.newSofaProduct.id = productId;
+        
+        // Create variants and collect their observables
+        const variantObservables = this.variants.map((variant) => {
+          // Update variant with final price and sofa ID
           variant.price = this.finalPrices.get(variant.longName) || 0;
-          // Update sofaId with the newly created sofa
-          variant.sofaId = this.newSofaProduct.id;
+          variant.sofaId = productId;
 
-          return this.variantService.addVariant(variant);
+          return this.variantService.createVariant(variant);
         });
 
-        // Wait for all variants to be saved
-        Promise.all(saveVariantPromises).then(() => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Successo',
-            detail: 'Prodotto salvato con successo',
-          });
+        // Wait for all variants to be created using forkJoin
+        forkJoin(variantObservables).subscribe(
+          (variantIds) => {
+            // Update the product with variant IDs
+            this.sofaProductService.updateProductVariants(productId, variantIds).subscribe(
+              () => {
+                this.messageService.add({
+                  severity: 'success',
+                  summary: 'Successo',
+                  detail: 'Prodotto salvato con successo',
+                });
 
-          // Navigate to products list
-          setTimeout(() => {
-            this.router.navigate(['/prodotti']);
-          }, 2000);
-        });
+                // Navigate to products list
+                setTimeout(() => {
+                  this.router.navigate(['/prodotti']);
+                }, 2000);
+              },
+              (error) => {
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Errore',
+                  detail: 'Errore durante l\'associazione delle varianti',
+                });
+                console.error('Error updating product variants:', error);
+              }
+            );
+          },
+          (error) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Errore',
+              detail: 'Errore durante la creazione delle varianti',
+            });
+            console.error('Error creating variants:', error);
+          }
+        );
       },
       (error) => {
         this.messageService.add({
