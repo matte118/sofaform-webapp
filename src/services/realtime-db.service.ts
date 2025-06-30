@@ -347,5 +347,44 @@ export class RealtimeDbService {
   deleteComponentType(id: string): Promise<void> {
     return remove(ref(this.db, `component-types/${id}`));
   }
+
+  // Method to delete all components that have a specific supplier
+  deleteComponentsBySupplier(supplierId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.getComponents((components) => {
+        const componentsToDelete = components.filter(c => {
+          // Check if suppliers exists and is an array
+          if (!c.data.suppliers || !Array.isArray(c.data.suppliers)) {
+            return false;
+          }
+          return c.data.suppliers.some((supplier: any) => supplier.id === supplierId);
+        });
+
+        if (componentsToDelete.length === 0) {
+          resolve();
+          return;
+        }
+
+        const deletePromises: Promise<void>[] = [];
+
+        componentsToDelete.forEach((component) => {
+          // First remove the component from all variants
+          const removeFromVariantsPromise = this.removeComponentFromAllVariants(component.id);
+          
+          // Then delete the component itself
+          const deleteComponentPromise = removeFromVariantsPromise.then(() => 
+            this.deleteComponent(component.id)
+          );
+          
+          deletePromises.push(deleteComponentPromise);
+        });
+
+        // Wait for all deletions to complete
+        Promise.all(deletePromises)
+          .then(() => resolve())
+          .catch((error) => reject(error));
+      });
+    });
+  }
 }
 

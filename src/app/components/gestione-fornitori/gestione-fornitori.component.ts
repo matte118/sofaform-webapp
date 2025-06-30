@@ -13,6 +13,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Supplier } from '../../../models/supplier.model';
 import { SupplierService } from '../../../services/supplier.service';
+import { ComponentService } from '../../../services/component.service';
 
 @Component({
   selector: 'app-gestione-fornitori',
@@ -43,6 +44,7 @@ export class GestioneFornitoriComponent implements OnInit {
 
   constructor(
     private supplierService: SupplierService,
+    private componentService: ComponentService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private cd: ChangeDetectorRef
@@ -119,11 +121,20 @@ export class GestioneFornitoriComponent implements OnInit {
     this.editingIndex = index;
   }
 
+  private getComponentsUsingSupplier(supplierId: string): Promise<string[]> {
+    return new Promise((resolve) => {
+      this.componentService.getComponentsBySupplier(supplierId).subscribe((components) => {
+        const componentNames = components.map(component => component.name);
+        resolve(componentNames);
+      });
+    });
+  }
+
   deleteSupplier(supplier: Supplier) {
-    this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il fornitore "${supplier.name}"?`,
-      header: 'Conferma Eliminazione',
-      accept: () => {
+    // First check which components use this supplier
+    this.getComponentsUsingSupplier(supplier.id).then((componentNames) => {
+      if (componentNames.length === 0) {
+        // Supplier is not used by any components, proceed directly with deletion
         this.saving = true;
         this.supplierService.deleteSupplier(supplier.id).subscribe(
           () => {
@@ -148,7 +159,85 @@ export class GestioneFornitoriComponent implements OnInit {
             this.saving = false;
           }
         );
+        return;
       }
+
+      // Supplier is used by components, show confirmation dialog
+      const message = `
+        <div class="supplier-usage-warning">
+          <div class="warning-content">
+            <div class="warning-text">
+              Questo fornitore fornisce i seguenti componenti:
+            </div>
+            
+            <ul class="component-list">
+              ${componentNames.map(name => `<li class="component-item">${name}</li>`).join('')}
+            </ul>
+            
+            <div class="removal-warning">
+              <i class="pi pi-info-circle info-icon"></i>
+              <span>
+                <strong>Se procedi con l'eliminazione, tutti i componenti forniti da questo fornitore verranno automaticamente eliminati.</strong>
+              </span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.confirmationService.confirm({
+        message: message,
+        header: 'Conferma Eliminazione',
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Sì',
+        rejectLabel: 'Annulla',
+        acceptButtonStyleClass: 'p-button-primary',
+        rejectButtonStyleClass: 'p-button-danger',
+        accept: () => {
+          this.saving = true;
+          
+          // First delete all components that use this supplier
+          this.componentService.deleteComponentsBySupplier(supplier.id).subscribe(
+            () => {
+              // Then delete the supplier itself
+              this.supplierService.deleteSupplier(supplier.id).subscribe(
+                () => {
+                  this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successo',
+                    detail: 'Fornitore e componenti associati eliminati con successo'
+                  });
+                  this.loadSuppliers();
+                  if (this.editingIndex >= 0 && this.suppliers[this.editingIndex]?.id === supplier.id) {
+                    this.resetForm();
+                  }
+                  this.saving = false;
+                },
+                error => {
+                  this.messageService.add({
+                    severity: 'error',
+                    summary: 'Errore',
+                    detail: 'Errore durante l\'eliminazione del fornitore'
+                  });
+                  console.error('Error deleting supplier:', error);
+                  this.saving = false;
+                }
+              );
+            },
+            error => {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Errore',
+                detail: 'Errore durante l\'eliminazione dei componenti'
+              });
+              console.error('Error deleting components:', error);
+              this.saving = false;
+            }
+          );
+        },
+        reject: () => {
+          console.log('Eliminazione annullata');
+        }
+      });
     });
   }
 
@@ -200,3 +289,4 @@ export class GestioneFornitoriComponent implements OnInit {
     return true;
   }
 }
+

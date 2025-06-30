@@ -53,4 +53,36 @@ export class ComponentService {
         });
     });
   }
+
+  getComponentsBySupplier(supplierId: string): Observable<Component[]> {
+    return new Observable((observer) => {
+      this.dbService.getComponents((components) => {
+        const componentsWithSupplier = components.filter((c) => {
+          // Check if suppliers exists and is an array
+          if (!c.data.suppliers || !Array.isArray(c.data.suppliers)) {
+            return false;
+          }
+          return c.data.suppliers.some((supplier: any) => supplier.id === supplierId);
+        });
+
+        const mappedComponents = componentsWithSupplier.map(
+          (c) =>
+            new Component(
+              c.id,
+              c.data.name,
+              c.data.price,
+              c.data.suppliers || [],
+              c.data.type
+            )
+        );
+
+        observer.next(mappedComponents);
+        observer.complete();
+      });
+    });
+  }
+
+  deleteComponentsBySupplier(supplierId: string): Observable<void> {
+    return from(this.dbService.deleteComponentsBySupplier(supplierId));
+  }
 }
