@@ -112,6 +112,12 @@ export class AggiungiProdottoComponent implements OnInit {
   isSavingProduct: boolean = false;
   saveProgress: string = '';
 
+  // Dialogs visibility
+  showSedutaDialog = false;
+  showSchienaleDialog = false;
+  showMeccanicaDialog = false;
+  showMaterassoDialog = false;
+
   isBrowser: boolean;
 
   constructor(

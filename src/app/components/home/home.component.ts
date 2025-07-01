@@ -220,13 +220,35 @@ export class HomeComponent implements OnInit {
     doc.setFontSize(18);
     doc.text(`Listino: ${product.name}`, 40, 20);
 
+    let y = 40;
+    doc.setFontSize(12);
+
+    // Aggiungi i nuovi campi se presenti
+    if (product.seduta) {
+      doc.text(`Seduta: ${product.seduta}`, 40, y);
+      y += 16;
+    }
+    if (product.schienale) {
+      doc.text(`Schienale: ${product.schienale}`, 40, y);
+      y += 16;
+    }
+    if (product.meccanica) {
+      doc.text(`Meccanica: ${product.meccanica}`, 40, y);
+      y += 16;
+    }
+    if (product.materasso) {
+      doc.text(`Materasso: ${product.materasso}`, 40, y);
+      y += 16;
+    }
+
+    doc.setFontSize(14);
+
     const rivestimentoCost = this.calculateRivestimentoCost();
 
     const rows: string[][] = [];
     variants.forEach((variant) => {
       rows.push([`Variante: ${variant.longName}`, '', '', '']);
       variant.components.forEach((component) => {
-        // Nessun ricarico sulle componenti
         rows.push([
           component.name,
           '1',
@@ -242,7 +264,6 @@ export class HomeComponent implements OnInit {
           rivestimentoCost.toFixed(2),
         ]);
       }
-      // Calcolo prezzo finale con ricarico solo sul totale
       const baseTotal = variant.price + rivestimentoCost;
       const markupFactor = (100 - markupPerc) / 100;
       const finalTotal =
@@ -259,14 +280,11 @@ export class HomeComponent implements OnInit {
     autoTable(doc, {
       head: [['Componente', 'Quantità', 'Prezzo cad.', 'Subtotale']],
       body: rows,
-      startY: 30,
+      startY: y + 10,
       theme: 'striped',
       margin: { left: 40, right: 40 },
     });
 
-    const finalY = (doc as any).lastAutoTable?.finalY ?? 50;
-
-    doc.setFontSize(14);
     doc.save(`Listino_${product.name.replace(/\s+/g, '_')}.pdf`);
   }
 

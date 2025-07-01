@@ -5,8 +5,46 @@
 /* You can add global styles to this file, and also import other style files */
 
 body {
-    margin: 0;
-    padding: 0;
-    font-family: var(--font-family);
-    background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  background-color: #f8f9fa;
+}
+
+.p-button.gradient-success {
+  background: linear-gradient(90deg, #4c8d62 0%, #8ac8a2 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(67, 233, 123, 0.15);
+}
+
+.p-button.gradient-success .pi-trash {
+  color: #fff !important;
+}
+
+.optional-btn,
+.optional-field-cell .p-button {
+  min-width: 160px;
+  width: 100%;
+  justify-content: center;
+}
+
+.icon-trash {
+  background: transparent !important;
+  border: none !important;
+  color: #888 !important;
+  font-size: 1.2rem !important;
+  margin-left: 0.2rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  min-width: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-trash:hover {
+  color: #e53935 !important;
 }
