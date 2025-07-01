@@ -20,6 +20,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
+
 import { SofaProduct } from '../../../models/sofa-product.model';
 import { SofaProductService } from '../../../services/sofa-product.service';
 import { VariantService } from '../../../services/variant.service';
@@ -27,6 +28,7 @@ import { Variant } from '../../../models/variant.model';
 import { Rivestimento } from '../../../models/rivestimento.model';
 import { RivestimentoType } from '../../../models/rivestimento-type.model';
 import { RivestimentoService } from '../../../services/rivestimento.service';
+import { PhotoUploadService } from '../../../services/upload.service';
 
 @Component({
   selector: 'app-home',
@@ -63,14 +65,19 @@ export class HomeComponent implements OnInit {
   rivestimentoTypes = Object.values(RivestimentoType);
   showRivestimentoDialog = false;
 
-  // New properties for variant expansion
+  // Variant expansion
   expandedVariants: Set<string> = new Set();
+
+  // Image properties
+  productImages: Map<string, string> = new Map();
+  imageLoadErrors: Set<string> = new Set();
 
   constructor(
     private router: Router,
     private sofaProductService: SofaProductService,
     private variantService: VariantService,
     private rivestimentoService: RivestimentoService,
+    private uploadService: PhotoUploadService,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private cdr: ChangeDetectorRef,
@@ -80,7 +87,6 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Only load data on the browser
     if (this.isBrowser) {
       this.loadProducts();
       this.loadRivestimenti();
@@ -88,33 +94,22 @@ export class HomeComponent implements OnInit {
   }
 
   loadRivestimenti(): void {
-    this.rivestimentoService.getRivestimenti().subscribe((rivestimenti) => {
-      this.availableRivestimenti = rivestimenti;
+    this.rivestimentoService.getRivestimenti().subscribe(r => {
+      this.availableRivestimenti = r;
       this.cdr.detectChanges();
     });
   }
 
   loadProducts(): void {
-    this.sofaProductService.getSofaProducts().subscribe((products) => {
-      console.log('Loaded products:', products); // Debug output
+    this.sofaProductService.getSofaProducts().subscribe(products => {
       this.products = products;
-
-      // Load variants for each product
-      products.forEach((product) => {
-        // Use the components array as a variant ID list
-        if (Array.isArray(product.variants)) {
-          // Convert the component IDs to variant IDs
-          product.variants.forEach((variantId) => {
-            this.variantService
-              .getVariantsBySofaId(product.id)
-              .subscribe((variants) => {
-                this.productVariants.set(product.id, variants);
-                this.cdr.detectChanges();
-              });
-          });
-        }
+      // Load variants
+      products.forEach(product => {
+        this.variantService.getVariantsBySofaId(product.id).subscribe(variants => {
+          this.productVariants.set(product.id, variants);
+          this.cdr.detectChanges();
+        });
       });
-
       this.cdr.detectChanges();
     });
   }
@@ -128,20 +123,30 @@ export class HomeComponent implements OnInit {
   }
 
   getTotalPrice(productId: string): number {
-    const variants = this.productVariants.get(productId) || [];
-    if (variants.length === 0) {
-      // Try to get a price from the database structure
-      const product = this.products.find((p) => p.id === productId);
-      if (product && product.variants && Array.isArray(product.variants)) {
-        // For now, return 0 but we'll populate from variants later
-        return 0;
-      }
-      return 0;
-    }
+    const variants = this.getProductVariants(productId);
+    if (!variants.length) return 0;
+    return variants.reduce((sum, v) => sum + v.price, 0);
+  }
 
-    // Return average price of variants as an example
-    const total = variants.reduce((sum, variant) => sum + variant.price, 0);
-    return total;
+  getProductImageUrl(productId: string): string | null {
+    const product = this.products.find(p => p.id === productId);
+    return product?.photoUrl || null;
+  }
+
+  hasProductImage(productId: string): boolean {
+    const url = this.getProductImageUrl(productId);
+    const has = !!url && !this.imageLoadErrors.has(productId);
+    console.log(`Product ${productId} has image:`, has);
+    return has;
+  }
+
+  onImageError(productId: string): void {
+    this.imageLoadErrors.add(productId);
+    this.cdr.detectChanges();
+  }
+
+  getDefaultImage(): string {
+    return 'assets/images/no-image-placeholder.png';
   }
 
   generaListino(product: SofaProduct) {
@@ -166,14 +171,13 @@ export class HomeComponent implements OnInit {
       });
       return;
     }
-
     this.showRivestimentoDialog = false;
     this.showMarkupDialog = true;
   }
 
   generateWithMarkup() {
     if (this.selectedProduct) {
-      const variants = this.productVariants.get(this.selectedProduct.id) || [];
+      const variants = this.getProductVariants(this.selectedProduct.id);
       this.exportPdf(this.selectedProduct, variants, this.markupPercentage);
     }
     this.showMarkupDialog = false;
@@ -190,8 +194,7 @@ export class HomeComponent implements OnInit {
   }
 
   calculateRivestimentoCost(): number {
-    if (!this.selectedRivestimento) return 0;
-    return this.selectedRivestimento.mtPrice * this.metersOfRivestimento;
+    return this.selectedRivestimento ? this.selectedRivestimento.mtPrice * this.metersOfRivestimento : 0;
   }
 
   private exportPdf(
@@ -200,32 +203,19 @@ export class HomeComponent implements OnInit {
     markupPerc: number
   ) {
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-
     doc.setFontSize(18);
     doc.text(`Listino: ${product.name}`, 40, 20);
 
     const markup = markupPerc / 100;
     const rivestimentoCost = this.calculateRivestimentoCost();
 
-    // Create rows for each variant
     const rows: string[][] = [];
-
-    variants.forEach((variant) => {
-      // Add variant header
+    variants.forEach(variant => {
       rows.push([`Variante: ${variant.longName}`, '', '', '']);
-
-      // Add components
-      variant.components.forEach((component) => {
-        const componentPrice = component.price * (1 + markup);
-        rows.push([
-          component.name,
-          '1', // Quantity is always 1 in this model
-          componentPrice.toFixed(2),
-          componentPrice.toFixed(2),
-        ]);
+      variant.components.forEach(component => {
+        const price = component.price * (1 + markup);
+        rows.push([component.name, '1', price.toFixed(2), price.toFixed(2)]);
       });
-
-      // Add rivestimento information
       if (this.selectedRivestimento) {
         rows.push([
           `Rivestimento: ${this.selectedRivestimento.code || 'N/A'}`,
@@ -234,40 +224,24 @@ export class HomeComponent implements OnInit {
           rivestimentoCost.toFixed(2),
         ]);
       }
-
-      // Calculate total with rivestimento
-      const componentTotal = variant.price;
-      const variantTotal = componentTotal + rivestimentoCost * (1 + markup);
-
-      // Add variant total
-      rows.push(['Totale variante', '', '', variantTotal.toFixed(2)]);
-
-      // Add spacer
+      const total = variant.price + rivestimentoCost * (1 + markup);
+      rows.push(['Totale variante', '', '', total.toFixed(2)]);
       rows.push(['', '', '', '']);
     });
 
-    const head = [['Componente', 'Quantità', 'Prezzo cad.', 'Subtotale']];
-
     autoTable(doc, {
-      head,
+      head: [['Componente', 'Quantità', 'Prezzo cad.', 'Subtotale']],
       body: rows,
       startY: 30,
       theme: 'striped',
-      headStyles: { fillColor: [33, 150, 243] },
       margin: { left: 40, right: 40 },
     });
 
     const finalY = (doc as any).lastAutoTable?.finalY ?? 50;
-
-    // Calculate grand total across all variants
-    const grandTotal = variants.reduce(
-      (sum, variant) => sum + variant.price,
-      0
-    );
+    const grandTotal = variants.reduce((sum, v) => sum + v.price, 0);
 
     doc.setFontSize(14);
     doc.text(`Totale Prodotto: € ${grandTotal.toFixed(2)}`, 40, finalY + 20);
-
     doc.save(`Listino_${product.name.replace(/\s+/g, '_')}.pdf`);
   }
 
@@ -281,7 +255,7 @@ export class HomeComponent implements OnInit {
       message: 'Sei sicuro di voler eliminare questo prodotto?',
       accept: () => {
         this.sofaProductService.deleteSofaProduct(product.id).subscribe(() => {
-          this.products = this.products.filter((p) => p.id !== product.id);
+          this.products = this.products.filter(p => p.id !== product.id);
           this.cdr.detectChanges();
         });
       },

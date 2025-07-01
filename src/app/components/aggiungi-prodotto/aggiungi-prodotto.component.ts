@@ -17,6 +17,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { forkJoin } from 'rxjs';
 
 import { SofaProduct } from '../../../models/sofa-product.model';
@@ -28,6 +29,9 @@ import { SofaProductService } from '../../../services/sofa-product.service';
 import { VariantService } from '../../../services/variant.service';
 import { ComponentService } from '../../../services/component.service';
 import { SupplierService } from '../../../services/supplier.service';
+import { PhotoUploadService } from '../../../services/upload.service';
+import { FileUploadEvent, FileUploadModule } from 'primeng/fileupload';
+import { HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 @Component({
@@ -49,6 +53,9 @@ import { Router } from '@angular/router';
     InputTextareaModule,
     ToastModule,
     DialogModule,
+    FileUploadModule,
+    HttpClientModule,
+    ProgressSpinnerModule,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './aggiungi-prodotto.component.html',
@@ -94,6 +101,17 @@ export class AggiungiProdottoComponent implements OnInit {
   showAddSupplierDialog = false;
   newSupplier: Supplier = new Supplier('', '', '');
 
+  // Image upload properties
+  selectedFile: File | null = null;
+  imagePreview: string | null = null;
+  uploadProgress: number = 0;
+  isUploading: boolean = false;
+  uploadComplete: boolean = false;
+
+  // Save product loading properties
+  isSavingProduct: boolean = false;
+  saveProgress: string = '';
+
   isBrowser: boolean;
 
   constructor(
@@ -101,6 +119,7 @@ export class AggiungiProdottoComponent implements OnInit {
     private variantService: VariantService,
     private componentService: ComponentService,
     private supplierService: SupplierService,
+    private uploadService: PhotoUploadService,
     private router: Router,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
@@ -156,6 +175,17 @@ export class AggiungiProdottoComponent implements OnInit {
           });
           return false;
         }
+        
+        // Se un'immagine è in caricamento, impedisci l'avanzamento
+        if (this.isUploading) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Attendere',
+            detail: 'Attendere il completamento del caricamento dell\'immagine',
+          });
+          return false;
+        }
+        
         return true;
 
       case 1: // Variants
@@ -363,57 +393,19 @@ export class AggiungiProdottoComponent implements OnInit {
       return;
     }
 
+    this.isSavingProduct = true;
+    this.saveProgress = 'Preparazione dati...';
+
     // First create the sofa product and get its ID
     this.sofaProductService.createProduct(this.newSofaProduct).subscribe(
       (productId) => {
         // Update the product ID
         this.newSofaProduct.id = productId;
-        
-        // Create variants and collect their observables
-        const variantObservables = this.variants.map((variant) => {
-          // Update variant with final price and sofa ID
-          variant.price = this.finalPrices.get(variant.longName) || 0;
-          variant.sofaId = productId;
+        this.saveProgress = 'Prodotto creato, creazione varianti...';
 
-          return this.variantService.createVariant(variant);
-        });
-
-        // Wait for all variants to be created using forkJoin
-        forkJoin(variantObservables).subscribe(
-          (variantIds) => {
-            // Update the product with variant IDs
-            this.sofaProductService.updateProductVariants(productId, variantIds).subscribe(
-              () => {
-                this.messageService.add({
-                  severity: 'success',
-                  summary: 'Successo',
-                  detail: 'Prodotto salvato con successo',
-                });
-
-                // Navigate to products list
-                setTimeout(() => {
-                  this.router.navigate(['/prodotti']);
-                }, 2000);
-              },
-              (error) => {
-                this.messageService.add({
-                  severity: 'error',
-                  summary: 'Errore',
-                  detail: 'Errore durante l\'associazione delle varianti',
-                });
-                console.error('Error updating product variants:', error);
-              }
-            );
-          },
-          (error) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Errore',
-              detail: 'Errore durante la creazione delle varianti',
-            });
-            console.error('Error creating variants:', error);
-          }
-        );
+        // Se l'immagine è già stata caricata, il photoUrl è già impostato
+        // Quindi possiamo procedere direttamente con le varianti
+        this.createVariants(productId);
       },
       (error) => {
         this.messageService.add({
@@ -422,9 +414,147 @@ export class AggiungiProdottoComponent implements OnInit {
           detail: 'Errore durante il salvataggio del prodotto',
         });
         console.error('Error saving product:', error);
+        this.isSavingProduct = false;
+        this.saveProgress = '';
       }
     );
   }
+
+  private createVariants(productId: string): void {
+    // Create variants and collect their observables
+    const variantObservables = this.variants.map((variant) => {
+      // Update variant with final price and sofa ID
+      variant.price = this.finalPrices.get(variant.longName) || 0;
+      variant.sofaId = productId;
+
+      return this.variantService.createVariant(variant);
+    });
+
+    // Wait for all variants to be created using forkJoin
+    forkJoin(variantObservables).subscribe(
+      (variantIds) => {
+        this.saveProgress = 'Collegamento varianti al prodotto...';
+        // Update the product with variant IDs
+        this.sofaProductService.updateProductVariants(productId, variantIds).subscribe(
+          () => {
+            this.saveProgress = 'Completamento...';
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Successo',
+              detail: 'Prodotto salvato con successo',
+            });
+
+            // Small delay to show completion message
+            setTimeout(() => {
+              this.isSavingProduct = false;
+              this.saveProgress = '';
+              // Navigate to home instead of products list
+              this.router.navigate(['/']);
+            }, 1000);
+          },
+          (error) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Errore',
+              detail: 'Errore durante l\'associazione delle varianti',
+            });
+            console.error('Error updating product variants:', error);
+            this.isSavingProduct = false;
+            this.saveProgress = '';
+          }
+        );
+      },
+      (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Errore durante la creazione delle varianti',
+        });
+        console.error('Error creating variants:', error);
+        this.isSavingProduct = false;
+        this.saveProgress = '';
+      }
+    );
+  }
+
+  // Image upload methods
+  onFileSelect(event: any): void {
+    const file = event.files[0];
+    if (file) {
+      this.selectedFile = file;
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      // Carica immediatamente l'immagine
+      this.uploadImageImmediately(file);
+    }
+  }
+
+  private uploadImageImmediately(file: File): void {
+    // Genera un ID temporaneo per il prodotto se non esiste
+    const tempProductId = this.newSofaProduct.id || `temp_${Date.now()}`;
+    
+    this.isUploading = true;
+    this.uploadProgress = 0;
+    this.uploadComplete = false;
+
+    this.uploadService.uploadProductImage(file, tempProductId).subscribe({
+      next: (result) => {
+        this.uploadProgress = result.progress;
+        
+        // Se abbiamo ricevuto l'URL di download, l'upload è completato
+        if (result.downloadURL) {
+          this.newSofaProduct.photoUrl = result.downloadURL;
+          this.uploadComplete = true;
+          this.isUploading = false;
+          
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Successo',
+            detail: 'Immagine caricata con successo'
+          });
+        }
+      },
+      error: (error) => {
+        this.isUploading = false;
+        this.uploadProgress = 0;
+        this.uploadComplete = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Errore durante il caricamento dell\'immagine'
+        });
+        console.error('Error uploading image:', error);
+      }
+    });
+  }
+
+  removeImage(): void {
+    // Se l'immagine è già stata caricata, eliminala da Firebase Storage
+    if (this.newSofaProduct.photoUrl) {
+      this.uploadService.deleteImage(this.newSofaProduct.photoUrl).subscribe({
+        next: () => {
+          console.log('Image deleted from Firebase Storage');
+        },
+        error: (error) => {
+          console.error('Error deleting image:', error);
+        }
+      });
+    }
+
+    this.selectedFile = null;
+    this.imagePreview = null;
+    this.newSofaProduct.photoUrl = '';
+    this.uploadProgress = 0;
+    this.isUploading = false;
+    this.uploadComplete = false;
+  }
+
 
   // Supplier management
   openAddSupplierDialog(): void {
@@ -482,5 +612,11 @@ export class AggiungiProdottoComponent implements OnInit {
         console.error('Error saving supplier:', error);
       }
     );
+  }
+
+  // Handle file upload from p-fileUpload component
+  async onUpload(event: any) {
+    // This method can be used for alternative upload handling if needed
+    console.log('Upload event:', event);
   }
 }

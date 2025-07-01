@@ -39,21 +39,23 @@ export class SofaProductService {
   }
 
   getSofaProducts(): Observable<SofaProduct[]> {
-    if (!this.isBrowser) {
-      return of([]);
-    }
-    
-    // Use the products path from the database structure
-    return new Observable(observer => {
-      this.dbService.getProductsFromPath('products', products => {
-        const mappedProducts = products.map(p => 
-          new SofaProduct(
-            p.id, 
-            p.data.name, 
-            p.data.description,
-            p.data.variants || [] // Now this should contain variant IDs
-          )
+    return new Observable((observer) => {
+      this.dbService.getSofaProducts((products) => {
+        const mappedProducts = products.map(
+          (p) => {
+            console.log('Raw product data from DB:', p);
+            const sofaProduct = new SofaProduct(
+              p.id,
+              p.data.name,
+              p.data.description || '',
+              p.data.photoUrl || '', // Assicurati che photoUrl sia incluso
+              p.data.variants || []
+            );
+            console.log('Mapped SofaProduct:', sofaProduct);
+            return sofaProduct;
+          }
         );
+        console.log('SofaProductService: Mapped products', mappedProducts);
         observer.next(mappedProducts);
       });
     });
