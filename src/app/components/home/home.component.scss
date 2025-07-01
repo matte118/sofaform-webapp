@@ -314,6 +314,50 @@
     }
   }
 
+  /* Rivestimento dropdown specific styles */
+  .p-dropdown {
+    .selected-rivestimento,
+    .rivestimento-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 0.5rem 0;
+
+      .rivestimento-code {
+        font-weight: 500;
+        color: #333;
+        flex: 1;
+      }
+
+      .rivestimento-price {
+        font-weight: 600;
+        color: #2196f3;
+        margin-left: 1rem;
+      }
+    }
+  }
+
+  /* Ensure dropdown panel can scroll properly */
+  .p-dropdown-panel {
+    z-index: 9999 !important;
+    max-height: 250px !important;
+
+    .p-dropdown-items-wrapper {
+      max-height: 250px !important;
+      overflow-y: auto !important;
+    }
+
+    .p-dropdown-filter-container {
+      padding: 0.5rem;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .p-dropdown-filter {
+      width: 100%;
+    }
+  }
+
   .variant-preview {
     background: #f8f9fa;
     border: 1px solid #e9ecef;
@@ -341,6 +385,48 @@
         padding-top: 0.5rem;
         border-top: 1px solid #dee2e6;
         font-size: 1rem;
+      }
+    }
+  }
+}
+
+/* Override PrimeNG dropdown styles globally for better scrolling */
+::ng-deep {
+  .p-dropdown-panel {
+    .p-dropdown-items {
+      .p-dropdown-item {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+
+        &:hover {
+          background-color: #f8f9fa;
+        }
+
+        &.p-highlight {
+          background-color: #e3f2fd;
+          color: #1976d2;
+        }
+      }
+    }
+  }
+}
+
+/* Responsive dialog adjustments */
+@media (max-width: 768px) {
+  ::ng-deep .p-dialog {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 1rem;
+
+    .p-dialog-content {
+      padding: 1rem;
+    }
+
+    .p-dropdown-panel {
+      max-height: 200px !important;
+
+      .p-dropdown-items-wrapper {
+        max-height: 200px !important;
       }
     }
   }

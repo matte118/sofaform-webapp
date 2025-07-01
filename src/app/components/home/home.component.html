@@ -163,10 +163,11 @@
   [(visible)]="showRivestimentoDialog"
   header="Seleziona Rivestimento"
   [modal]="true"
-  [style]="{ width: '500px' }"
+  [style]="{ width: '800px', maxHeight: '90vh' }"
   [closable]="true"
   [draggable]="false"
   [resizable]="false"
+  [contentStyle]="{ 'overflow-y': 'visible' }"
 >
   <div class="p-fluid">
     <div class="field">
@@ -178,16 +179,24 @@
         optionLabel="code"
         placeholder="Seleziona un rivestimento"
         [showClear]="true"
+        scrollHeight="300px"
+        [filter]="true"
+        filterBy="code"
+        [autoZIndex]="true"
+        [baseZIndex]="10000"
+        appendTo="body"
       >
         <ng-template pTemplate="selectedItem">
-          <div *ngIf="selectedRivestimento">
-            {{ selectedRivestimento.code }} - €{{
-              selectedRivestimento.mtPrice
-            }}/mt
+          <div *ngIf="selectedRivestimento" class="selected-rivestimento">
+            <span class="rivestimento-code">{{ selectedRivestimento.code }}</span>
+            <span class="rivestimento-price">€{{ selectedRivestimento.mtPrice }}/mt</span>
           </div>
         </ng-template>
         <ng-template let-rivestimento pTemplate="item">
-          <div>{{ rivestimento.code }} - €{{ rivestimento.mtPrice }}/mt</div>
+          <div class="rivestimento-item">
+            <span class="rivestimento-code">{{ rivestimento.code }}</span>
+            <span class="rivestimento-price">€{{ rivestimento.mtPrice }}/mt</span>
+          </div>
         </ng-template>
       </p-dropdown>
     </div>
