@@ -5,7 +5,7 @@ import { RealtimeDbService } from './realtime-db.service';
 import { SofaProduct } from '../models/sofa-product.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SofaProductService {
   private isBrowser: boolean;
@@ -19,7 +19,7 @@ export class SofaProductService {
 
   addSofaProduct(product: SofaProduct): Observable<void> {
     if (!this.isBrowser) {
-      return of(void 0); 
+      return of(void 0);
     }
     return from(this.dbService.addSofaProduct(product));
   }
@@ -31,7 +31,10 @@ export class SofaProductService {
     return from(this.dbService.createProduct(product));
   }
 
-  updateProductVariants(productId: string, variantIds: string[]): Observable<void> {
+  updateProductVariants(
+    productId: string,
+    variantIds: string[]
+  ): Observable<void> {
     if (!this.isBrowser) {
       return of(void 0);
     }
@@ -41,20 +44,18 @@ export class SofaProductService {
   getSofaProducts(): Observable<SofaProduct[]> {
     return new Observable((observer) => {
       this.dbService.getSofaProducts((products) => {
-        const mappedProducts = products.map(
-          (p) => {
-            console.log('Raw product data from DB:', p);
-            const sofaProduct = new SofaProduct(
-              p.id,
-              p.data.name,
-              p.data.description || '',
-              p.data.photoUrl || '', // Assicurati che photoUrl sia incluso
-              p.data.variants || []
-            );
-            console.log('Mapped SofaProduct:', sofaProduct);
-            return sofaProduct;
-          }
-        );
+        const mappedProducts = products.map((p) => {
+          console.log('Raw product data from DB:', p);
+          const sofaProduct = new SofaProduct(
+            p.id,
+            p.data.name,
+            p.data.description || '',
+            p.data.variants || [],
+            p.data.photoUrl || ''
+          );
+          console.log('Mapped SofaProduct:', sofaProduct);
+          return sofaProduct;
+        });
         console.log('SofaProductService: Mapped products', mappedProducts);
         observer.next(mappedProducts);
       });

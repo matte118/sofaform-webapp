@@ -1,6 +1,6 @@
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideDatabase, getDatabase } from '@angular/fire/database';
-import { provideStorage, getStorage } from '@angular/fire/storage';  // ← aggiunto
+import { provideStorage, getStorage } from '@angular/fire/storage';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { importProvidersFrom } from '@angular/core';
@@ -17,5 +17,4 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes),
     importProvidersFrom(BrowserAnimationsModule),
   ],
-})
-  .catch(err => console.error(err));
+}).catch((err) => console.error(err));
