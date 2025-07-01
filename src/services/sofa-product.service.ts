@@ -71,6 +71,10 @@ export class SofaProductService {
     return from(this.dbService.updateSofaProduct(id, product));
   }
 
+  updateProduct(id: string, product: SofaProduct): Observable<void> {
+    return this.updateSofaProduct(id, product);
+  }
+
   deleteSofaProduct(id: string): Observable<void> {
     if (!this.isBrowser) {
       return of(void 0);

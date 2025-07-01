@@ -407,11 +407,30 @@ export class AggiungiProdottoComponent implements OnInit {
       (productId) => {
         // Update the product ID
         this.newSofaProduct.id = productId;
-        this.saveProgress = 'Prodotto creato, creazione varianti...';
+        this.saveProgress = 'Prodotto creato, rinominando immagine...';
 
-        // Se l'immagine è già stata caricata, il photoUrl è già impostato
-        // Quindi possiamo procedere direttamente con le varianti
-        this.createVariants(productId);
+        // If we have an uploaded image, rename it with the product ID
+        if (this.newSofaProduct.photoUrl && this.selectedFile) {
+          this.uploadService.renameProductImage(this.newSofaProduct.photoUrl, productId, this.selectedFile).subscribe({
+            next: (newUrl) => {
+              this.newSofaProduct.photoUrl = newUrl;
+              // Update the product with the new image URL
+              this.sofaProductService.updateProduct(productId, this.newSofaProduct).subscribe(() => {
+                this.saveProgress = 'Immagine aggiornata, creazione varianti...';
+                this.createVariants(productId);
+              });
+            },
+            error: (error) => {
+              console.error('Error renaming image:', error);
+              // Continue with variants creation even if image rename fails
+              this.saveProgress = 'Creazione varianti...';
+              this.createVariants(productId);
+            }
+          });
+        } else {
+          this.saveProgress = 'Creazione varianti...';
+          this.createVariants(productId);
+        }
       },
       (error) => {
         this.messageService.add({

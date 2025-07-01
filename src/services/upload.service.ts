@@ -83,4 +83,42 @@ export class PhotoUploadService {
   hasProductImage(product: any): boolean {
     return !!(product.photoUrl && product.photoUrl.trim());
   }
+
+  /**
+   * Rinomina un'immagine esistente con l'ID del prodotto
+   * @param currentUrl URL attuale dell'immagine
+   * @param productId ID del prodotto da usare come nome file
+   * @param originalFile File originale per ottenere l'estensione
+   */
+  renameProductImage(
+    currentUrl: string,
+    productId: string,
+    originalFile: File
+  ): Observable<string> {
+    return new Observable(observer => {
+      // Ottieni l'estensione del file originale
+      const fileExtension = originalFile.name.split('.').pop() || 'jpg';
+      const newFilePath = `products/${productId}/${productId}.${fileExtension}`;
+      const newStorageRef = ref(this.storage, newFilePath);
+
+      // Carica il file con il nuovo nome
+      uploadBytesResumable(newStorageRef, originalFile)
+        .then(() => {
+          // Ottieni il nuovo URL
+          getDownloadURL(newStorageRef)
+            .then(newUrl => {
+              // Elimina il file precedente
+              const oldStorageRef = ref(this.storage, currentUrl);
+              deleteObject(oldStorageRef).catch(err => {
+                console.warn('Could not delete old image:', err);
+              });
+
+              observer.next(newUrl);
+              observer.complete();
+            })
+            .catch(err => observer.error(err));
+        })
+        .catch(err => observer.error(err));
+    });
+  }
 }
