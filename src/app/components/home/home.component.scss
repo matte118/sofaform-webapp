@@ -301,6 +301,51 @@
   }
 }
 
+/* Dialog Styles */
+::ng-deep .p-dialog {
+  .field {
+    margin-bottom: 1.5rem;
+
+    label {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      display: block;
+      color: #333;
+    }
+  }
+
+  .variant-preview {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+
+    .variant-preview-header {
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .price-breakdown {
+      font-size: 0.9rem;
+
+      > div {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+      }
+
+      .total-price {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #dee2e6;
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .home {

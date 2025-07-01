@@ -7,42 +7,23 @@
   </div>
 
   <div class="p-grid p-align-start p-mt-4" *ngIf="products.length > 0">
-    <div
-      class="p-col-12 p-sm-6 p-md-4"
-      *ngFor="let product of products; trackBy: trackById"
-    >
-      <p-card
-        [header]="product.name"
-        [subheader]="'Prezzo: € ' + getTotalPrice(product.id).toFixed(2)"
-        styleClass="product-card"
-      >
+    <div class="p-col-12 p-sm-6 p-md-4" *ngFor="let product of products; trackBy: trackById">
+      <p-card [header]="product.name" 
+        styleClass="product-card">
         <!-- Azioni modifica / elimina -->
         <div class="card-actions">
-          <button
-            pButton
-            class="p-button-rounded p-button-text"
-            icon="pi pi-pencil"
-            (click)="editProduct(product)"
-          ></button>
-          <button
-            pButton
-            class="p-button-rounded p-button-danger p-button-text"
-            icon="pi pi-trash"
-            (click)="deleteProduct($event, product)"
-          ></button>
+          <button pButton type="button" class="p-button-rounded p-button-text" icon="pi pi-pencil"
+            (click)="editProduct(product)"></button>
+          <button pButton type="button" class="p-button-rounded p-button-danger p-button-text" icon="pi pi-trash"
+            (click)="deleteProduct($event, product)"></button>
         </div>
 
         <!-- Header con immagine -->
         <ng-template pTemplate="header">
           <div class="product-image-container">
             <ng-container *ngIf="hasProductImage(product.id); else placeholder">
-              <img
-                pCardImage
-                [src]="getProductImageUrl(product.id)"
-                [alt]="product.name"
-                class="product-image"
-                (error)="onImageError(product.id)"
-              />
+              <img pCardImage [src]="getProductImageUrl(product.id)" [alt]="product.name" class="product-image"
+                (error)="onImageError(product.id)" />
             </ng-container>
             <ng-template #placeholder>
               <div class="product-image-placeholder">
@@ -61,39 +42,25 @@
 
           <h4 class="variants-title">Varianti</h4>
           <ul class="variants-list">
-            <li
-              *ngFor="let variant of getProductVariants(product.id)"
-              class="variant-item"
-            >
+            <li *ngFor="let variant of getProductVariants(product.id)" class="variant-item">
               <div class="variant-header">
                 <div class="variant-info">
                   <span class="variant-name">{{ variant.longName }}</span>
                 </div>
                 <div class="variant-meta">
-                  <span class="variant-price"
-                    >€ {{ variant.price.toFixed(2) }}</span
-                  >
+                  <span class="variant-price">€ {{ variant.price.toFixed(2) }}</span>
                   <small *ngIf="variant.seatsCount" class="variant-seats">
                     {{ variant.seatsCount }} posti
                   </small>
-                  <button
-                    pButton
-                    class="p-button-text p-button-sm variant-toggle"
-                    [icon]="
+                  <button pButton type="button" class="p-button-text p-button-sm variant-toggle" [icon]="
                       isVariantExpanded(variant.id)
                         ? 'pi pi-chevron-up'
                         : 'pi pi-chevron-down'
-                    "
-                    (click)="toggleVariantExpansion(variant.id)"
-                    type="button"
-                  ></button>
+                    " (click)="toggleVariantExpansion(variant.id)"></button>
                 </div>
               </div>
 
-              <div
-                class="variant-details"
-                *ngIf="isVariantExpanded(variant.id)"
-              >
+              <div class="variant-details" *ngIf="isVariantExpanded(variant.id)">
                 <div class="variant-detail-row" *ngIf="variant.seatsCount">
                   <strong>Posti:</strong> {{ variant.seatsCount }}
                 </div>
@@ -102,34 +69,21 @@
                   {{ variant.mattressWidth }}cm
                 </div>
 
-                <div
-                  class="components-section"
-                  *ngIf="variant.components?.length"
-                >
+                <div class="components-section" *ngIf="variant.components?.length">
                   <h5 class="components-title">Componenti:</h5>
                   <div class="components-list">
-                    <div
-                      class="component-item"
-                      *ngFor="let component of variant.components"
-                    >
+                    <div class="component-item" *ngFor="let component of variant.components">
                       <div class="component-header">
                         <span class="component-name">{{ component.name }}</span>
-                        <span class="component-price"
-                          >€ {{ component.price.toFixed(2) }}</span
-                        >
+                        <span class="component-price">€ {{ component.price.toFixed(2) }}</span>
                       </div>
                       <div class="component-details">
-                        <div
-                          class="component-detail"
-                          *ngIf="component.suppliers?.length"
-                        >
+                        <div class="component-detail" *ngIf="component.suppliers?.length">
                           <strong>Fornitori:</strong>
-                          <span
-                            *ngFor="
+                          <span *ngFor="
                               let supplier of component.suppliers;
                               let last = last
-                            "
-                          >
+                            ">
                             {{ supplier.name }}<span *ngIf="!last">, </span>
                           </span>
                         </div>
@@ -148,12 +102,7 @@
 
         <!-- Footer con pulsante listino -->
         <ng-template pTemplate="footer">
-          <button
-            pButton
-            type="button"
-            label="Genera Listino"
-            (click)="generaListino(product)"
-          ></button>
+          <button pButton type="button" label="Genera Listino" (click)="generaListino(product)"></button>
         </ng-template>
       </p-card>
     </div>
@@ -161,26 +110,79 @@
 </div>
 
 <!-- Dialog Selezione Rivestimento -->
-<p-dialog
-  [(visible)]="showRivestimentoDialog"
-  header="Seleziona Rivestimento"
-  [modal]="true"
-  [style]="{ width: '500px' }"
->
-  <!-- ... contenuto dialog (rimane invariato) ... -->
+<p-dialog [(visible)]="showRivestimentoDialog" header="Seleziona Rivestimento" [modal]="true"
+  [style]="{ width: '500px' }" [closable]="true" [draggable]="false" [resizable]="false">
+  <div class="p-fluid">
+    <div class="field">
+      <label for="rivestimento">Rivestimento:</label>
+      <p-dropdown id="rivestimento" [options]="availableRivestimenti" [(ngModel)]="selectedRivestimento"
+        optionLabel="code" placeholder="Seleziona un rivestimento" [showClear]="true">
+        <ng-template pTemplate="selectedItem">
+          <div *ngIf="selectedRivestimento">
+            {{ selectedRivestimento.code }} - €{{ selectedRivestimento.mtPrice }}/mt
+          </div>
+        </ng-template>
+        <ng-template let-rivestimento pTemplate="item">
+          <div>
+            {{ rivestimento.code }} - €{{ rivestimento.mtPrice }}/mt
+          </div>
+        </ng-template>
+      </p-dropdown>
+    </div>
+
+    <div class="field" *ngIf="selectedRivestimento">
+      <label for="meters">Metri di rivestimento:</label>
+      <p-inputNumber id="meters" [(ngModel)]="metersOfRivestimento" [min]="0.1" [step]="0.1" suffix=" mt"
+        placeholder="Inserisci i metri"></p-inputNumber>
+    </div>
+
+    <div class="field" *ngIf="selectedRivestimento && metersOfRivestimento > 0">
+      <strong>Costo totale rivestimento: €{{ calculateRivestimentoCost().toFixed(2) }}</strong>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Annulla" class="p-button-secondary" (click)="cancelRivestimento()"></button>
+    <button pButton type="button" label="Continua" (click)="selectRivestimento()"
+      [disabled]="!selectedRivestimento || metersOfRivestimento <= 0"></button>
+  </ng-template>
 </p-dialog>
 
 <!-- Dialog Configura Ricarico -->
-<p-dialog
-  [(visible)]="showMarkupDialog"
-  header="Configura Ricarico"
-  [modal]="true"
-  [style]="{ width: '450px' }"
->
-  <!-- ... contenuto dialog (rimane invariato) ... -->
+<p-dialog [(visible)]="showMarkupDialog" header="Configura Ricarico" [modal]="true" [style]="{ width: '450px' }"
+  [closable]="true" [draggable]="false" [resizable]="false">
+  <div class="p-fluid">
+    <div class="field">
+      <label for="markup">Percentuale di ricarico:</label>
+      <p-inputNumber id="markup" [(ngModel)]="markupPercentage" [min]="0" [max]="1000" suffix="%"
+        placeholder="Inserisci la percentuale"></p-inputNumber>
+    </div>
+
+    <div class="field" *ngIf="selectedProduct">
+      <h4>Anteprima prezzi ({{ selectedProduct.name }}):</h4>
+      <div *ngFor="let variant of getProductVariants(selectedProduct.id)" class="variant-preview">
+        <div class="variant-preview-header">
+          <strong>{{ variant.longName }}</strong>
+        </div>
+        <div class="price-breakdown">
+          <div>Prezzo base: €{{ variant.price.toFixed(2) }}</div>
+          <div>Rivestimento: €{{ calculateRivestimentoCost().toFixed(2) }}</div>
+          <div>Ricarico ({{ markupPercentage }}%): €{{ ((variant.price + calculateRivestimentoCost()) * markupPercentage
+            / 100).toFixed(2) }}</div>
+          <div class="total-price">
+            <strong>Totale: €{{ (variant.price + calculateRivestimentoCost() * (1 + markupPercentage / 100)).toFixed(2)
+              }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Annulla" class="p-button-secondary" (click)="cancelMarkup()"></button>
+    <button pButton type="button" label="Genera PDF" (click)="generateWithMarkup()"></button>
+  </ng-template>
 </p-dialog>
 
-<p-toast></p-toast>
-<p-confirmDialog></p-confirmDialog>
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>

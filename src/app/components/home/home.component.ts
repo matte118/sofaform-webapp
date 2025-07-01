@@ -159,6 +159,7 @@ export class HomeComponent implements OnInit {
   generaListino(product: SofaProduct) {
     this.selectedProduct = product;
     this.showRivestimentoDialog = true;
+    this.cdr.detectChanges(); // Force change detection
   }
 
   selectRivestimento() {
@@ -180,6 +181,7 @@ export class HomeComponent implements OnInit {
     }
     this.showRivestimentoDialog = false;
     this.showMarkupDialog = true;
+    this.cdr.detectChanges(); // Force change detection
   }
 
   generateWithMarkup() {
@@ -188,16 +190,19 @@ export class HomeComponent implements OnInit {
       this.exportPdf(this.selectedProduct, variants, this.markupPercentage);
     }
     this.showMarkupDialog = false;
+    this.cdr.detectChanges(); // Force change detection
   }
 
   cancelRivestimento() {
     this.showRivestimentoDialog = false;
     this.selectedRivestimento = undefined;
     this.metersOfRivestimento = 1;
+    this.cdr.detectChanges(); // Force change detection
   }
 
   cancelMarkup() {
     this.showMarkupDialog = false;
+    this.cdr.detectChanges(); // Force change detection
   }
 
   calculateRivestimentoCost(): number {
