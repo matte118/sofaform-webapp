@@ -134,7 +134,45 @@ export class RealtimeDbService {
   }
 
   deleteVariant(id: string): Promise<void> {
-    return remove(ref(this.db, `variants/${id}`));
+    // 1. Rimuovi la variante dalla collezione 'variants'
+    return remove(ref(this.db, `variants/${id}`)).then(() => {
+      // 2. Rimuovi l'id della variante da tutti i prodotti che la referenziano
+      return new Promise<void>((resolve, reject) => {
+        this.getSofaProducts((products) => {
+          const updatePromises: Promise<void>[] = [];
+          const deleteProductPromises: Promise<void>[] = [];
+
+          products.forEach((product) => {
+            if (product.data.variants && Array.isArray(product.data.variants)) {
+              const newVariants = product.data.variants.filter(
+                (vId: string) => vId !== id
+              );
+              if (newVariants.length !== product.data.variants.length) {
+                if (newVariants.length === 0) {
+                  // Se non ci sono più varianti, elimina il prodotto
+                  deleteProductPromises.push(
+                    remove(ref(this.db, `products/${product.id}`))
+                  );
+                } else {
+                  // Aggiorna la lista delle varianti
+                  updatePromises.push(
+                    set(
+                      ref(this.db, `products/${product.id}/variants`),
+                      newVariants
+                    )
+                  );
+                }
+              }
+            }
+          });
+
+          // Attendi sia gli update che le delete
+          Promise.all([...updatePromises, ...deleteProductPromises])
+            .then(() => resolve())
+            .catch((err) => reject(err));
+        });
+      });
+    });
   }
 
   // Supplier methods
@@ -255,18 +293,29 @@ export class RealtimeDbService {
 
         variants.forEach((variant) => {
           const variantData = variant.data;
-          
+
           // Check if this variant contains the component to be removed
-          if (variantData.components && variantData.components.some((comp: any) => comp.id === componentId)) {
+          if (
+            variantData.components &&
+            variantData.components.some((comp: any) => comp.id === componentId)
+          ) {
             // Remove the component from the variant's components array
-            variantData.components = variantData.components.filter((comp: any) => comp.id !== componentId);
-            
+            variantData.components = variantData.components.filter(
+              (comp: any) => comp.id !== componentId
+            );
+
             // Recalculate the variant price based on remaining components
-            variantData.price = variantData.components.reduce((sum: number, comp: any) => sum + (comp.price || 0), 0);
-            
+            variantData.price = variantData.components.reduce(
+              (sum: number, comp: any) => sum + (comp.price || 0),
+              0
+            );
+
             // Update the variant in the database
             const sanitizedVariant = this.sanitizeData(variantData);
-            const updatePromise = set(ref(this.db, `variants/${variant.id}`), sanitizedVariant);
+            const updatePromise = set(
+              ref(this.db, `variants/${variant.id}`),
+              sanitizedVariant
+            );
             updatePromises.push(updatePromise);
           }
         });
@@ -307,7 +356,10 @@ export class RealtimeDbService {
   }
 
   // Method to update product with variant IDs
-  updateProductVariants(productId: string, variantIds: string[]): Promise<void> {
+  updateProductVariants(
+    productId: string,
+    variantIds: string[]
+  ): Promise<void> {
     return set(ref(this.db, `products/${productId}/variants`), variantIds);
   }
 
@@ -352,12 +404,14 @@ export class RealtimeDbService {
   deleteComponentsBySupplier(supplierId: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.getComponents((components) => {
-        const componentsToDelete = components.filter(c => {
+        const componentsToDelete = components.filter((c) => {
           // Check if suppliers exists and is an array
           if (!c.data.suppliers || !Array.isArray(c.data.suppliers)) {
             return false;
           }
-          return c.data.suppliers.some((supplier: any) => supplier.id === supplierId);
+          return c.data.suppliers.some(
+            (supplier: any) => supplier.id === supplierId
+          );
         });
 
         if (componentsToDelete.length === 0) {
@@ -369,13 +423,15 @@ export class RealtimeDbService {
 
         componentsToDelete.forEach((component) => {
           // First remove the component from all variants
-          const removeFromVariantsPromise = this.removeComponentFromAllVariants(component.id);
-          
+          const removeFromVariantsPromise = this.removeComponentFromAllVariants(
+            component.id
+          );
+
           // Then delete the component itself
-          const deleteComponentPromise = removeFromVariantsPromise.then(() => 
+          const deleteComponentPromise = removeFromVariantsPromise.then(() =>
             this.deleteComponent(component.id)
           );
-          
+
           deletePromises.push(deleteComponentPromise);
         });
 
@@ -387,4 +443,3 @@ export class RealtimeDbService {
     });
   }
 }
-

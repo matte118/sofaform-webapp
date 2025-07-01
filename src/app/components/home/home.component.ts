@@ -28,6 +28,8 @@ import { Variant } from '../../../models/variant.model';
 import { Rivestimento } from '../../../models/rivestimento.model';
 import { RivestimentoType } from '../../../models/rivestimento-type.model';
 import { RivestimentoService } from '../../../services/rivestimento.service';
+import { ComponentTypeService } from '../../../services/component-type.service';
+import { ComponentType } from '../../../models/component-type.model';
 import { PhotoUploadService } from '../../../services/upload.service';
 
 @Component({
@@ -52,6 +54,7 @@ import { PhotoUploadService } from '../../../services/upload.service';
 export class HomeComponent implements OnInit {
   products: SofaProduct[] = [];
   productVariants: Map<string, Variant[]> = new Map();
+  componentTypeMap = new Map<string, string>();
   showMarkupDialog = false;
   selectedProduct?: SofaProduct;
   markupPercentage = 30;
@@ -75,6 +78,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private router: Router,
     private sofaProductService: SofaProductService,
+    private componentTypeService: ComponentTypeService,
     private variantService: VariantService,
     private rivestimentoService: RivestimentoService,
     private uploadService: PhotoUploadService,
@@ -90,25 +94,28 @@ export class HomeComponent implements OnInit {
     if (this.isBrowser) {
       this.loadProducts();
       this.loadRivestimenti();
+      this.loadComponentTypes();
     }
   }
 
   loadRivestimenti(): void {
-    this.rivestimentoService.getRivestimenti().subscribe(r => {
+    this.rivestimentoService.getRivestimenti().subscribe((r) => {
       this.availableRivestimenti = r;
       this.cdr.detectChanges();
     });
   }
 
   loadProducts(): void {
-    this.sofaProductService.getSofaProducts().subscribe(products => {
+    this.sofaProductService.getSofaProducts().subscribe((products) => {
       this.products = products;
       // Load variants
-      products.forEach(product => {
-        this.variantService.getVariantsBySofaId(product.id).subscribe(variants => {
-          this.productVariants.set(product.id, variants);
-          this.cdr.detectChanges();
-        });
+      products.forEach((product) => {
+        this.variantService
+          .getVariantsBySofaId(product.id)
+          .subscribe((variants) => {
+            this.productVariants.set(product.id, variants);
+            this.cdr.detectChanges();
+          });
       });
       this.cdr.detectChanges();
     });
@@ -129,7 +136,7 @@ export class HomeComponent implements OnInit {
   }
 
   getProductImageUrl(productId: string): string | null {
-    const product = this.products.find(p => p.id === productId);
+    const product = this.products.find((p) => p.id === productId);
     return product?.photoUrl || null;
   }
 
@@ -194,7 +201,9 @@ export class HomeComponent implements OnInit {
   }
 
   calculateRivestimentoCost(): number {
-    return this.selectedRivestimento ? this.selectedRivestimento.mtPrice * this.metersOfRivestimento : 0;
+    return this.selectedRivestimento
+      ? this.selectedRivestimento.mtPrice * this.metersOfRivestimento
+      : 0;
   }
 
   private exportPdf(
@@ -210,9 +219,9 @@ export class HomeComponent implements OnInit {
     const rivestimentoCost = this.calculateRivestimentoCost();
 
     const rows: string[][] = [];
-    variants.forEach(variant => {
+    variants.forEach((variant) => {
       rows.push([`Variante: ${variant.longName}`, '', '', '']);
-      variant.components.forEach(component => {
+      variant.components.forEach((component) => {
         const price = component.price * (1 + markup);
         rows.push([component.name, '1', price.toFixed(2), price.toFixed(2)]);
       });
@@ -255,7 +264,7 @@ export class HomeComponent implements OnInit {
       message: 'Sei sicuro di voler eliminare questo prodotto?',
       accept: () => {
         this.sofaProductService.deleteSofaProduct(product.id).subscribe(() => {
-          this.products = this.products.filter(p => p.id !== product.id);
+          this.products = this.products.filter((p) => p.id !== product.id);
           this.cdr.detectChanges();
         });
       },
@@ -272,5 +281,18 @@ export class HomeComponent implements OnInit {
 
   isVariantExpanded(variantId: string): boolean {
     return this.expandedVariants.has(variantId);
+  }
+
+  loadComponentTypes(): void {
+    this.componentTypeService
+      .getComponentTypes()
+      .subscribe((types: ComponentType[]) => {
+        this.componentTypeMap = new Map(types.map((t) => [t.id, t.name]));
+        this.cdr.detectChanges();
+      });
+  }
+
+  getComponentTypeName(typeId?: string): string {
+    return typeId ? this.componentTypeMap.get(typeId) ?? '' : '';
   }
 }

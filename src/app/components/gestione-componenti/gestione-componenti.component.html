@@ -62,8 +62,9 @@
             id="componentType"
             [options]="availableComponentTypes"
             [(ngModel)]="selectedComponentType"
-            name="componentType"
             optionLabel="name"
+            optionValue="id"
+            name="componentType"
             placeholder="Seleziona tipo (opzionale)"
             [showClear]="true"
             [filter]="true"
@@ -150,7 +151,8 @@
           <td>{{ component.price | currency : "EUR" }}</td>
           <td>
             <span *ngFor="let supplier of component.suppliers; let last = last">
-              {{ supplier.name ? supplier.name : 'ND'  }}<span *ngIf="!last">, </span>
+              {{ supplier.name ? supplier.name : "ND"
+              }}<span *ngIf="!last">, </span>
             </span>
             <span *ngIf="!component.suppliers.length" class="no-suppliers">
               Nessun fornitore
@@ -187,13 +189,14 @@
   </div>
 
   <!-- Dialog per conferma eliminazione -->
-  <p-confirmDialog 
+  <p-confirmDialog
     header="Conferma"
     [style]="{ width: '450px' }"
-    (modal)="true"
+    (modal)="(true)"
     [closable]="false"
     [draggable]="false"
-    (resizable)="false">
+    (resizable)="(false)"
+  >
   </p-confirmDialog>
 
   <!-- Dialog per creazione nuovo tipo componente -->

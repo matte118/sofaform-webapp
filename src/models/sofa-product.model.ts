@@ -4,8 +4,8 @@ export class SofaProduct {
   constructor(
     public id: string,
     public name: string,
-    public description: string,
-    public photoUrl?: string,
-    public variants?: string[]
+    public description?: string,
+    public variants: string[] = [],
+    public photoUrl?: string
   ) {}
 }

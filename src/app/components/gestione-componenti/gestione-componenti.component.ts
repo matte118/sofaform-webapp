@@ -23,7 +23,6 @@ import { ComponentTypeService } from '../../../services/component-type.service';
 import { VariantService } from '../../../services/variant.service';
 import { SofaProductService } from '../../../services/sofa-product.service';
 import { DialogModule } from 'primeng/dialog';
-import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-gestione-componenti',
@@ -58,9 +57,9 @@ export class GestioneComponentiComponent implements OnInit {
   components: ComponentModel[] = [];
   newComponent: ComponentModel = new ComponentModel('', '', 0, []);
   availableSuppliers: Supplier[] = [];
-  selectedSupplier: Supplier | null = null; // Cambiato da selectedSuppliers array a selectedSupplier singolo
+  selectedSupplier: Supplier | null = null;
   availableComponentTypes: ComponentType[] = [];
-  selectedComponentType: ComponentType | null = null;
+  selectedComponentType: string | null = null;
   editingIndex: number = -1;
   loading: boolean = false;
   saving: boolean = false;
@@ -283,7 +282,9 @@ export class GestioneComponentiComponent implements OnInit {
             </div>
             
             <ul class="product-list">
-              ${productNames.map(name => `<li class="product-item">${name}</li>`).join('')}
+              ${productNames
+                .map((name) => `<li class="product-item">${name}</li>`)
+                .join('')}
             </ul>
             
             <div class="removal-warning">
@@ -311,7 +312,9 @@ export class GestioneComponentiComponent implements OnInit {
               this.messageService.add({
                 severity: 'success',
                 summary: 'Successo',
-                detail: `Componente eliminato con successo e rimosso da ${productNames.length} prodotto${productNames.length > 1 ? 'i' : ''}`,
+                detail: `Componente eliminato con successo e rimosso da ${
+                  productNames.length
+                } prodotto${productNames.length > 1 ? 'i' : ''}`,
               });
               this.loadComponents();
               if (
@@ -492,4 +495,3 @@ export class GestioneComponentiComponent implements OnInit {
     this.showComponentTypeDialog = true;
   }
 }
-

@@ -175,17 +175,17 @@ export class AggiungiProdottoComponent implements OnInit {
           });
           return false;
         }
-        
+
         // Se un'immagine è in caricamento, impedisci l'avanzamento
         if (this.isUploading) {
           this.messageService.add({
             severity: 'warn',
             summary: 'Attendere',
-            detail: 'Attendere il completamento del caricamento dell\'immagine',
+            detail: "Attendere il completamento del caricamento dell'immagine",
           });
           return false;
         }
-        
+
         return true;
 
       case 1: // Variants
@@ -332,7 +332,7 @@ export class AggiungiProdottoComponent implements OnInit {
       this.newComponent.name,
       this.newComponent.price,
       this.selectedSuppliers,
-      this.selectedComponentType
+      this.selectedComponentType?.id
     );
 
     if (this.editingComponentIndex >= 0) {
@@ -435,34 +435,36 @@ export class AggiungiProdottoComponent implements OnInit {
       (variantIds) => {
         this.saveProgress = 'Collegamento varianti al prodotto...';
         // Update the product with variant IDs
-        this.sofaProductService.updateProductVariants(productId, variantIds).subscribe(
-          () => {
-            this.saveProgress = 'Completamento...';
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Successo',
-              detail: 'Prodotto salvato con successo',
-            });
+        this.sofaProductService
+          .updateProductVariants(productId, variantIds)
+          .subscribe(
+            () => {
+              this.saveProgress = 'Completamento...';
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Successo',
+                detail: 'Prodotto salvato con successo',
+              });
 
-            // Small delay to show completion message
-            setTimeout(() => {
+              // Small delay to show completion message
+              setTimeout(() => {
+                this.isSavingProduct = false;
+                this.saveProgress = '';
+                // Navigate to home instead of products list
+                this.router.navigate(['/']);
+              }, 1000);
+            },
+            (error) => {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Errore',
+                detail: "Errore durante l'associazione delle varianti",
+              });
+              console.error('Error updating product variants:', error);
               this.isSavingProduct = false;
               this.saveProgress = '';
-              // Navigate to home instead of products list
-              this.router.navigate(['/']);
-            }, 1000);
-          },
-          (error) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Errore',
-              detail: 'Errore durante l\'associazione delle varianti',
-            });
-            console.error('Error updating product variants:', error);
-            this.isSavingProduct = false;
-            this.saveProgress = '';
-          }
-        );
+            }
+          );
       },
       (error) => {
         this.messageService.add({
@@ -498,7 +500,7 @@ export class AggiungiProdottoComponent implements OnInit {
   private uploadImageImmediately(file: File): void {
     // Genera un ID temporaneo per il prodotto se non esiste
     const tempProductId = this.newSofaProduct.id || `temp_${Date.now()}`;
-    
+
     this.isUploading = true;
     this.uploadProgress = 0;
     this.uploadComplete = false;
@@ -506,17 +508,17 @@ export class AggiungiProdottoComponent implements OnInit {
     this.uploadService.uploadProductImage(file, tempProductId).subscribe({
       next: (result) => {
         this.uploadProgress = result.progress;
-        
+
         // Se abbiamo ricevuto l'URL di download, l'upload è completato
         if (result.downloadURL) {
           this.newSofaProduct.photoUrl = result.downloadURL;
           this.uploadComplete = true;
           this.isUploading = false;
-          
+
           this.messageService.add({
             severity: 'success',
             summary: 'Successo',
-            detail: 'Immagine caricata con successo'
+            detail: 'Immagine caricata con successo',
           });
         }
       },
@@ -527,10 +529,10 @@ export class AggiungiProdottoComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
-          detail: 'Errore durante il caricamento dell\'immagine'
+          detail: "Errore durante il caricamento dell'immagine",
         });
         console.error('Error uploading image:', error);
-      }
+      },
     });
   }
 
@@ -543,7 +545,7 @@ export class AggiungiProdottoComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error deleting image:', error);
-        }
+        },
       });
     }
 
@@ -554,7 +556,6 @@ export class AggiungiProdottoComponent implements OnInit {
     this.isUploading = false;
     this.uploadComplete = false;
   }
-
 
   // Supplier management
   openAddSupplierDialog(): void {
