@@ -3,13 +3,19 @@ import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 import { PanelMenuModule } from 'primeng/panelmenu';
-import { routes } from './app.routes';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideDatabase, getDatabase } from '@angular/fire/database';
+import { provideStorage, getStorage } from '@angular/fire/storage';
+import { routes } from './app.routes';
+import { environment } from '../environments/environments';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // abilita il router con le tue rotte
+    // Firebase providers
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideDatabase(() => getDatabase()),
+    provideStorage(() => getStorage()),
+    // Basic router configuration for fallback
     importProvidersFrom(
       RouterModule.forRoot(routes, {
         scrollPositionRestoration: 'enabled',
@@ -20,18 +26,5 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(BrowserAnimationsModule),
     // importa il modulo PrimeNG che ti serve
     importProvidersFrom(PanelMenuModule),
-    provideFirebaseApp(() =>
-      initializeApp({
-        // ...your Firebase config...
-        apiKey: 'your-api-key',
-        authDomain: 'your-project-id.firebaseapp.com',
-        databaseURL: 'https://your-project-id-default-rtdb.firebaseio.com',
-        projectId: 'your-project-id',
-        storageBucket: 'your-project-id.appspot.com',
-        messagingSenderId: 'your-messaging-sender-id',
-        appId: 'your-app-id'
-      })
-    ),
-    provideDatabase(() => getDatabase())
   ]
 };

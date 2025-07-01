@@ -1,34 +1,16 @@
-// src/app/services/upload.service.ts
-
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { FirebaseApp } from '@angular/fire/app';
+import { Injectable } from '@angular/core';
 import {
-  getStorage,
+  Storage,
   ref,
   uploadBytesResumable,
   getDownloadURL,
-  deleteObject,
-  FirebaseStorage,
-} from 'firebase/storage';
-import { isPlatformBrowser } from '@angular/common';
+  deleteObject
+} from '@angular/fire/storage';
 import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class PhotoUploadService {
-  private storage: FirebaseStorage | null = null;
-  private isBrowser: boolean;
-
-  constructor(
-    private app: FirebaseApp,
-    @Inject(PLATFORM_ID) platformId: Object
-  ) {
-    this.isBrowser = isPlatformBrowser(platformId);
-
-    // Inizializza Firebase Storage SOLO se siamo in ambiente browser
-    if (this.isBrowser) {
-      this.storage = getStorage(this.app);
-    }
-  }
+  constructor(private storage: Storage) {}
 
   /**
    * Carica il file su Firebase Storage, emettendo sia il progresso (0–100)
@@ -41,30 +23,27 @@ export class PhotoUploadService {
     file: File,
     productId: string
   ): Observable<{ progress: number; downloadURL?: string }> {
-    if (!this.isBrowser || !this.storage) {
-      throw new Error('Firebase Storage non disponibile (SSR o non-browser)');
-    }
-
     const timestamp = Date.now();
     const filePath = `products/${productId}/${timestamp}_${file.name}`;
     const storageRef = ref(this.storage, filePath);
     const task = uploadBytesResumable(storageRef, file);
 
-    return new Observable((observer) => {
+    return new Observable(observer => {
       task.on(
         'state_changed',
-        (snapshot) => {
+        snapshot => {
           const prog = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           observer.next({ progress: Math.round(prog) });
         },
-        (error) => observer.error(error),
+        error => {
+          observer.error(error);
+        },
         () => {
-          getDownloadURL(storageRef)
-            .then((url) => {
-              observer.next({ progress: 100, downloadURL: url });
-              observer.complete();
-            })
-            .catch((err) => observer.error(err));
+          // Al termine del caricamento, recupera l’URL di download
+          getDownloadURL(storageRef).then(url => {
+            observer.next({ progress: 100, downloadURL: url });
+            observer.complete();
+          });
         }
       );
     });
@@ -78,18 +57,14 @@ export class PhotoUploadService {
    * @param imageUrl URL completo o URI gs://
    */
   deleteImage(imageUrl: string): Observable<void> {
-    if (!this.isBrowser || !this.storage) {
-      throw new Error('Firebase Storage non disponibile (SSR o non-browser)');
-    }
-
     const storageRef = ref(this.storage, imageUrl);
-    return new Observable((observer) => {
+    return new Observable(observer => {
       deleteObject(storageRef)
         .then(() => {
           observer.next();
           observer.complete();
         })
-        .catch((err) => observer.error(err));
+        .catch(err => observer.error(err));
     });
   }
 
