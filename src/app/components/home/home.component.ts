@@ -265,12 +265,34 @@ export class HomeComponent implements OnInit {
 
   deleteProduct(event: Event, product: SofaProduct) {
     event.stopPropagation();
+    const hasImage = this.hasProductImage(product.id);
+    const message = hasImage 
+      ? 'Sei sicuro di voler eliminare questo prodotto? Anche l\'immagine associata verrà eliminata.'
+      : 'Sei sicuro di voler eliminare questo prodotto?';
+      
     this.confirmationService.confirm({
-      message: 'Sei sicuro di voler eliminare questo prodotto?',
+      message: message,
       accept: () => {
-        this.sofaProductService.deleteSofaProduct(product.id).subscribe(() => {
-          this.products = this.products.filter((p) => p.id !== product.id);
-          this.cdr.detectChanges();
+        this.sofaProductService.deleteSofaProduct(product.id).subscribe({
+          next: () => {
+            this.products = this.products.filter((p) => p.id !== product.id);
+            this.productVariants.delete(product.id);
+            this.imageLoadErrors.delete(product.id);
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Successo',
+              detail: 'Prodotto eliminato con successo'
+            });
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            console.error('Error deleting product:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Errore',
+              detail: 'Errore durante l\'eliminazione del prodotto'
+            });
+          }
         });
       },
     });

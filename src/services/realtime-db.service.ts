@@ -96,6 +96,25 @@ export class RealtimeDbService {
     return remove(ref(this.db, `products/${id}`));
   }
 
+  // Add method to get a single product by ID
+  getSofaProduct(id: string): Promise<{ id: string; data: SofaProduct } | null> {
+    return new Promise((resolve) => {
+      const refPath = ref(this.db, `products/${id}`);
+      onValue(
+        refPath,
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            resolve({ id, data: data as SofaProduct });
+          } else {
+            resolve(null);
+          }
+        },
+        { onlyOnce: true }
+      );
+    });
+  }
+
   // Variant methods
   addVariant(variant: Variant): Promise<void> {
     const refPath = ref(this.db, 'variants');

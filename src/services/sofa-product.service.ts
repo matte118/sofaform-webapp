@@ -1,7 +1,8 @@
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
-import { Observable, from, of } from 'rxjs';
+import { Observable, from, of, switchMap } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { RealtimeDbService } from './realtime-db.service';
+import { PhotoUploadService } from './upload.service';
 import { SofaProduct } from '../models/sofa-product.model';
 
 @Injectable({
@@ -12,6 +13,7 @@ export class SofaProductService {
 
   constructor(
     private dbService: RealtimeDbService,
+    private uploadService: PhotoUploadService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -73,6 +75,50 @@ export class SofaProductService {
     if (!this.isBrowser) {
       return of(void 0);
     }
-    return from(this.dbService.deleteSofaProduct(id));
+
+    return new Observable((observer) => {
+      // First get the product to check if it has an image
+      this.dbService.getSofaProducts((products) => {
+        const product = products.find((p) => p.id === id);
+
+        if (product?.data.photoUrl) {
+          // Delete the image first, then delete the product
+          this.uploadService
+            .deleteImage(product.data.photoUrl)
+            .subscribe({
+              next: () => {
+                // Image deleted successfully, now delete the product
+                from(this.dbService.deleteSofaProduct(id)).subscribe({
+                  next: () => {
+                    observer.next();
+                    observer.complete();
+                  },
+                  error: (error) => observer.error(error),
+                });
+              },
+              error: (imageError) => {
+                // Even if image deletion fails, still delete the product
+                console.warn('Failed to delete product image:', imageError);
+                from(this.dbService.deleteSofaProduct(id)).subscribe({
+                  next: () => {
+                    observer.next();
+                    observer.complete();
+                  },
+                  error: (error) => observer.error(error),
+                });
+              },
+            });
+        } else {
+          // No image to delete, just delete the product
+          from(this.dbService.deleteSofaProduct(id)).subscribe({
+            next: () => {
+              observer.next();
+              observer.complete();
+            },
+            error: (error) => observer.error(error),
+          });
+        }
+      });
+    });
   }
 }
