@@ -272,15 +272,21 @@ export class HomeComponent implements OnInit {
   }
 
   toggleVariantExpansion(variantId: string): void {
+    console.log('Toggling variant expansion for:', variantId);
     if (this.expandedVariants.has(variantId)) {
       this.expandedVariants.delete(variantId);
+      console.log('Collapsed variant:', variantId);
     } else {
       this.expandedVariants.add(variantId);
+      console.log('Expanded variant:', variantId);
     }
+    console.log('Current expanded variants:', Array.from(this.expandedVariants));
+    this.cdr.detectChanges();
   }
 
   isVariantExpanded(variantId: string): boolean {
-    return this.expandedVariants.has(variantId);
+    const isExpanded = this.expandedVariants.has(variantId);
+    return isExpanded;
   }
 
   loadComponentTypes(): void {

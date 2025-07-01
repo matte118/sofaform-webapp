@@ -65,21 +65,9 @@
               *ngFor="let variant of getProductVariants(product.id)"
               class="variant-item"
             >
-              <div
-                class="variant-header"
-                (click)="toggleVariantExpansion(variant.id)"
-              >
+              <div class="variant-header">
                 <div class="variant-info">
                   <span class="variant-name">{{ variant.longName }}</span>
-                  <button
-                    pButton
-                    class="p-button-text p-button-sm variant-toggle"
-                    [icon]="
-                      isVariantExpanded(variant.id)
-                        ? 'pi pi-chevron-up'
-                        : 'pi pi-chevron-down'
-                    "
-                  ></button>
                 </div>
                 <div class="variant-meta">
                   <span class="variant-price"
@@ -88,6 +76,17 @@
                   <small *ngIf="variant.seatsCount" class="variant-seats">
                     {{ variant.seatsCount }} posti
                   </small>
+                  <button
+                    pButton
+                    class="p-button-text p-button-sm variant-toggle"
+                    [icon]="
+                      isVariantExpanded(variant.id)
+                        ? 'pi pi-chevron-up'
+                        : 'pi pi-chevron-down'
+                    "
+                    (click)="toggleVariantExpansion(variant.id)"
+                    type="button"
+                  ></button>
                 </div>
               </div>
 
@@ -181,5 +180,7 @@
   <!-- ... contenuto dialog (rimane invariato) ... -->
 </p-dialog>
 
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>

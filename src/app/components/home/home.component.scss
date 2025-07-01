@@ -98,7 +98,6 @@
             justify-content: space-between;
             align-items: center;
             padding: 0.75rem;
-            cursor: pointer;
             background: #fafafa;
 
             &:hover {
@@ -109,15 +108,33 @@
               display: flex;
               align-items: center;
               gap: 0.5rem;
+              flex: 1;
             }
 
             .variant-meta {
-              text-align: right;
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
 
               .variant-price {
                 font-weight: 600;
                 color: #2196f3;
-                margin-right: 0.5rem;
+              }
+
+              .variant-seats {
+                color: #666;
+                font-size: 0.85rem;
+              }
+
+              .variant-toggle {
+                width: 2rem !important;
+                height: 2rem !important;
+                min-width: 2rem !important;
+                padding: 0 !important;
+
+                &:hover {
+                  background-color: rgba(33, 150, 243, 0.1) !important;
+                }
               }
             }
           }
@@ -126,6 +143,80 @@
             padding: 1rem;
             background: #ffffff;
             border-top: 1px solid #f1f5f9;
+            animation: slideDown 0.3s ease-out;
+
+            .variant-detail-row {
+              margin-bottom: 0.5rem;
+              font-size: 0.9rem;
+              color: #4a5568;
+
+              strong {
+                color: #2d3748;
+              }
+            }
+
+            .components-section {
+              margin-top: 1rem;
+
+              .components-title {
+                font-size: 0.95rem;
+                font-weight: 600;
+                color: #4a5568;
+                margin-bottom: 0.75rem;
+                border-bottom: 1px solid #e2e8f0;
+                padding-bottom: 0.25rem;
+              }
+
+              .components-list {
+                .component-item {
+                  background: #f8f9fa;
+                  border-radius: 6px;
+                  padding: 0.75rem;
+                  margin-bottom: 0.5rem;
+                  border: 1px solid #e9ecef;
+
+                  .component-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 0.5rem;
+
+                    .component-name {
+                      font-weight: 500;
+                      color: #2d3748;
+                    }
+
+                    .component-price {
+                      font-weight: 600;
+                      color: #38a169;
+                    }
+                  }
+
+                  .component-details {
+                    font-size: 0.85rem;
+                    color: #666;
+
+                    .component-detail {
+                      margin-bottom: 0.25rem;
+
+                      strong {
+                        color: #4a5568;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          .variant-detail-row {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+
+            strong {
+              color: #2d3748;
+            }
           }
         }
       }
@@ -229,5 +320,18 @@
     .product-image-container {
       height: 140px; // Ottimizzata per schermi molto piccoli
     }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 500px;
   }
 }
