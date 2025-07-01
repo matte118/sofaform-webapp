@@ -220,15 +220,19 @@ export class HomeComponent implements OnInit {
     doc.setFontSize(18);
     doc.text(`Listino: ${product.name}`, 40, 20);
 
-    const markup = markupPerc / 100;
     const rivestimentoCost = this.calculateRivestimentoCost();
 
     const rows: string[][] = [];
     variants.forEach((variant) => {
       rows.push([`Variante: ${variant.longName}`, '', '', '']);
       variant.components.forEach((component) => {
-        const price = component.price * (1 + markup);
-        rows.push([component.name, '1', price.toFixed(2), price.toFixed(2)]);
+        // Nessun ricarico sulle componenti
+        rows.push([
+          component.name,
+          '1',
+          component.price.toFixed(2),
+          component.price.toFixed(2),
+        ]);
       });
       if (this.selectedRivestimento) {
         rows.push([
@@ -238,8 +242,17 @@ export class HomeComponent implements OnInit {
           rivestimentoCost.toFixed(2),
         ]);
       }
-      const total = variant.price + rivestimentoCost * (1 + markup);
-      rows.push(['Totale variante', '', '', total.toFixed(2)]);
+      // Calcolo prezzo finale con ricarico solo sul totale
+      const baseTotal = variant.price + rivestimentoCost;
+      const markupFactor = (100 - markupPerc) / 100;
+      const finalTotal =
+        markupFactor > 0 ? baseTotal / markupFactor : baseTotal;
+      rows.push([
+        'Totale variante (con ricarico)',
+        '',
+        '',
+        finalTotal.toFixed(2),
+      ]);
       rows.push(['', '', '', '']);
     });
 
@@ -252,10 +265,8 @@ export class HomeComponent implements OnInit {
     });
 
     const finalY = (doc as any).lastAutoTable?.finalY ?? 50;
-    const grandTotal = variants.reduce((sum, v) => sum + v.price, 0);
 
     doc.setFontSize(14);
-    doc.text(`Totale Prodotto: € ${grandTotal.toFixed(2)}`, 40, finalY + 20);
     doc.save(`Listino_${product.name.replace(/\s+/g, '_')}.pdf`);
   }
 
@@ -307,7 +318,10 @@ export class HomeComponent implements OnInit {
       this.expandedVariants.add(variantId);
       console.log('Expanded variant:', variantId);
     }
-    console.log('Current expanded variants:', Array.from(this.expandedVariants));
+    console.log(
+      'Current expanded variants:',
+      Array.from(this.expandedVariants)
+    );
     this.cdr.detectChanges();
   }
 
