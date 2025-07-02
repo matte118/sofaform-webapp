@@ -43,6 +43,10 @@ export class GestioneTessutiComponent implements OnInit {
   editingIndex: number = -1;
   loading: boolean = false;
   saving: boolean = false;
+  
+  // Add form state tracking
+  formSubmitted: boolean = false;
+  formValid: boolean = true;
 
   constructor(
     private rivestimentoService: RivestimentoService,
@@ -76,9 +80,12 @@ export class GestioneTessutiComponent implements OnInit {
   }
 
   addTessuto() {
+    this.formSubmitted = true;
     if (!this.validateForm()) {
+      this.formValid = false;
       return;
     }
+    this.formValid = true;
     this.saving = true;
     const tessuto = new Rivestimento(
       this.isEditing ? this.tessuti[this.editingIndex].id : '',
@@ -160,6 +167,14 @@ export class GestioneTessutiComponent implements OnInit {
   resetForm() {
     this.newTessuto = new Rivestimento('', null as any, 0, '');
     this.editingIndex = -1;
+    // Reset form state
+    this.formSubmitted = false;
+    this.formValid = true;
+  }
+
+  // Add method to check if field should show error
+  shouldShowFieldError(fieldValue: any): boolean {
+    return this.formSubmitted && !this.formValid && !fieldValue;
   }
 
   get isEditing(): boolean {

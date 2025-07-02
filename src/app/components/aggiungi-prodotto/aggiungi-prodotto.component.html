@@ -38,8 +38,9 @@
               name="nome"
               required
               placeholder="Inserisci il nome del prodotto"
+              [class.ng-invalid]="shouldShowProductFieldError(newSofaProduct.name)"
             />
-            <small *ngIf="!newSofaProduct.name?.trim()" class="p-error">
+            <small *ngIf="shouldShowProductFieldError(newSofaProduct.name)" class="p-error">
               Campo obbligatorio
             </small>
           </div>
@@ -230,9 +231,13 @@
                     [(ngModel)]="newVariant.longName"
                     name="nomeVariante"
                     required
+                    [class.ng-invalid]="shouldShowVariantFieldError(newVariant.longName)"
                   />
                   <label>Nome Variante</label>
                 </p-floatLabel>
+                <small *ngIf="shouldShowVariantFieldError(newVariant.longName)" class="p-error">
+                  Il nome della variante è obbligatorio
+                </small>
               </div>
 
               <div class="p-field p-col-12 p-md-2">
@@ -374,9 +379,13 @@
                         [(ngModel)]="newComponent.name"
                         name="compName"
                         required
+                        [class.ng-invalid]="shouldShowComponentFieldError(newComponent.name)"
                       />
                       <label>Nome Componente</label>
                     </p-floatLabel>
+                    <small *ngIf="shouldShowComponentFieldError(newComponent.name)" class="p-error">
+                      Il nome del componente è obbligatorio
+                    </small>
                   </div>
 
                   <div class="p-field p-col-12 p-md-3">
@@ -683,4 +692,4 @@
     </ng-template>
   </p-dialog>
 </div>
-      
+

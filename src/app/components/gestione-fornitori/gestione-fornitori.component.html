@@ -8,7 +8,7 @@
 
   <div class="supplier-form-card">
     <h2>{{ formTitle }}</h2>
-    <form class="supplier-form">
+    <form class="supplier-form" #supplierForm="ngForm">
       <div class="form-row">
         <div class="form-group">
           <label for="supplierName"
@@ -21,7 +21,11 @@
             [(ngModel)]="newSupplier.name"
             name="name"
             placeholder="Nome del fornitore"
+            [class.ng-invalid]="shouldShowFieldError(newSupplier.name)"
           />
+          <small *ngIf="shouldShowFieldError(newSupplier.name)" class="p-error">
+            Il nome del fornitore è obbligatorio
+          </small>
         </div>
 
         <div class="form-group">

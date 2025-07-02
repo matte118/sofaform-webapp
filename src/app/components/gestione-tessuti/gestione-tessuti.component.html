@@ -8,18 +8,26 @@
 
   <div class="tessuto-form-card">
     <h2>{{ formTitle }}</h2>
-    <form class="tessuto-form">
+    <form class="tessuto-form" #tessutoForm="ngForm">
       <div class="form-row">
         <div class="form-group">
           <label for="tessutoType">Tipo di Tessuto</label>
           <input pInputText id="tessutoType" type="text" [(ngModel)]="newTessuto.type" name="type"
-            placeholder="Tipo di tessuto (es. Cotone, Velluto)" />
+            placeholder="Tipo di tessuto (es. Cotone, Velluto)"
+            [class.ng-invalid]="shouldShowFieldError(newTessuto.type)" />
+          <small *ngIf="shouldShowFieldError(newTessuto.type)" class="p-error">
+            Il tipo di tessuto è obbligatorio
+          </small>
         </div>
 
         <div class="form-group">
           <label for="tessutoCode">Codice</label>
           <input pInputText id="tessutoCode" type="text" [(ngModel)]="newTessuto.code" name="code"
-            placeholder="Codice identificativo" />
+            placeholder="Codice identificativo"
+            [class.ng-invalid]="shouldShowFieldError(newTessuto.code?.trim())" />
+          <small *ngIf="shouldShowFieldError(newTessuto.code?.trim())" class="p-error">
+            Il codice del tessuto è obbligatorio
+          </small>
         </div>
       </div>
 
@@ -27,8 +35,12 @@
         <div class="form-group">
           <label for="tessutoPrice">Prezzo al Metro (€)</label>
           <p-inputNumber id="tessutoPrice" [(ngModel)]="newTessuto.mtPrice" name="mtPrice"
-            [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT">
+            [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT"
+            [class.ng-invalid]="shouldShowFieldError(newTessuto.mtPrice > 0 ? newTessuto.mtPrice : null)">
           </p-inputNumber>
+          <small *ngIf="formSubmitted && !formValid && newTessuto.mtPrice <= 0" class="p-error">
+            Il prezzo al metro deve essere maggiore di zero
+          </small>
         </div>
       </div>
 

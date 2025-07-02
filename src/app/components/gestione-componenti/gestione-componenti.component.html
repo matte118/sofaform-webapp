@@ -10,7 +10,7 @@
   <!-- Scheda form componente -->
   <div class="component-form-card">
     <h2>{{ formTitle }}</h2>
-    <form class="component-form">
+    <form class="component-form" #componentForm="ngForm">
       <!-- Prima riga: nome e prezzo -->
       <div class="form-row">
         <div class="form-group">
@@ -22,7 +22,11 @@
             [(ngModel)]="newComponent.name"
             name="name"
             placeholder="Nome del componente"
+            [class.ng-invalid]="shouldShowFieldError(newComponent.name)"
           />
+          <small *ngIf="shouldShowFieldError(newComponent.name)" class="p-error">
+            Il nome del componente è obbligatorio
+          </small>
         </div>
 
         <div class="form-group">
@@ -36,7 +40,11 @@
             mode="currency"
             currency="EUR"
             locale="it-IT"
+            [class.ng-invalid]="shouldShowPriceError()"
           ></p-inputNumber>
+          <small *ngIf="shouldShowPriceError()" class="p-error">
+            Il prezzo non può essere negativo
+          </small>
         </div>
       </div>
 

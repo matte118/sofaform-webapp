@@ -42,6 +42,10 @@ export class GestioneFornitoriComponent implements OnInit {
   loading: boolean = false;
   saving: boolean = false;
 
+  // Add form state tracking
+  formSubmitted: boolean = false;
+  formValid: boolean = true;
+
   constructor(
     private supplierService: SupplierService,
     private componentService: ComponentService,
@@ -75,9 +79,12 @@ export class GestioneFornitoriComponent implements OnInit {
   }
 
   addSupplier() {
+    this.formSubmitted = true;
     if (!this.validateForm()) {
+      this.formValid = false;
       return;
     }
+    this.formValid = true;
     this.saving = true;
     const supplier = new Supplier(
       this.isEditing ? this.suppliers[this.editingIndex].id : '',
@@ -244,6 +251,14 @@ export class GestioneFornitoriComponent implements OnInit {
   resetForm() {
     this.newSupplier = new Supplier('', '', '');
     this.editingIndex = -1;
+    // Reset form state
+    this.formSubmitted = false;
+    this.formValid = true;
+  }
+
+  // Add method to check if field should show error
+  shouldShowFieldError(fieldValue: any): boolean {
+    return this.formSubmitted && !this.formValid && !fieldValue?.trim();
   }
 
   get isEditing(): boolean {

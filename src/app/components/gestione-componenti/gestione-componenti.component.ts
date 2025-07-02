@@ -64,6 +64,10 @@ export class GestioneComponentiComponent implements OnInit {
   loading: boolean = false;
   saving: boolean = false;
 
+  // Add form state tracking
+  formSubmitted: boolean = false;
+  formValid: boolean = true;
+
   // Add missing property for dialog visibility
   showComponentTypeDialog = false;
 
@@ -146,9 +150,12 @@ export class GestioneComponentiComponent implements OnInit {
   }
 
   addComponent() {
+    this.formSubmitted = true;
     if (!this.validateForm()) {
+      this.formValid = false;
       return;
     }
+    this.formValid = true;
     this.saving = true;
 
     // Creare un array di fornitori dal singolo fornitore selezionato (se presente)
@@ -345,9 +352,21 @@ export class GestioneComponentiComponent implements OnInit {
 
   resetForm() {
     this.newComponent = new ComponentModel('', '', 0, []);
-    this.selectedSupplier = null; // Cambiato da selectedSuppliers a selectedSupplier
+    this.selectedSupplier = null;
     this.selectedComponentType = null;
     this.editingIndex = -1;
+    // Reset form state
+    this.formSubmitted = false;
+    this.formValid = true;
+  }
+
+  // Add method to check if field should show error
+  shouldShowFieldError(fieldValue: any): boolean {
+    return this.formSubmitted && !this.formValid && !fieldValue?.trim();
+  }
+
+  shouldShowPriceError(): boolean {
+    return this.formSubmitted && !this.formValid && this.newComponent.price < 0;
   }
 
   get isEditing(): boolean {
