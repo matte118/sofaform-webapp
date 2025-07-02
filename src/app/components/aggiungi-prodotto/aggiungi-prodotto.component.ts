@@ -104,7 +104,6 @@ export class AggiungiProdottoComponent implements OnInit {
   // Image upload properties
   selectedFile: File | null = null;
   imagePreview: string | null = null;
-  uploadProgress: number = 0;
   isUploading: boolean = false;
   uploadComplete: boolean = false;
 
@@ -527,13 +526,10 @@ export class AggiungiProdottoComponent implements OnInit {
     const tempProductId = this.newSofaProduct.id || `temp_${Date.now()}`;
 
     this.isUploading = true;
-    this.uploadProgress = 0;
     this.uploadComplete = false;
 
     this.uploadService.uploadProductImage(file, tempProductId).subscribe({
       next: (result) => {
-        this.uploadProgress = result.progress;
-
         // Se abbiamo ricevuto l'URL di download, l'upload è completato
         if (result.downloadURL) {
           this.newSofaProduct.photoUrl = result.downloadURL;
@@ -549,7 +545,6 @@ export class AggiungiProdottoComponent implements OnInit {
       },
       error: (error) => {
         this.isUploading = false;
-        this.uploadProgress = 0;
         this.uploadComplete = false;
         this.messageService.add({
           severity: 'error',
@@ -577,7 +572,6 @@ export class AggiungiProdottoComponent implements OnInit {
     this.selectedFile = null;
     this.imagePreview = null;
     this.newSofaProduct.photoUrl = '';
-    this.uploadProgress = 0;
     this.isUploading = false;
     this.uploadComplete = false;
   }
@@ -646,3 +640,6 @@ export class AggiungiProdottoComponent implements OnInit {
     console.log('Upload event:', event);
   }
 }
+  // Handle file upload from p-fileUpload component
+ 
+
