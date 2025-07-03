@@ -4,12 +4,8 @@
   <!-- Overlay di caricamento durante il salvataggio -->
   <div *ngIf="isSavingProduct" class="saving-overlay">
     <div class="saving-content">
-      <p-progressSpinner
-        [style]="{ width: '80px', height: '80px' }"
-        strokeWidth="4"
-        fill="transparent"
-        animationDuration="1.5s"
-      ></p-progressSpinner>
+      <p-progressSpinner [style]="{ width: '80px', height: '80px' }" strokeWidth="4" fill="transparent"
+        animationDuration="1.5s"></p-progressSpinner>
       <h3>Salvataggio in corso...</h3>
       <p>{{ saveProgress }}</p>
       <small>Non chiudere la pagina</small>
@@ -19,106 +15,52 @@
   <!-- Contenuto principale (disabilitato durante il salvataggio) -->
   <div [class.disabled-content]="isSavingProduct">
     <p-card header="Aggiungi Nuovo Prodotto" class="p-mb-4">
-      <p-steps
-        [model]="steps"
-        [(activeIndex)]="currentStep"
-        [readonly]="true"
-        class="p-mb-4"
-      ></p-steps>
+      <p-steps [model]="steps" [(activeIndex)]="currentStep" [readonly]="true" class="p-mb-4"></p-steps>
 
       <form class="p-fluid p-formgrid p-grid">
         <!-- Step 1: Informazioni Prodotto -->
         <ng-container *ngIf="currentStep === 0">
           <div class="p-field p-col-12 p-md-6">
-            <label for="productName">Nome Prodotto</label>
-            <input
-              id="productName"
-              pInputText
-              [(ngModel)]="newSofaProduct.name"
-              name="nome"
-              required
+            <label for="productName">Nome Prodotto <span class="required-field">*</span></label>
+            <input id="productName" pInputText [(ngModel)]="newSofaProduct.name" name="nome" required
               placeholder="Inserisci il nome del prodotto"
-              [class.ng-invalid]="shouldShowProductFieldError(newSofaProduct.name)"
-            />
+              [class.ng-invalid]="shouldShowProductFieldError(newSofaProduct.name)" />
             <small *ngIf="shouldShowProductFieldError(newSofaProduct.name)" class="p-error">
               Campo obbligatorio
             </small>
           </div>
 
           <div class="p-field p-col-12 p-md-6">
-            <label>Immagine Prodotto (opzionale)</label>
+            <label>Immagine Prodotto</label>
             <div class="image-upload-section">
-              <p-fileUpload
-                *ngIf="!imagePreview && !isUploading"
-                mode="basic"
-                name="productImage"
-                accept="image/*"
-                [maxFileSize]="5000000"
-                (onSelect)="onFileSelect($event)"
-                chooseLabel="Seleziona Immagine"
-                [auto]="false"
-                styleClass="p-button-outlined"
-              ></p-fileUpload>
+              <p-fileUpload *ngIf="!imagePreview && !isUploading" mode="basic" name="productImage" accept="image/*"
+                [maxFileSize]="5000000" (onSelect)="onFileSelect($event)" chooseLabel="Seleziona Immagine"
+                [auto]="false" styleClass="p-button-outlined"></p-fileUpload>
 
               <!-- Preview dell'immagine -->
-              <div
-                *ngIf="imagePreview && !isUploading"
-                class="image-preview-container"
-              >
-                <img
-                  [src]="imagePreview"
-                  alt="Anteprima"
-                  class="image-preview"
-                />
+              <div *ngIf="imagePreview && !isUploading" class="image-preview-container">
+                <img [src]="imagePreview" alt="Anteprima" class="image-preview" />
                 <div class="image-actions">
-                  <p-button
-                    icon="pi pi-times"
-                    (onClick)="removeImage()"
-                    styleClass="p-button-danger p-button-sm"
-                    pTooltip="Rimuovi immagine"
-                  ></p-button>
+                  <p-button icon="pi pi-times" (onClick)="removeImage()" styleClass="p-button-danger p-button-sm"
+                    pTooltip="Rimuovi immagine"></p-button>
                 </div>
               </div>
 
               <!-- Upload in corso -->
               <div *ngIf="isUploading" class="upload-progress-container">
                 <div class="upload-spinner-section">
-                  <p-progressSpinner
-                    [style]="{ width: '50px', height: '50px' }"
-                    strokeWidth="4"
-                    fill="transparent"
-                    animationDuration="1s"
-                  ></p-progressSpinner>
+                  <p-progressSpinner [style]="{ width: '50px', height: '50px' }" strokeWidth="4" fill="transparent"
+                    animationDuration="1s"></p-progressSpinner>
                   <span class="upload-text">Caricamento immagine...</span>
                 </div>
-              </div>
-
-              <!-- Upload completato -->
-              <div
-                *ngIf="uploadComplete && !isUploading"
-                class="upload-complete"
-              >
-                <i
-                  class="pi pi-check-circle"
-                  style="color: green; font-size: 1.5rem"
-                ></i>
-                <span style="color: green; margin-left: 0.5rem"
-                  >Immagine caricata con successo!</span
-                >
               </div>
             </div>
           </div>
 
           <div class="p-field p-col-12">
             <label for="productDescription">Descrizione</label>
-            <textarea
-              id="productDescription"
-              pInputTextarea
-              [(ngModel)]="newSofaProduct.description"
-              name="descrizione"
-              rows="5"
-              placeholder="Inserisci una descrizione del prodotto"
-            ></textarea>
+            <textarea id="productDescription" pInputTextarea [(ngModel)]="newSofaProduct.description" name="descrizione"
+              rows="5" placeholder="Inserisci una descrizione del prodotto"></textarea>
           </div>
 
           <!-- Pulsanti per campi opzionali in due colonne -->
@@ -127,91 +69,67 @@
             <div class="optional-fields-grid">
               <!-- Seduta -->
               <div class="optional-field-cell">
-                <p-button
-                  [label]="'Seduta'"
-                  [icon]="newSofaProduct.seduta ? 'pi pi-trash' : ''"
-                  (onClick)="
+                <p-button [label]="'Seduta'" [icon]="newSofaProduct.seduta ? 'pi pi-trash' : ''" (onClick)="
                     newSofaProduct.seduta
                       ? (newSofaProduct.seduta = '')
                       : (showSedutaDialog = true)
-                  "
-                  [styleClass]="
+                  " [styleClass]="
                     newSofaProduct.seduta
                       ? 'gradient-success optional-btn'
                       : 'p-button-outlined optional-btn'
-                  "
-                  pTooltip="{{
+                  " pTooltip="{{
                     newSofaProduct.seduta
                       ? 'Rimuovi contenuto'
                       : 'Aggiungi seduta'
-                  }}"
-                ></p-button>
+                  }}"></p-button>
               </div>
               <!-- Schienale -->
               <div class="optional-field-cell">
-                <p-button
-                  [label]="'Schienale'"
-                  [icon]="newSofaProduct.schienale ? 'pi pi-trash' : ''"
-                  (onClick)="
+                <p-button [label]="'Schienale'" [icon]="newSofaProduct.schienale ? 'pi pi-trash' : ''" (onClick)="
                     newSofaProduct.schienale
                       ? (newSofaProduct.schienale = '')
                       : (showSchienaleDialog = true)
-                  "
-                  [styleClass]="
+                  " [styleClass]="
                     newSofaProduct.schienale
                       ? 'gradient-success optional-btn'
                       : 'p-button-outlined optional-btn'
-                  "
-                  pTooltip="{{
+                  " pTooltip="{{
                     newSofaProduct.schienale
                       ? 'Rimuovi contenuto'
                       : 'Aggiungi schienale'
-                  }}"
-                ></p-button>
+                  }}"></p-button>
               </div>
               <!-- Meccanica -->
               <div class="optional-field-cell">
-                <p-button
-                  [label]="'Meccanica'"
-                  [icon]="newSofaProduct.meccanica ? 'pi pi-trash' : ''"
-                  (onClick)="
+                <p-button [label]="'Meccanica'" [icon]="newSofaProduct.meccanica ? 'pi pi-trash' : ''" (onClick)="
                     newSofaProduct.meccanica
                       ? (newSofaProduct.meccanica = '')
                       : (showMeccanicaDialog = true)
-                  "
-                  [styleClass]="
+                  " [styleClass]="
                     newSofaProduct.meccanica
                       ? 'gradient-success optional-btn'
                       : 'p-button-outlined optional-btn'
-                  "
-                  pTooltip="{{
+                  " pTooltip="{{
                     newSofaProduct.meccanica
                       ? 'Rimuovi contenuto'
                       : 'Aggiungi meccanica'
-                  }}"
-                ></p-button>
+                  }}"></p-button>
               </div>
               <!-- Materasso -->
               <div class="optional-field-cell">
-                <p-button
-                  [label]="'Materasso'"
-                  [icon]="newSofaProduct.materasso ? 'pi pi-trash' : ''"
-                  (onClick)="
+                <p-button [label]="'Materasso'" [icon]="newSofaProduct.materasso ? 'pi pi-trash' : ''" (onClick)="
                     newSofaProduct.materasso
                       ? (newSofaProduct.materasso = '')
                       : (showMaterassoDialog = true)
-                  "
-                  [styleClass]="
+                  " [styleClass]="
                     newSofaProduct.materasso
                       ? 'gradient-success optional-btn'
                       : 'p-button-outlined optional-btn'
-                  "
-                  pTooltip="{{
+                  " pTooltip="{{
                     newSofaProduct.materasso
                       ? 'Rimuovi contenuto'
                       : 'Aggiungi materasso'
-                  }}"
-                ></p-button>
+                  }}"></p-button>
               </div>
             </div>
           </div>
@@ -225,14 +143,8 @@
             <div class="p-grid p-nogutter p-align-end">
               <div class="p-field p-col-12 p-md-4">
                 <p-floatLabel>
-                  <input
-                    id="variantName"
-                    pInputText
-                    [(ngModel)]="newVariant.longName"
-                    name="nomeVariante"
-                    required
-                    [class.ng-invalid]="shouldShowVariantFieldError(newVariant.longName)"
-                  />
+                  <input id="variantName" pInputText [(ngModel)]="newVariant.longName" name="nomeVariante" required
+                    [class.ng-invalid]="shouldShowVariantFieldError(newVariant.longName)" />
                   <label>Nome Variante</label>
                 </p-floatLabel>
                 <small *ngIf="shouldShowVariantFieldError(newVariant.longName)" class="p-error">
@@ -242,46 +154,29 @@
 
               <div class="p-field p-col-12 p-md-2">
                 <p-floatLabel>
-                  <p-inputNumber
-                    id="seatsCount"
-                    [(ngModel)]="newVariant.seatsCount"
-                    name="postiSeduta"
-                  ></p-inputNumber>
+                  <p-inputNumber id="seatsCount" [(ngModel)]="newVariant.seatsCount" name="postiSeduta"></p-inputNumber>
                   <label>Numero Posti</label>
                 </p-floatLabel>
               </div>
 
               <div class="p-field p-col-12 p-md-2">
                 <p-floatLabel>
-                  <p-inputNumber
-                    id="mattressWidth"
-                    [(ngModel)]="newVariant.mattressWidth"
-                    name="larghezzaMaterasso"
-                  ></p-inputNumber>
+                  <p-inputNumber id="mattressWidth" [(ngModel)]="newVariant.mattressWidth"
+                    name="larghezzaMaterasso"></p-inputNumber>
                   <label>Larghezza (cm)</label>
                 </p-floatLabel>
               </div>
 
               <div class="p-field p-col-12 p-md-1">
-                <p-button
-                  [icon]="
+                <p-button [icon]="
                     editingVariantIndex >= 0 ? 'pi pi-check' : 'pi pi-plus'
-                  "
-                  [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'"
-                  (onClick)="addVariant()"
-                  [disabled]="!newVariant.longName.trim()"
-                >
+                  " [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'" (onClick)="addVariant()"
+                  [disabled]="!newVariant.longName.trim()">
                 </p-button>
               </div>
             </div>
 
-            <p-table
-              [value]="variants"
-              *ngIf="variants.length"
-              [paginator]="true"
-              [rows]="5"
-              class="p-mt-3"
-            >
+            <p-table [value]="variants" *ngIf="variants.length" [paginator]="true" [rows]="5" class="p-mt-3">
               <ng-template pTemplate="header">
                 <tr>
                   <th>Nome</th>
@@ -296,22 +191,16 @@
                   <td>{{ variant.seatsCount || "N/A" }}</td>
                   <td>
                     {{
-                      variant.mattressWidth
-                        ? variant.mattressWidth + " cm"
-                        : "N/A"
+                    variant.mattressWidth
+                    ? variant.mattressWidth + " cm"
+                    : "N/A"
                     }}
                   </td>
                   <td>
-                    <p-button
-                      icon="pi pi-pencil"
-                      (onClick)="editVariant(i)"
-                      styleClass="p-button-text p-button-sm"
-                    ></p-button>
-                    <p-button
-                      icon="pi pi-trash"
-                      (onClick)="deleteVariant(i)"
-                      styleClass="p-button-danger p-button-text p-button-sm"
-                    ></p-button>
+                    <p-button icon="pi pi-pencil" (onClick)="editVariant(i)"
+                      styleClass="p-button-text p-button-sm"></p-button>
+                    <p-button icon="pi pi-trash" (onClick)="deleteVariant(i)"
+                      styleClass="p-button-danger p-button-text p-button-sm"></p-button>
                   </td>
                 </tr>
               </ng-template>
@@ -323,15 +212,8 @@
         <ng-container *ngIf="currentStep === 2">
           <div class="p-field p-col-12">
             <h3>Seleziona Variante</h3>
-            <p-dropdown
-              [options]="variants"
-              [(ngModel)]="selectedVariant"
-              optionLabel="longName"
-              name="selectedVariant"
-              placeholder="Seleziona una variante"
-              [showClear]="false"
-              [required]="true"
-            >
+            <p-dropdown [options]="variants" [(ngModel)]="selectedVariant" optionLabel="longName" name="selectedVariant"
+              placeholder="Seleziona una variante" [showClear]="false" [required]="true">
             </p-dropdown>
 
             <div *ngIf="selectedVariant" class="p-mt-4">
@@ -342,24 +224,14 @@
                 <h4>Seleziona Componenti Esistenti</h4>
                 <div class="p-grid p-nogutter p-align-end">
                   <div class="p-field p-col-12 p-md-8">
-                    <p-dropdown
-                      [options]="availableComponents"
-                      [(ngModel)]="selectedComponent"
-                      optionLabel="name"
-                      [filter]="true"
-                      filterBy="name"
-                      placeholder="Seleziona un componente esistente"
-                      [showClear]="true"
-                      name="existingComponent"
-                    >
+                    <p-dropdown [options]="availableComponents" [(ngModel)]="selectedComponent" optionLabel="name"
+                      [filter]="true" filterBy="name" placeholder="Seleziona un componente esistente" [showClear]="true"
+                      name="existingComponent">
                     </p-dropdown>
                   </div>
                   <div class="p-field p-col-12 p-md-4">
-                    <p-button
-                      label="Aggiungi Componente"
-                      (onClick)="addComponentToVariant(selectedComponent!)"
-                      [disabled]="!selectedComponent"
-                    >
+                    <p-button label="Aggiungi Componente" (onClick)="addComponentToVariant(selectedComponent!)"
+                      [disabled]="!selectedComponent">
                     </p-button>
                   </div>
                 </div>
@@ -373,14 +245,8 @@
                 <div class="p-grid p-nogutter p-align-end">
                   <div class="p-field p-col-12 p-md-4">
                     <p-floatLabel>
-                      <input
-                        id="componentName"
-                        pInputText
-                        [(ngModel)]="newComponent.name"
-                        name="compName"
-                        required
-                        [class.ng-invalid]="shouldShowComponentFieldError(newComponent.name)"
-                      />
+                      <input id="componentName" pInputText [(ngModel)]="newComponent.name" name="compName" required
+                        [class.ng-invalid]="shouldShowComponentFieldError(newComponent.name)" />
                       <label>Nome Componente</label>
                     </p-floatLabel>
                     <small *ngIf="shouldShowComponentFieldError(newComponent.name)" class="p-error">
@@ -390,60 +256,35 @@
 
                   <div class="p-field p-col-12 p-md-3">
                     <p-floatLabel>
-                      <p-inputNumber
-                        id="componentPrice"
-                        [(ngModel)]="newComponent.price"
-                        name="compPrice"
-                        mode="currency"
-                        currency="EUR"
-                        [minFractionDigits]="2"
-                      ></p-inputNumber>
+                      <p-inputNumber id="componentPrice" [(ngModel)]="newComponent.price" name="compPrice"
+                        mode="currency" currency="EUR" [minFractionDigits]="2"></p-inputNumber>
                       <label>Prezzo</label>
                     </p-floatLabel>
                   </div>
 
                   <div class="p-field p-col-12 p-md-4">
                     <div class="p-d-flex p-ai-center">
-                      <p-dropdown
-                        [options]="availableSuppliers"
-                        [(ngModel)]="selectedSuppliers"
-                        optionLabel="name"
-                        [filter]="true"
-                        filterBy="name"
-                        name="suppliers"
-                        placeholder="Seleziona fornitori"
-                        class="p-mr-2 p-w-100"
-                      >
+                      <p-dropdown [options]="availableSuppliers" [(ngModel)]="selectedSuppliers" optionLabel="name"
+                        [filter]="true" filterBy="name" name="suppliers" placeholder="Seleziona fornitori"
+                        class="p-mr-2 p-w-100">
                       </p-dropdown>
-                      <p-button
-                        icon="pi pi-plus"
-                        styleClass="p-button-rounded p-button-text"
-                        pTooltip="Aggiungi nuovo fornitore"
-                        (onClick)="openAddSupplierDialog()"
-                      >
+                      <p-button icon="pi pi-plus" styleClass="p-button-rounded p-button-text"
+                        pTooltip="Aggiungi nuovo fornitore" (onClick)="openAddSupplierDialog()">
                       </p-button>
                     </div>
                   </div>
 
                   <div class="p-field p-col-12 p-md-1">
-                    <p-button
-                      label="Crea Componente"
-                      (onClick)="createComponent()"
-                      [disabled]="!newComponent.name.trim()"
-                    >
+                    <p-button label="Crea Componente" (onClick)="createComponent()"
+                      [disabled]="!newComponent.name.trim()">
                     </p-button>
                   </div>
                 </div>
               </div>
 
               <!-- Components table -->
-              <p-table
-                [value]="selectedVariant.components"
-                *ngIf="selectedVariant.components.length"
-                [paginator]="true"
-                [rows]="5"
-                class="p-mt-3"
-              >
+              <p-table [value]="selectedVariant.components" *ngIf="selectedVariant.components.length" [paginator]="true"
+                [rows]="5" class="p-mt-3">
                 <ng-template pTemplate="header">
                   <tr>
                     <th>Nome</th>
@@ -457,23 +298,17 @@
                     <td>{{ comp.name }}</td>
                     <td>{{ comp.price | currency : "EUR" }}</td>
                     <td>
-                      <span
-                        *ngFor="let supplier of comp.suppliers; let last = last"
-                      >
+                      <span *ngFor="let supplier of comp.suppliers; let last = last">
                         {{ supplier.name }}{{ !last ? ", " : "" }}
                       </span>
                     </td>
                     <td>
-                      <p-button
-                        icon="pi pi-trash"
-                        (onClick)="
+                      <p-button icon="pi pi-trash" (onClick)="
                           removeComponentFromVariant(
                             variants.indexOf(selectedVariant!),
                             i
                           )
-                        "
-                        styleClass="p-button-danger p-button-text p-button-sm"
-                      >
+                        " styleClass="p-button-danger p-button-text p-button-sm">
                       </p-button>
                     </td>
                   </tr>
@@ -487,13 +322,8 @@
           <p-divider></p-divider>
 
           <div class="p-text-center p-mt-4">
-            <p-button
-              label="Salva Prodotto"
-              icon="pi pi-save"
-              (onClick)="saveProduct()"
-              [disabled]="isSavingProduct"
-              [loading]="isSavingProduct"
-            ></p-button>
+            <p-button label="Salva Prodotto" icon="pi pi-save" (onClick)="saveProduct()" [disabled]="isSavingProduct"
+              [loading]="isSavingProduct"></p-button>
           </div>
         </div>
 
@@ -501,22 +331,12 @@
         <div class="p-col-12">
           <p-divider class="p-mt-4"></p-divider>
           <div class="p-d-flex p-jc-between p-mt-3">
-            <p-button
-              *ngIf="currentStep > 0"
-              label="Indietro"
-              (onClick)="prevStep()"
-              styleClass="p-button-outlined"
-              [disabled]="isSavingProduct || isUploading"
-            ></p-button>
+            <p-button *ngIf="currentStep > 0" label="Indietro" (onClick)="prevStep()" styleClass="p-button-outlined"
+              [disabled]="isSavingProduct || isUploading"></p-button>
 
-            <p-button
-              *ngIf="currentStep < steps.length - 1"
-              label="Avanti"
-              (onClick)="nextStep()"
-              styleClass="p-button-primary"
-              [disabled]="isSavingProduct || isUploading"
-              [loading]="isUploading && currentStep === 0"
-            ></p-button>
+            <p-button *ngIf="currentStep < steps.length - 1" label="Avanti" (onClick)="nextStep()"
+              styleClass="p-button-primary" [disabled]="isSavingProduct || isUploading"
+              [loading]="isUploading && currentStep === 0"></p-button>
           </div>
         </div>
       </form>
@@ -524,178 +344,89 @@
   </div>
 
   <!-- Add Supplier Dialog -->
-  <p-dialog
-    [(visible)]="showAddSupplierDialog"
-    header="Aggiungi Nuovo Fornitore"
-    [modal]="true"
-    [style]="{ width: '450px' }"
-    [closable]="false"
-  >
+  <p-dialog [(visible)]="showAddSupplierDialog" header="Aggiungi Nuovo Fornitore" [modal]="true"
+    [style]="{ width: '450px' }" [closable]="false">
     <div class="p-fluid">
       <div class="p-field">
         <label for="supplierName">Nome Fornitore</label>
-        <input
-          id="supplierName"
-          type="text"
-          pInputText
-          [(ngModel)]="newSupplier.name"
-          required
-        />
-        <small *ngIf="!newSupplier.name?.trim()" class="p-error"
-          >Campo obbligatorio</small
-        >
+        <input id="supplierName" type="text" pInputText [(ngModel)]="newSupplier.name" required />
+        <small *ngIf="!newSupplier.name?.trim()" class="p-error">Campo obbligatorio</small>
       </div>
 
       <div class="p-field">
         <label for="supplierContact">Contatto</label>
-        <input
-          id="supplierContact"
-          type="text"
-          pInputText
-          [(ngModel)]="newSupplier.contact"
-        />
+        <input id="supplierContact" type="text" pInputText [(ngModel)]="newSupplier.contact" />
         <small>Email o telefono del fornitore</small>
       </div>
     </div>
 
     <ng-template pTemplate="footer">
-      <p-button
-        icon="pi pi-times"
-        label="Annulla"
-        (onClick)="cancelAddSupplier()"
-        styleClass="p-button-text"
-      >
+      <p-button icon="pi pi-times" label="Annulla" (onClick)="cancelAddSupplier()" styleClass="p-button-text">
       </p-button>
-      <p-button
-        icon="pi pi-check"
-        label="Salva"
-        (onClick)="saveSupplier()"
-        [disabled]="!newSupplier.name.trim()"
-      >
+      <p-button icon="pi pi-check" label="Salva" (onClick)="saveSupplier()" [disabled]="!newSupplier.name.trim()">
       </p-button>
     </ng-template>
   </p-dialog>
 
-  <p-confirmDialog
-    header="Conferma"
-    icon="pi pi-exclamation-triangle"
-    [closable]="false"
-  ></p-confirmDialog>
+  <p-confirmDialog header="Conferma" icon="pi pi-exclamation-triangle" [closable]="false"></p-confirmDialog>
 
   <!-- Dialog Seduta -->
-  <p-dialog
-    header="Seduta"
-    [(visible)]="showSedutaDialog"
-    [modal]="true"
-    [style]="{ width: '400px' }"
-    [closable]="false"
-  >
+  <p-dialog header="Seduta" [(visible)]="showSedutaDialog" [modal]="true" [style]="{ width: '400px' }"
+    [closable]="false">
     <div class="p-fluid">
       <div class="p-field">
         <label for="sedutaInput">Descrizione Seduta</label>
-        <textarea
-          id="sedutaInput"
-          pInputTextarea
-          [(ngModel)]="newSofaProduct.seduta"
-          rows="3"
-          placeholder="Inserisci la descrizione della seduta"
-        ></textarea>
+        <textarea id="sedutaInput" pInputTextarea [(ngModel)]="newSofaProduct.seduta" rows="3"
+          placeholder="Inserisci la descrizione della seduta"></textarea>
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button
-        label="Chiudi"
-        icon="pi pi-check"
-        (onClick)="showSedutaDialog = false"
-      ></p-button>
+      <p-button label="Chiudi" icon="pi pi-check" (onClick)="showSedutaDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 
   <!-- Dialog Schienale -->
-  <p-dialog
-    header="Schienale"
-    [(visible)]="showSchienaleDialog"
-    [modal]="true"
-    [style]="{ width: '400px' }"
-    [closable]="false"
-  >
+  <p-dialog header="Schienale" [(visible)]="showSchienaleDialog" [modal]="true" [style]="{ width: '400px' }"
+    [closable]="false">
     <div class="p-fluid">
       <div class="p-field">
         <label for="schienaleInput">Descrizione Schienale</label>
-        <textarea
-          id="schienaleInput"
-          pInputTextarea
-          [(ngModel)]="newSofaProduct.schienale"
-          rows="3"
-          placeholder="Inserisci la descrizione dello schienale"
-        ></textarea>
+        <textarea id="schienaleInput" pInputTextarea [(ngModel)]="newSofaProduct.schienale" rows="3"
+          placeholder="Inserisci la descrizione dello schienale"></textarea>
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button
-        label="Chiudi"
-        icon="pi pi-check"
-        (onClick)="showSchienaleDialog = false"
-      ></p-button>
+      <p-button label="Chiudi" icon="pi pi-check" (onClick)="showSchienaleDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 
   <!-- Dialog Meccanica -->
-  <p-dialog
-    header="Meccanica"
-    [(visible)]="showMeccanicaDialog"
-    [modal]="true"
-    [style]="{ width: '400px' }"
-    [closable]="false"
-  >
+  <p-dialog header="Meccanica" [(visible)]="showMeccanicaDialog" [modal]="true" [style]="{ width: '400px' }"
+    [closable]="false">
     <div class="p-fluid">
       <div class="p-field">
         <label for="meccanicaInput">Descrizione Meccanica</label>
-        <textarea
-          id="meccanicaInput"
-          pInputTextarea
-          [(ngModel)]="newSofaProduct.meccanica"
-          rows="3"
-          placeholder="Inserisci la descrizione della meccanica"
-        ></textarea>
+        <textarea id="meccanicaInput" pInputTextarea [(ngModel)]="newSofaProduct.meccanica" rows="3"
+          placeholder="Inserisci la descrizione della meccanica"></textarea>
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button
-        label="Chiudi"
-        icon="pi pi-check"
-        (onClick)="showMeccanicaDialog = false"
-      ></p-button>
+      <p-button label="Chiudi" icon="pi pi-check" (onClick)="showMeccanicaDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 
   <!-- Dialog Materasso -->
-  <p-dialog
-    header="Materasso"
-    [(visible)]="showMaterassoDialog"
-    [modal]="true"
-    [style]="{ width: '400px' }"
-    [closable]="false"
-  >
+  <p-dialog header="Materasso" [(visible)]="showMaterassoDialog" [modal]="true" [style]="{ width: '400px' }"
+    [closable]="false">
     <div class="p-fluid">
       <div class="p-field">
         <label for="materassoInput">Descrizione Materasso</label>
-        <textarea
-          id="materassoInput"
-          pInputTextarea
-          [(ngModel)]="newSofaProduct.materasso"
-          rows="3"
-          placeholder="Inserisci la descrizione del materasso"
-        ></textarea>
+        <textarea id="materassoInput" pInputTextarea [(ngModel)]="newSofaProduct.materasso" rows="3"
+          placeholder="Inserisci la descrizione del materasso"></textarea>
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button
-        label="Chiudi"
-        icon="pi pi-check"
-        (onClick)="showMaterassoDialog = false"
-      ></p-button>
+      <p-button label="Chiudi" icon="pi pi-check" (onClick)="showMaterassoDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 </div>
-

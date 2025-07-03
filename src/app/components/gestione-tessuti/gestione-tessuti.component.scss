@@ -287,4 +287,9 @@
   :host ::ng-deep .p-toast {
     z-index: 9999;
   }
+
+  .required-field {
+    color: red;
+    margin-left: 2px;
+  }
 }

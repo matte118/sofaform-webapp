@@ -11,7 +11,7 @@
     <form class="tessuto-form" #tessutoForm="ngForm">
       <div class="form-row">
         <div class="form-group">
-          <label for="tessutoType">Tipo di Tessuto</label>
+          <label for="tessutoType">Tipo di Tessuto <span class="required-field">*</span></label>
           <input pInputText id="tessutoType" type="text" [(ngModel)]="newTessuto.type" name="type"
             placeholder="Tipo di tessuto (es. Cotone, Velluto)"
             [class.ng-invalid]="shouldShowFieldError(newTessuto.type)" />
@@ -21,7 +21,7 @@
         </div>
 
         <div class="form-group">
-          <label for="tessutoCode">Codice</label>
+          <label for="tessutoCode">Codice <span class="required-field">*</span></label>
           <input pInputText id="tessutoCode" type="text" [(ngModel)]="newTessuto.code" name="code"
             placeholder="Codice identificativo"
             [class.ng-invalid]="shouldShowFieldError(newTessuto.code?.trim())" />
@@ -33,7 +33,7 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="tessutoPrice">Prezzo al Metro (€)</label>
+          <label for="tessutoPrice">Prezzo al Metro <span class="required-field">*</span> (€)</label>
           <p-inputNumber id="tessutoPrice" [(ngModel)]="newTessuto.mtPrice" name="mtPrice"
             [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT"
             [class.ng-invalid]="shouldShowFieldError(newTessuto.mtPrice > 0 ? newTessuto.mtPrice : null)">

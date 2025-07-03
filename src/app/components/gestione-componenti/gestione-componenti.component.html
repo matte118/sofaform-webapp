@@ -14,7 +14,7 @@
       <!-- Prima riga: nome e prezzo -->
       <div class="form-row">
         <div class="form-group">
-          <label for="componentName">Nome</label>
+          <label for="componentName">Nome <span class="required-field">*</span></label>
           <input
             pInputText
             id="componentName"
@@ -30,7 +30,7 @@
         </div>
 
         <div class="form-group">
-          <label for="componentPrice">Prezzo</label>
+          <label for="componentPrice">Prezzo <span class="required-field">*</span></label>
           <p-inputNumber
             id="componentPrice"
             [(ngModel)]="newComponent.price"
@@ -51,7 +51,7 @@
       <!-- Seconda riga: fornitore e tipo -->
       <div class="form-row">
         <div class="form-group">
-          <label for="componentSuppliers">Fornitore</label>
+          <label for="componentSuppliers">Fornitore <span class="required-field">*</span></label>
           <p-dropdown
             id="componentSuppliers"
             [options]="availableSuppliers"
@@ -65,7 +65,7 @@
         </div>
 
         <div class="form-group">
-          <label for="componentType">Tipo di Componente</label>
+          <label for="componentType">Tipo di Componente <span class="required-field">*</span></label>
           <p-dropdown
             id="componentType"
             [options]="availableComponentTypes"

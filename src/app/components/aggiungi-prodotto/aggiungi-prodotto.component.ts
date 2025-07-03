@@ -288,6 +288,8 @@ export class AggiungiProdottoComponent implements OnInit {
   deleteVariant(index: number): void {
     this.confirmationService.confirm({
       message: 'Sei sicuro di voler eliminare questa variante?',
+      acceptButtonStyleClass: 'p-button-primary',
+      rejectButtonStyleClass: 'p-button-danger',
       accept: () => {
         const removedVariant = this.variants.splice(index, 1)[0];
 
