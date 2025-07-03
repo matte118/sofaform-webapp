@@ -12,7 +12,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { Rivestimento} from '../../../models/rivestimento.model';
+import { Rivestimento } from '../../../models/rivestimento.model';
 import { RivestimentoService } from '../../../services/rivestimento.service';
 import { RivestimentoType } from '../../../models/rivestimento-type.model';
 
@@ -43,7 +43,7 @@ export class GestioneTessutiComponent implements OnInit {
   editingIndex: number = -1;
   loading: boolean = false;
   saving: boolean = false;
-  
+
   // Add form state tracking
   formSubmitted: boolean = false;
   formValid: boolean = true;
@@ -93,11 +93,11 @@ export class GestioneTessutiComponent implements OnInit {
       this.newTessuto.mtPrice,
       this.newTessuto.code?.trim() ?? ''
     );
-    
+
     const operation = this.isEditing
       ? this.rivestimentoService.updateRivestimento(tessuto.id, tessuto)
       : this.rivestimentoService.addRivestimento(tessuto);
-      
+
     operation.subscribe(
       () => {
         this.messageService.add({
@@ -135,6 +135,8 @@ export class GestioneTessutiComponent implements OnInit {
     this.confirmationService.confirm({
       message: `Sei sicuro di voler eliminare il tessuto "${tessuto.type}" (${tessuto.code})?`,
       header: 'Conferma Eliminazione',
+      acceptButtonStyleClass: 'p-button-primary',
+      rejectButtonStyleClass: 'p-button-danger',
       accept: () => {
         this.saving = true;
         this.rivestimentoService.deleteRivestimento(tessuto.id).subscribe(
@@ -203,7 +205,7 @@ export class GestioneTessutiComponent implements OnInit {
       });
       return false;
     }
-    
+
     if (!this.newTessuto.code?.trim()) {
       this.messageService.add({
         severity: 'error',

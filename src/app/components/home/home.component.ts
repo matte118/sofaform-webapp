@@ -296,6 +296,8 @@ export class HomeComponent implements OnInit {
     event.stopPropagation();
     this.confirmationService.confirm({
       message: 'Sei sicuro di voler eliminare questo prodotto?',
+      acceptButtonStyleClass: 'p-button-primary',
+      rejectButtonStyleClass: 'p-button-danger',
       accept: () => {
         this.sofaProductService.deleteSofaProduct(product.id).subscribe(() => {
           this.products = this.products.filter((p) => p.id !== product.id);

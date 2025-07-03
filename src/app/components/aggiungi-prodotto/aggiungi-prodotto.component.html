@@ -529,6 +529,7 @@
     header="Aggiungi Nuovo Fornitore"
     [modal]="true"
     [style]="{ width: '450px' }"
+    [closable]="false"
   >
     <div class="p-fluid">
       <div class="p-field">
@@ -578,6 +579,7 @@
   <p-confirmDialog
     header="Conferma"
     icon="pi pi-exclamation-triangle"
+    [closable]="false"
   ></p-confirmDialog>
 
   <!-- Dialog Seduta -->
@@ -586,6 +588,7 @@
     [(visible)]="showSedutaDialog"
     [modal]="true"
     [style]="{ width: '400px' }"
+    [closable]="false"
   >
     <div class="p-fluid">
       <div class="p-field">
@@ -614,6 +617,7 @@
     [(visible)]="showSchienaleDialog"
     [modal]="true"
     [style]="{ width: '400px' }"
+    [closable]="false"
   >
     <div class="p-fluid">
       <div class="p-field">
@@ -642,6 +646,7 @@
     [(visible)]="showMeccanicaDialog"
     [modal]="true"
     [style]="{ width: '400px' }"
+    [closable]="false"
   >
     <div class="p-fluid">
       <div class="p-field">
@@ -670,6 +675,7 @@
     [(visible)]="showMaterassoDialog"
     [modal]="true"
     [style]="{ width: '400px' }"
+    [closable]="false"
   >
     <div class="p-fluid">
       <div class="p-field">

@@ -196,7 +196,7 @@ export class GestioneFornitoriComponent implements OnInit {
         header: 'Conferma Eliminazione',
         icon: 'pi pi-exclamation-triangle',
         acceptLabel: 'Sì',
-        rejectLabel: 'Annulla',
+        rejectLabel: 'No',
         acceptButtonStyleClass: 'p-button-primary',
         rejectButtonStyleClass: 'p-button-danger',
         accept: () => {
