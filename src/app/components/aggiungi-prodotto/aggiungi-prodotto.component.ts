@@ -579,11 +579,6 @@ export class AggiungiProdottoComponent implements OnInit {
           .subscribe(
             () => {
               this.saveProgress = 'Completamento...';
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Successo',
-                detail: 'Prodotto salvato con successo',
-              });
 
               // Small delay to show completion message
               setTimeout(() => {
