@@ -70,6 +70,8 @@ export class AggiungiProdottoComponent implements OnInit {
 
   currentStep = 0;
 
+  value1 = 1; // Cambiato da 0 a 1 per inizializzare con il valore minimo
+
   // Product basic information
   newSofaProduct = new SofaProduct('', '', '');
 
@@ -126,6 +128,9 @@ export class AggiungiProdottoComponent implements OnInit {
   componentFormValid: boolean = true;
 
   isBrowser: boolean;
+
+  // Add a map to track component quantities
+  componentQuantities: Map<string, number> = new Map();
 
   constructor(
     private sofaProductService: SofaProductService,
@@ -304,36 +309,123 @@ export class AggiungiProdottoComponent implements OnInit {
   // Component management
   selectVariantForComponents(variant: Variant): void {
     this.selectedVariant = variant;
+
+    // Reset and rebuild the component quantities map for this variant
+    this.componentQuantities.clear();
+
+    // Group components by ID or name and count them
+    const componentCounts = new Map<string, number>();
+    variant.components.forEach(comp => {
+      const key = comp.id || comp.name;
+      componentCounts.set(key, (componentCounts.get(key) || 0) + 1);
+    });
+
+    // Store unique components with their counts
+    const uniqueComponents = new Map<string, ComponentModel>();
+    variant.components.forEach(comp => {
+      const key = comp.id || comp.name;
+      if (!uniqueComponents.has(key)) {
+        uniqueComponents.set(key, comp);
+        // Set the quantity in our tracking map
+        this.componentQuantities.set(key, componentCounts.get(key) || 0);
+      }
+    });
   }
 
+  // Update the addComponentToVariant method to handle quantities correctly
   addComponentToVariant(component: ComponentModel): void {
-    if (!this.selectedVariant) return;
+    if (!this.selectedVariant || !component) return;
+    const qty = this.value1;
 
-    const existingIndex = this.selectedVariant.components.findIndex(
-      (c) => c.id === component.id
-    );
-
-    if (existingIndex >= 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Attenzione',
-        detail: 'Componente già presente nella variante',
-      });
-      return;
+    // Aggiungi `qty` volte lo stesso componente nell'array
+    for (let i = 0; i < qty; i++) {
+      this.selectedVariant.components.push(component);
     }
 
-    this.selectedVariant.components.push(component);
-    // Automatically update the variant price
+    // Aggiorna il prezzo
     this.selectedVariant.updatePrice();
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Componente aggiunto',
+      detail: `${component.name} ×${qty}`
+    });
+
+    // Reset quantità a 1
+    this.value1 = 1;
   }
 
-  removeComponentFromVariant(
-    variantIndex: number,
-    componentIndex: number
-  ): void {
-    this.variants[variantIndex].components.splice(componentIndex, 1);
-    // Automatically update the variant price after removing component
-    this.variants[variantIndex].updatePrice();
+  get groupedComponents(): { component: ComponentModel; quantity: number }[] {
+    if (!this.selectedVariant) {
+      return [];
+    }
+    const map = new Map<string, { component: ComponentModel; quantity: number }>();
+
+    for (const comp of this.selectedVariant.components) {
+      const key = comp.id || comp.name;
+      if (!map.has(key)) {
+        map.set(key, { component: comp, quantity: 1 });
+      } else {
+        map.get(key)!.quantity++;
+      }
+    }
+
+    return Array.from(map.values());
+  }
+
+  removeComponentGroup(component: ComponentModel): void {
+    if (!this.selectedVariant) return;
+    // Filtra fuori tutte le occorrenze
+    this.selectedVariant.components = this.selectedVariant.components
+      .filter(c => (c.id || c.name) !== (component.id || component.name));
+
+    // Ricalcola prezzo
+    this.selectedVariant.updatePrice();
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Componente rimosso',
+      detail: `Tutte le istanze di ${component.name} sono state eliminate`
+    });
+  }
+
+  // Update getComponentQuantity to use the quantity map
+  getComponentQuantity(comp: ComponentModel): number {
+    if (!this.selectedVariant) return 0;
+
+    const componentKey = comp.id || comp.name;
+    return this.componentQuantities.get(componentKey) || 0;
+  }
+
+  // Update the removeComponentFromVariant method to also clean up from the quantities map
+  removeComponentFromVariant(variantIndex: number, componentIdentifier: string): void {
+    if (!this.selectedVariant) return;
+
+    const variant = this.variants[variantIndex];
+    const component = variant.components.find(c =>
+      c.id === componentIdentifier || c.name === componentIdentifier
+    );
+
+    if (component) {
+      // Remove from components array
+      variant.components = variant.components.filter(c =>
+        (c.id && c.id !== componentIdentifier) ||
+        (!c.id && c.name !== componentIdentifier)
+      );
+
+      // Remove from quantities map
+      this.componentQuantities.delete(componentIdentifier);
+
+      // Update variant price
+      variant.updatePrice();
+
+      // Show confirmation message
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Componente rimosso',
+        detail: `${component.name} rimosso dalla variante`
+      });
+    }
   }
 
   // Create new component
@@ -350,11 +442,14 @@ export class AggiungiProdottoComponent implements OnInit {
     }
     this.componentFormValid = true;
 
+    // Ensure selectedSuppliers is an array
+    const suppliersList = Array.isArray(this.selectedSuppliers) ? this.selectedSuppliers : [];
+
     const component = new ComponentModel(
       '', // ID will be generated by Firebase
       this.newComponent.name,
       this.newComponent.price,
-      this.selectedSuppliers,
+      suppliersList, // Ensure it's an array
       this.selectedComponentType?.id
     );
 
@@ -494,19 +589,60 @@ export class AggiungiProdottoComponent implements OnInit {
               setTimeout(() => {
                 this.isSavingProduct = false;
                 this.saveProgress = '';
-                // Navigate to home instead of products list
-                this.router.navigate(['/']);
+                // Navigate to products list page
+                this.router.navigate(['/prodotti']);
               }, 1000);
             },
             (error) => {
               this.messageService.add({
                 severity: 'error',
                 summary: 'Errore',
-                detail: "Errore durante l'associazione delle varianti",
+                detail: `Errore durante l'associazione delle varianti: ${error.message || 'Verifica la connessione'}`,
               });
               console.error('Error updating product variants:', error);
               this.isSavingProduct = false;
               this.saveProgress = '';
+
+              // Offer retry option
+              this.confirmationService.confirm({
+                message: 'Vuoi riprovare ad associare le varianti al prodotto?',
+                header: 'Riprova',
+                icon: 'pi pi-exclamation-triangle',
+                acceptLabel: 'Sì, riprova',
+                rejectLabel: 'No, torna alla lista prodotti',
+                accept: () => {
+                  // Retry updating product variants
+                  this.isSavingProduct = true;
+                  this.saveProgress = 'Riprovo collegamento varianti...';
+                  this.sofaProductService
+                    .updateProductVariants(productId, variantIds)
+                    .subscribe(
+                      () => {
+                        this.messageService.add({
+                          severity: 'success',
+                          summary: 'Successo',
+                          detail: 'Prodotto salvato con successo',
+                        });
+                        this.isSavingProduct = false;
+                        this.saveProgress = '';
+                        this.router.navigate(['/prodotti']);
+                      },
+                      (error) => {
+                        this.messageService.add({
+                          severity: 'error',
+                          summary: 'Errore',
+                          detail: 'Errore persistente, prova più tardi',
+                        });
+                        this.isSavingProduct = false;
+                        this.saveProgress = '';
+                      }
+                    );
+                },
+                reject: () => {
+                  // Navigate to products list even if save was incomplete
+                  this.router.navigate(['/prodotti']);
+                }
+              });
             }
           );
       },
@@ -514,11 +650,28 @@ export class AggiungiProdottoComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
-          detail: 'Errore durante la creazione delle varianti',
+          detail: `Errore durante la creazione delle varianti: ${error.message || 'Controlla i dati inseriti'}`,
         });
         console.error('Error creating variants:', error);
         this.isSavingProduct = false;
         this.saveProgress = '';
+
+        // Offer option to navigate away or try again
+        this.confirmationService.confirm({
+          message: 'Le varianti non sono state create correttamente. Vuoi riprovare?',
+          header: 'Errore Salvataggio',
+          icon: 'pi pi-exclamation-triangle',
+          acceptLabel: 'Riprova',
+          rejectLabel: 'Torna alla lista prodotti',
+          accept: () => {
+            // Retry variant creation
+            this.createVariants(productId);
+          },
+          reject: () => {
+            // Navigate to products list
+            this.router.navigate(['/prodotti']);
+          }
+        });
       }
     );
   }

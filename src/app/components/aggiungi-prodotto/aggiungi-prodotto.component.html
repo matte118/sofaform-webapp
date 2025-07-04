@@ -220,22 +220,40 @@
               <h3>Componenti per: {{ selectedVariant.longName }}</h3>
 
               <!-- Existing components selection -->
-              <div class="existing-components p-mb-4">
+              <!-- app.component.html -->
+              <div class="existing-components p-mb-4 full-width-container">
                 <h4>Seleziona Componenti Esistenti</h4>
-                <div class="p-grid p-nogutter p-align-end">
-                  <div class="p-field p-col-12 p-md-8">
+
+                <div class="components-row">
+                  <!-- 75% -->
+                  <div class="p-field first">
                     <p-dropdown [options]="availableComponents" [(ngModel)]="selectedComponent" optionLabel="name"
                       [filter]="true" filterBy="name" placeholder="Seleziona un componente esistente" [showClear]="true"
-                      name="existingComponent">
+                      name="existingComponent" [style]="{ width: '100%' }">
                     </p-dropdown>
                   </div>
-                  <div class="p-field p-col-12 p-md-4">
-                    <p-button label="Aggiungi Componente" (onClick)="addComponentToVariant(selectedComponent!)"
-                      [disabled]="!selectedComponent">
-                    </p-button>
+
+                  <!-- 25% -->
+                  <div class="p-field second">
+                    <label for="quantity">Quantità</label>
+                    <p-inputNumber [(ngModel)]="value1" [showButtons]="true" buttonLayout="horizontal"
+                      spinnerMode="horizontal" inputId="quantity" decrementButtonClass="p-button-secondary"
+                      incrementButtonClass="p-button-secondary" decrementButtonClass="p-button-primary"
+                      incrementButtonClass="p-button-primary" [min]="1" [style]="{ width: '100%' }"
+                      [inputStyle]="{ 'text-align': 'center' }" name="componentQuantity">
+                    </p-inputNumber>
+
                   </div>
+
+                  <!-- spazio vuoto (opzionale) -->
+                  <div class="p-field third"></div>
                 </div>
+
+                <p-button label="Aggiungi Componente" (onClick)="addComponentToVariant(selectedComponent!)"
+                  [disabled]="!selectedComponent" styleClass="w-100">
+                </p-button>
               </div>
+
 
               <p-divider></p-divider>
 
@@ -266,7 +284,7 @@
                     <div class="p-d-flex p-ai-center">
                       <p-dropdown [options]="availableSuppliers" [(ngModel)]="selectedSuppliers" optionLabel="name"
                         [filter]="true" filterBy="name" name="suppliers" placeholder="Seleziona fornitori"
-                        class="p-mr-2 p-w-100">
+                        class="p-mr-2 p-w-100" (multiple)="true">
                       </p-dropdown>
                       <p-button icon="pi pi-plus" styleClass="p-button-rounded p-button-text"
                         pTooltip="Aggiungi nuovo fornitore" (onClick)="openAddSupplierDialog()">
@@ -283,37 +301,41 @@
               </div>
 
               <!-- Components table -->
-              <p-table [value]="selectedVariant.components" *ngIf="selectedVariant.components.length" [paginator]="true"
-                [rows]="5" class="p-mt-3">
+              <!-- aggiungi-prodotto.component.html -->
+              <p-table [value]="groupedComponents" *ngIf="groupedComponents.length" [paginator]="true" [rows]="5">
                 <ng-template pTemplate="header">
                   <tr>
                     <th>Nome</th>
-                    <th>Prezzo</th>
+                    <th>Prezzo unitario</th>
                     <th>Fornitori</th>
+                    <th>Quantità</th>
                     <th>Azioni</th>
                   </tr>
                 </ng-template>
-                <ng-template pTemplate="body" let-comp let-i="rowIndex">
+                <ng-template pTemplate="body" let-gc let-i="rowIndex">
                   <tr>
-                    <td>{{ comp.name }}</td>
-                    <td>{{ comp.price | currency : "EUR" }}</td>
+                    <td>{{ gc.component.name }}</td>
+                    <td>{{ gc.component.price | currency:'EUR' }}</td>
                     <td>
-                      <span *ngFor="let supplier of comp.suppliers; let last = last">
-                        {{ supplier.name }}{{ !last ? ", " : "" }}
-                      </span>
+                      <ng-container *ngIf="gc.component.suppliers && gc.component.suppliers.length > 0">
+                        <ng-container *ngFor="let s of gc.component.suppliers; let last=last">
+                          {{ s.name }}<span *ngIf="!last">, </span>
+                        </ng-container>
+                      </ng-container>
+                      <span *ngIf="!gc.component.suppliers || gc.component.suppliers.length === 0">-</span>
                     </td>
+                    <td>{{ gc.quantity }}</td>
                     <td>
-                      <p-button icon="pi pi-trash" (onClick)="
-                          removeComponentFromVariant(
-                            variants.indexOf(selectedVariant!),
-                            i
-                          )
-                        " styleClass="p-button-danger p-button-text p-button-sm">
+                      <!-- Rimuove tutte le istanze di quel componente -->
+                      <p-button icon="pi pi-trash" class="p-button-danger p-button-text p-button-sm"
+                        (onClick)="removeComponentGroup(gc.component)">
                       </p-button>
                     </td>
                   </tr>
                 </ng-template>
               </p-table>
+
+
             </div>
           </div>
         </ng-container>
@@ -377,7 +399,7 @@
       <div class="p-field">
         <label for="sedutaInput">Descrizione Seduta</label>
         <textarea id="sedutaInput" pInputTextarea [(ngModel)]="newSofaProduct.seduta" rows="3"
-          placeholder="Inserisci la descrizione della seduta"></textarea>
+          placeholder="Inserisci la descrizione della seduta" name="sedutaDesc"></textarea>
       </div>
     </div>
     <ng-template pTemplate="footer">
@@ -392,7 +414,7 @@
       <div class="p-field">
         <label for="schienaleInput">Descrizione Schienale</label>
         <textarea id="schienaleInput" pInputTextarea [(ngModel)]="newSofaProduct.schienale" rows="3"
-          placeholder="Inserisci la descrizione dello schienale"></textarea>
+          placeholder="Inserisci la descrizione dello schienale" name="schienaleDesc"></textarea>
       </div>
     </div>
     <ng-template pTemplate="footer">
@@ -407,7 +429,7 @@
       <div class="p-field">
         <label for="meccanicaInput">Descrizione Meccanica</label>
         <textarea id="meccanicaInput" pInputTextarea [(ngModel)]="newSofaProduct.meccanica" rows="3"
-          placeholder="Inserisci la descrizione della meccanica"></textarea>
+          placeholder="Inserisci la descrizione della meccanica" name="meccanicaDesc"></textarea>
       </div>
     </div>
     <ng-template pTemplate="footer">
@@ -422,7 +444,7 @@
       <div class="p-field">
         <label for="materassoInput">Descrizione Materasso</label>
         <textarea id="materassoInput" pInputTextarea [(ngModel)]="newSofaProduct.materasso" rows="3"
-          placeholder="Inserisci la descrizione del materasso"></textarea>
+          placeholder="Inserisci la descrizione del materasso" name="materassoDesc"></textarea>
       </div>
     </div>
     <ng-template pTemplate="footer">

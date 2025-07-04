@@ -31,6 +31,14 @@ import { RivestimentoService } from '../../../services/rivestimento.service';
 import { ComponentTypeService } from '../../../services/component-type.service';
 import { ComponentType } from '../../../models/component-type.model';
 import { PhotoUploadService } from '../../../services/upload.service';
+import { Component as ComponentModel } from '../../../models/component.model';
+
+// Interfaccia per i componenti raggruppati
+interface GroupedComponent {
+  component: ComponentModel;
+  quantity: number;
+  totalPrice: number;
+}
 
 @Component({
   selector: 'app-home',
@@ -339,5 +347,38 @@ export class HomeComponent implements OnInit {
 
   getComponentTypeName(typeId?: string): string {
     return typeId ? this.componentTypeMap.get(typeId) ?? '' : '';
+  }
+
+  // Metodo per raggruppare i componenti di una variante
+  getGroupedComponents(variant: Variant): GroupedComponent[] {
+    if (!variant.components || variant.components.length === 0) {
+      return [];
+    }
+
+    // Mappa per tenere traccia dei componenti raggruppati per ID o nome
+    const groupedMap = new Map<string, GroupedComponent>();
+
+    // Itera su tutti i componenti della variante
+    for (const component of variant.components) {
+      // Usa l'ID o il nome come chiave (preferibilmente ID se disponibile)
+      const key = component.id || component.name;
+
+      if (groupedMap.has(key)) {
+        // Se il componente esiste già nel gruppo, incrementa la quantità e il prezzo totale
+        const groupedItem = groupedMap.get(key)!;
+        groupedItem.quantity += 1;
+        groupedItem.totalPrice += component.price;
+      } else {
+        // Altrimenti, crea un nuovo gruppo per questo componente
+        groupedMap.set(key, {
+          component: component,
+          quantity: 1,
+          totalPrice: component.price,
+        });
+      }
+    }
+
+    // Converti la mappa in un array di componenti raggruppati
+    return Array.from(groupedMap.values());
   }
 }

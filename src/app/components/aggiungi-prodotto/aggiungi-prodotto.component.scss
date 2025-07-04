@@ -73,7 +73,7 @@
 /* Button container for vertical layout with full width */
 .p-d-flex.p-jc-between {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; // Questa proprietà forza un layout verticale
   gap: 1rem;
 
   .p-button {
@@ -268,9 +268,11 @@
   0% {
     box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
   }
@@ -281,10 +283,12 @@
     transform: scale(0.95);
     opacity: 0.8;
   }
+
   50% {
     transform: scale(1.02);
     opacity: 1;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -328,11 +332,74 @@
   align-items: center;
   justify-content: center;
 }
+
 .icon-trash:hover {
   color: #e53935 !important;
 }
 
 .required-field {
-    color: red;
-    margin-left: 2px;
+  color: red;
+  margin-left: 2px;
+}
+
+/* styles.scss (o nel file SCSS del componente) */
+.full-width-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.components-row {
+  display: flex;
+  flex-wrap: wrap;
+  /* in caso di schermi stretti cadano in colonna */
+  align-items: flex-end;
+  gap: 1rem;
+  width: 100%;
+  padding-bottom: 2rem;
+
+  .p-field {
+    margin-bottom: 0;
+    /* il gap gestisce lo spazio */
   }
+
+  /* 75% = 3 parti su 4 */
+  & .first {
+    flex: 3;
+  }
+
+  /* 25% = 1 parte su 4 */
+  & .second {
+    flex: 1;
+  }
+
+  /* elemento vuoto che non occupa spazio */
+  & .third {
+    flex: 0;
+  }
+
+  /* forza i componenti PrimeNG a riempire il proprio flex-item */
+  & ::ng-deep .p-dropdown {
+    width: 100% !important;
+  }
+
+  // Solo l’input-number: miriamo all’input interno
+  & ::ng-deep .p-inputnumber-input {
+    width: 100% !important;
+    text-align: center;
+  }
+}
+
+/* Media query per mobile: colonna unica al 100% */
+@media (max-width: 768px) {
+  .components-row {
+    flex-direction: column;
+
+    & .first,
+    & .second,
+    & .third {
+      flex: none;
+      width: 100%;
+    }
+  }
+}
