@@ -1,0 +1,69 @@
+<div class="login-container">
+  <div class="login-card-wrapper">
+    <p-card styleClass="login-card">
+      <div class="logo-container">
+        <img src="logo-calia.png" alt="Calia Logo" class="logo" />
+      </div>
+
+      <h2>Accesso al Gestionale</h2>
+
+      <p-toast></p-toast>
+
+      <div class="error-message" *ngIf="errorMessage">
+        <p-message severity="error" [text]="errorMessage"></p-message>
+      </div>
+
+      <form (ngSubmit)="login()" #loginForm="ngForm" class="login-form">
+        <div class="form-field">
+          <label for="email">Email</label>
+          <div class="p-input-icon-left">
+            <i class="pi pi-user"></i>
+            <input
+              id="email"
+              type="email"
+              pInputText
+              [(ngModel)]="email"
+              name="email"
+              placeholder="Email"
+              required
+              autocomplete="username"
+              [disabled]="isLoggingIn"
+            />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="password">Password</label>
+          <div class="p-input-icon-left">
+            <i class="pi pi-lock"></i>
+            <p-password
+              id="password"
+              [(ngModel)]="password"
+              name="password"
+              placeholder="Password"
+              [feedback]="false"
+              [toggleMask]="true"
+              required
+              autocomplete="current-password"
+              [disabled]="isLoggingIn"
+              styleClass="w-100"
+              inputStyleClass="w-100"
+            >
+            </p-password>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="submit"
+            label="Accedi"
+            icon="pi pi-sign-in"
+            [loading]="isLoggingIn"
+            [disabled]="loginForm.invalid || isLoggingIn"
+          ></button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>

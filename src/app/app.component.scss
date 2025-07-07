@@ -2,16 +2,168 @@
 .app-layout {
   display: flex;
   height: 100vh;
+  width: 100%;
+  overflow: hidden;
 }
+
 .sidebar {
-  width: 250px;
-  background: #f4f4f4;
-  padding: 1rem;
+  width: 280px;
+  background-color: var(--surface-card);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+
+  .sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto; // This makes the sidebar content scrollable
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+  }
+
+  .sidebar-header {
+    padding: 1.5rem;
+    text-align: center;
+
+    .logo {
+      max-width: 100%;
+      height: auto;
+      max-height: 60px;
+    }
+  }
+
+  .sidebar-menu {
+    flex: 1;
+    padding: 0 0.5rem;
+
+    ::ng-deep .menu-panel {
+      .p-panelmenu {
+        .p-panelmenu-header-link {
+          padding: 1rem;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background-color: var(--surface-hover);
+          }
+
+          .p-menuitem-icon {
+            margin-right: 0.5rem;
+          }
+        }
+
+        .p-panelmenu-content {
+          .p-menuitem-link {
+            padding: 0.75rem 1rem 0.75rem 2rem;
+
+            &:hover {
+              background-color: var(--surface-hover);
+            }
+
+            .p-menuitem-icon {
+              margin-right: 0.5rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .user-section {
+    padding: 1rem;
+    border-top: 1px solid var(--surface-border);
+    background-color: var(--surface-section);
+    margin-top: auto; // This pushes the user section to the bottom
+
+    .user-info {
+      display: flex;
+      align-items: center;
+
+      i {
+        font-size: 1.5rem;
+        margin-right: 0.75rem;
+        color: var(--primary-color);
+      }
+
+      .user-details {
+        display: flex;
+        flex-direction: column;
+
+        .user-email {
+          font-weight: 600;
+          margin-bottom: 0.25rem;
+        }
+
+        .user-role {
+          font-size: 0.875rem;
+          color: var(--text-color-secondary);
+        }
+      }
+    }
+
+    .logout-button {
+      margin-top: 0.75rem;
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
 }
+
 .content {
   flex: 1;
-  padding: 2rem;
+  padding: 1rem;
+  margin-left: 280px;
+  width: calc(100% - 280px);
+  overflow-y: auto;
+  background-color: var(--surface-ground);
+  min-height: 100vh;
 }
-.menu-panel {
-  border: none;
+
+// Media queries for responsive design
+@media (max-width: 768px) {
+  .sidebar {
+    width: 240px;
+  }
+
+  .content {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+  }
+}
+
+@media (max-width: 576px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .sidebar-content {
+      height: auto;
+    }
+  }
+
+  .content {
+    margin-left: 0;
+    width: 100%;
+  }
 }

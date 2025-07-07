@@ -41,13 +41,13 @@
                 pCardImage
                 [src]="getProductImageUrl(product.id)"
                 [alt]="product.name"
-                class="product-image"
+                class="product-image fill-space"
                 (error)="onImageError(product.id)"
               />
             </ng-container>
 
             <ng-template #placeholder>
-              <div class="product-image-placeholder">
+              <div class="product-image-placeholder fill-space">
                 <i class="pi pi-image"></i>
                 <span>Nessuna immagine</span>
               </div>

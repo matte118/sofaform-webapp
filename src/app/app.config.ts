@@ -1,30 +1,34 @@
 // src/app/app.config.ts
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideAuth, getAuth } from '@angular/fire/auth';
 import { provideDatabase, getDatabase } from '@angular/fire/database';
 import { provideStorage, getStorage } from '@angular/fire/storage';
+import { provideFunctions, getFunctions } from '@angular/fire/functions';
 import { routes } from './app.routes';
 import { environment } from '../environments/environments';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // Firebase providers
+    // Firebase core
     provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideAuth(() => getAuth()),
     provideDatabase(() => getDatabase()),
     provideStorage(() => getStorage()),
-    // Basic router configuration for fallback
+    provideFunctions(() => getFunctions()),
+
+    // Routing
     importProvidersFrom(
       RouterModule.forRoot(routes, {
         scrollPositionRestoration: 'enabled',
-        initialNavigation: 'enabledBlocking'
+        initialNavigation: 'enabledBlocking',
       })
     ),
-    // animations necessarie per molti componenti PrimeNG
-    importProvidersFrom(BrowserAnimationsModule),
-    // importa il modulo PrimeNG che ti serve
-    importProvidersFrom(PanelMenuModule),
-  ]
+
+    // Animations e PrimeNG
+    importProvidersFrom(BrowserAnimationsModule, PanelMenuModule),
+  ],
 };

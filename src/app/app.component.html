@@ -1,9 +1,43 @@
-<div class="app-layout">
+<div class="app-layout" *ngIf="isLoggedIn; else loginPage">
   <aside class="sidebar">
-    <p-panelMenu [model]="items" styleClass="menu-panel"></p-panelMenu>
+    <div class="sidebar-content">
+      <div class="sidebar-header">
+        <img src="logo-calia.png" alt="Logo" class="logo" />
+      </div>
+
+      <div class="sidebar-menu">
+        <p-panelMenu [model]="items" styleClass="menu-panel"></p-panelMenu>
+      </div>
+
+      <div class="user-section">
+        <div class="user-info">
+          <i class="pi pi-user"></i>
+          <div class="user-details">
+            <span class="user-email">{{ userEmail }}</span>
+            <span class="user-role">{{ getRoleLabel() }}</span>
+          </div>
+        </div>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-sign-out"
+          class="p-button-text logout-button"
+          (click)="logout()"
+          [loading]="isLoggingOut"
+          [disabled]="isLoggingOut"
+          pTooltip="Disconnetti"
+        ></button>
+      </div>
+    </div>
   </aside>
+
   <main class="content">
-    <!-- Qui Angular monterà i componenti in base alla rotta -->
     <router-outlet></router-outlet>
   </main>
+
+  <p-toast></p-toast>
 </div>
+
+<ng-template #loginPage>
+  <router-outlet></router-outlet>
+</ng-template>

@@ -1,0 +1,118 @@
+.gestione-utenti-container {
+  padding: 1rem;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+
+  h1 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+  }
+
+  p {
+    color: var(--text-color-secondary);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+    color: var(--text-color);
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+
+  p {
+    margin-top: 1rem;
+    color: var(--text-color-secondary);
+  }
+}
+
+.email-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.current-user-icon {
+  color: var(--primary-color);
+}
+
+.current-user-row {
+  background-color: rgba(var(--primary-color-rgb), 0.05) !important;
+}
+
+.user-role-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  &.role-founder {
+    background-color: #ffd8b2;
+    color: #805b36;
+  }
+
+  &.role-manager {
+    background-color: #c8e6c9;
+    color: #2e7d32;
+  }
+
+  &.role-operator {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+  }
+}
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.new-user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-weight: 500;
+  }
+}
+
+.password-hint {
+  color: var(--text-color-secondary);
+  font-size: 0.75rem;
+}
+
+:host ::ng-deep {
+  .users-card {
+    .p-card-header {
+      padding-bottom: 0;
+    }
+  }
+
+  .p-dropdown {
+    min-width: 8rem;
+  }
+}

@@ -97,7 +97,9 @@ export class RealtimeDbService {
   }
 
   // Add method to get a single product by ID
-  getSofaProduct(id: string): Promise<{ id: string; data: SofaProduct } | null> {
+  getSofaProduct(
+    id: string
+  ): Promise<{ id: string; data: SofaProduct } | null> {
     return new Promise((resolve) => {
       const refPath = ref(this.db, `products/${id}`);
       onValue(
@@ -460,5 +462,10 @@ export class RealtimeDbService {
           .catch((error) => reject(error));
       });
     });
+  }
+
+  // Generic method to remove data from any path
+  remove(path: string): Promise<void> {
+    return remove(ref(this.db, path));
   }
 }

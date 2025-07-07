@@ -1,279 +1,754 @@
 {
-  "componentTypes": {
-    "type_001": {
-      "id": "type_001",
-      "name": "Struttura"
-    },
-    "type_002": {
-      "id": "type_002",
-      "name": "Imbottitura"
-    },
-    "type_003": {
-      "id": "type_003",
-      "name": "Rivestimento"
-    },
-    "type_004": {
-      "id": "type_004",
-      "name": "Meccanismo"
-    },
-    "type_005": {
-      "id": "type_005",
-      "name": "Accessorio"
+  "component-types": {
+    "-OU4qm4bWKKLcg41vXaz": {
+      "id": "-OU4qm4bWKKLcg41vXaz",
+      "name": "ComponentType"
     }
   },
   "components": {
-    "comp_001": {
-      "componentModels": [
-        "type_001"
-      ],
-      "id": "comp_001",
-      "name": "Struttura Base Standard",
-      "price": 300,
+    "-OU4quE6o7fj36g_sfKW": {
+      "id": "-OU4quE6o7fj36g_sfKW",
+      "name": "Component1",
+      "price": 10,
       "suppliers": [
-        "supp_001",
-        "supp_002"
-      ]
+        {
+          "contact": "123",
+          "id": "-OU4qhJOubmhuBi10VgD",
+          "name": "Fornitore"
+        }
+      ],
+      "type": "-OU4qm4bWKKLcg41vXaz"
     },
-    "comp_002": {
-      "componentModels": [
-        "type_002"
-      ],
-      "id": "comp_002",
-      "name": "Imbottitura Memory Foam",
-      "price": 150,
-      "suppliers": [
-        "supp_003"
-      ]
+    "-OU5N9jVhV70o8uGihFf": {
+      "id": "-OU5N9jVhV70o8uGihFf",
+      "name": "ExampleComponent",
+      "price": 110,
+      "suppliers": {
+        "contact": "123",
+        "id": "-OU4qhJOubmhuBi10VgD",
+        "name": "Fornitore"
+      }
     },
-    "comp_003": {
-      "componentModels": [
-        "type_003"
-      ],
-      "id": "comp_003",
-      "name": "Rivestimento Pelle Premium",
-      "price": 400,
-      "suppliers": [
-        "supp_004"
-      ]
+    "-OU5U7NqAcAh42PMDQYq": {
+      "id": "-OU5U7NqAcAh42PMDQYq",
+      "name": "ExampleComponent",
+      "price": 600,
+      "suppliers": {
+        "contact": "123",
+        "id": "-OU4qhJOubmhuBi10VgD",
+        "name": "Fornitore"
+      }
     },
-    "comp_004": {
-      "componentModels": [
-        "type_004"
-      ],
-      "id": "comp_004",
-      "name": "Meccanismo Reclinabile",
-      "price": 200,
+    "-OU5X7DjER2KIDnKKg3l": {
+      "id": "-OU5X7DjER2KIDnKKg3l",
+      "name": "Alexandru Raul Raita",
+      "price": 770,
       "suppliers": [
-        "supp_001"
-      ]
+        {
+          "contact": "",
+          "id": "-OU5X2sfmZJmdqb64pZ2",
+          "name": "Alex"
+        }
+      ],
+      "type": "-OU4qm4bWKKLcg41vXaz"
     },
-    "comp_005": {
-      "componentModels": [
-        "type_005"
-      ],
-      "id": "comp_005",
-      "name": "Piedini Cromati",
-      "price": 80,
+    "-OUBtAEWOdkwbLhjzmw3": {
+      "id": "-OUBtAEWOdkwbLhjzmw3",
+      "name": "ProdottoModificato",
+      "price": 50,
       "suppliers": [
-        "supp_002",
-        "supp_005"
-      ]
+        {
+          "contact": "",
+          "id": "-OU5X2sfmZJmdqb64pZ2",
+          "name": "Alex"
+        }
+      ],
+      "type": "-OU4qm4bWKKLcg41vXaz"
     }
   },
   "products": {
-    "prod_001": {
-      "components": [
-        "var_001_001",
-        "var_001_002"
-      ],
-      "description": "Divano moderno a 3 posti con design contemporaneo",
-      "id": "prod_001",
-      "name": "Divano Moderno Milano"
+    "-OU5TZz7h8Hz4OEmPA6N": {
+      "description": "",
+      "id": "-OU5TZz7h8Hz4OEmPA6N",
+      "materasso": "d",
+      "meccanica": "d",
+      "name": "Product",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/sofaform-59f6f.firebasestorage.app/o/products%2F-OU5TZz7h8Hz4OEmPA6N%2F1751712517338_divano.jpeg?alt=media&token=dbe0e2fc-4810-4df5-9393-d289199a3b8b",
+      "schienale": "d",
+      "seduta": "d",
+      "variants": ["-OU5TZzt3NDjSoVXzxg3"]
     },
-    "prod_002": {
-      "components": [
-        "var_002_001"
-      ],
-      "description": "Poltrona relax con meccanismo reclinabile",
-      "id": "prod_002",
-      "name": "Poltrona Relax Roma"
+    "-OU5UEvyeLGS8Q0bBDGX": {
+      "description": "",
+      "id": "-OU5UEvyeLGS8Q0bBDGX",
+      "name": "Alexandru",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/sofaform-59f6f.firebasestorage.app/o/products%2Ftemp_1751381689739%2F1751381689739_ChatGPT%20Image%2030%20giu%202025%2C%2017_57_31.png?alt=media&token=acdb2a97-13c6-43fc-90e0-5563929e478d",
+      "variants": ["-OU5UEwVGdXkb765gDWE"]
     },
-    "prod_003": {
-      "components": [
-        "var_003_001",
-        "var_003_002",
-        "var_003_003"
-      ],
-      "description": "Divano angolare componibile per soggiorno",
-      "id": "prod_003",
-      "name": "Divano Angolare Torino"
+    "-OU5Xbqli9uSil9SM76r": {
+      "description": "",
+      "id": "-OU5Xbqli9uSil9SM76r",
+      "name": "Alexandruu",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/sofaform-59f6f.firebasestorage.app/o/products%2Ftemp_1751382585663%2F1751382585663_ChatGPT%20Image%2030%20giu%202025%2C%2017_51_53.png?alt=media&token=5d19cf1a-50e7-4978-8ca0-0745a09239c6",
+      "variants": ["-OU5XbrQ4_NNnpck8qI4"]
     },
-    "prod_004": {
-      "components": [
-        "var_004_001"
-      ],
-      "description": "Divano letto con materasso estraibile",
-      "id": "prod_004",
-      "name": "Divano Letto Firenze"
+    "-OU5e38lRkBAXITWF5oh": {
+      "description": "",
+      "id": "-OU5e38lRkBAXITWF5oh",
+      "name": "ExampleProduct3",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/sofaform-59f6f.firebasestorage.app/o/products%2F-OU5e38lRkBAXITWF5oh%2F1751384607071_ChatGPT%20Image%2030%20giu%202025%2C%2017_57_31.png?alt=media&token=6b93166c-4819-4143-a06b-580aa2207803",
+      "variants": ["-OU5e5KSHHYPdJYBtBHf"]
     },
-    "prod_005": {
-      "components": [
-        "var_005_001"
-      ],
-      "description": "Chaise longue elegante per zone relax",
-      "id": "prod_005",
-      "name": "Chaise Longue Venezia"
+    "-OU5h1xtFxy63KV4cIrx": {
+      "description": "Divano comodissimo!",
+      "id": "-OU5h1xtFxy63KV4cIrx",
+      "meccanica": "Meccanica incredibile!",
+      "name": "ExampleProduct3",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/sofaform-59f6f.firebasestorage.app/o/products%2Ftemp_1751385317548%2F1751385317548_divano.jpeg?alt=media&token=d5dd7abc-c9a9-4ba7-b88b-ab39bdc2dfd9",
+      "schienale": "Schienale top!",
+      "seduta": "Seduta top\n",
+      "variants": ["-OU5h1yRaWk5jsTRwJ3T", "-OU5h1ySxdf5dIVBYjh5"]
+    },
+    "-OU5jljudqZ6DnZvpQIx": {
+      "description": "",
+      "id": "-OU5jljudqZ6DnZvpQIx",
+      "name": "Product10",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/sofaform-59f6f.firebasestorage.app/o/products%2F-OU5jljudqZ6DnZvpQIx%2F-OU5jljudqZ6DnZvpQIx.png?alt=media&token=c284732d-1795-4d23-b099-1730b66837dd",
+      "variants": ["-OU5jo4_NASfQh8__A0l"]
+    },
+    "-OUFUx4z8ine_ge4p5DW": {
+      "description": "",
+      "id": "-OUFUx4z8ine_ge4p5DW",
+      "name": "ExampleProduct123",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/sofaform-59f6f.firebasestorage.app/o/products%2F-OUFUx4z8ine_ge4p5DW%2F-OUFUx4z8ine_ge4p5DW.png?alt=media&token=6d33ea7b-358e-4936-94bf-de305ed8270a",
+      "variants": ["-OUFUzygDNFBaZ5ZHrTi"]
+    },
+    "-OUFVkFVB7uZ6j5b_69Q": {
+      "description": "",
+      "id": "-OUFVkFVB7uZ6j5b_69Q",
+      "name": "ExampleProduct234",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/sofaform-59f6f.firebasestorage.app/o/products%2F-OUFVkFVB7uZ6j5b_69Q%2F-OUFVkFVB7uZ6j5b_69Q.png?alt=media&token=c262e90a-e1c9-478a-8865-7eb7689247e1",
+      "variants": ["-OUFVoo-Pk11-IzGSmr6"]
+    },
+    "-OUJc5aKXtxmxfUIq5O7": {
+      "description": "",
+      "id": "-OUJc5aKXtxmxfUIq5O7",
+      "name": "ExampleProduct3",
+      "variants": ["-OUJc5b_vMpmxmZ2V_o-"]
+    },
+    "-OUJdSucefvvYotRyDPO": {
+      "description": "",
+      "id": "-OUJdSucefvvYotRyDPO",
+      "name": "ExampleProduct3",
+      "variants": ["-OUJdSwB4zkfVWpA2mBQ"]
+    },
+    "-OUJfU7Plb0j4baXYr7z": {
+      "description": "",
+      "id": "-OUJfU7Plb0j4baXYr7z",
+      "name": "ExampleProduct3",
+      "variants": ["-OUJfU8svLHQAqhicV-t"]
     }
   },
   "rivestimenti": {
-    "riv_001": {
-      "code": "TES_001",
-      "id": "riv_001",
-      "mtPrice": 25,
-      "type": "TESSUTO"
+    "-OU5Tu7T50Ga_IemDbbA": {
+      "code": "TESS_\"",
+      "id": "-OU5Tu7T50Ga_IemDbbA",
+      "mtPrice": 1,
+      "type": "Tessuto2"
     },
-    "riv_002": {
-      "code": "PEL_001",
-      "id": "riv_002",
-      "mtPrice": 45,
-      "type": "PELLE"
+    "-OU5UrPUox1m6ivxSlVq": {
+      "code": "TESS",
+      "id": "-OU5UrPUox1m6ivxSlVq",
+      "mtPrice": 2,
+      "type": "Tessuto3"
     },
-    "riv_003": {
-      "code": "MIC_001",
-      "id": "riv_003",
-      "mtPrice": 30,
-      "type": "MICROFIBRA"
+    "-OU5X0JDfgTH-WPmXWWw": {
+      "code": "COT_00",
+      "id": "-OU5X0JDfgTH-WPmXWWw",
+      "mtPrice": 5,
+      "type": "Cotone"
     },
-    "riv_004": {
-      "code": "TES_PRE",
-      "id": "riv_004",
-      "mtPrice": 35,
-      "type": "TESSUTO"
-    },
-    "riv_005": {
-      "code": "PEL_PRE",
-      "id": "riv_005",
-      "mtPrice": 60,
-      "type": "PELLE"
+    "-OUBt64k73Hh2SpxNWsW": {
+      "code": "TESS_\"1",
+      "id": "-OUBt64k73Hh2SpxNWsW",
+      "mtPrice": 3,
+      "type": "Cotone2"
     }
   },
   "suppliers": {
-    "supp_001": {
-      "id": "supp_001",
-      "name": "Mobilificio Italiano SRL"
+    "-OU4qhJOubmhuBi10VgD": {
+      "contact": "123",
+      "id": "-OU4qhJOubmhuBi10VgD",
+      "name": "Fornitore"
     },
-    "supp_002": {
-      "id": "supp_002",
-      "name": "Componenti Design SpA"
+    "-OU5X2sfmZJmdqb64pZ2": {
+      "contact": "",
+      "id": "-OU5X2sfmZJmdqb64pZ2",
+      "name": "Alex"
     },
-    "supp_003": {
-      "id": "supp_003",
-      "name": "Memory Foam Solutions"
-    },
-    "supp_004": {
-      "id": "supp_004",
-      "name": "Pelletteria Toscana"
-    },
-    "supp_005": {
-      "id": "supp_005",
-      "name": "Metalli & Cromature"
+    "-OUBt3be8aLrcOhJdYlR": {
+      "contact": "123",
+      "id": "-OUBt3be8aLrcOhJdYlR",
+      "name": "Alex123"
+    }
+  },
+  "users": {
+    "GPt04Lexw8NLzUtukywnoQRKgfv2": {
+      "id": "GPt04Lexw8NLzUtukywnoQRKgfv2",
+      "email": "visionhubglobal@gmail.com",
+      "displayName": "Admin",
+      "role": "founder",
+      "creationDate": "2024-07-01T12:00:00.000Z",
+      "lastLoginDate": "2024-07-01T12:00:00.000Z",
+      "disabled": false
     }
   },
   "variants": {
-    "var_001_001": {
-      "code": "MIL_3P_TES",
+    "-OU53lS3z80TIvVJ_SSC": {
       "components": [
-        "comp_001",
-        "comp_002"
+        {
+          "id": "-OU4quE6o7fj36g_sfKW",
+          "name": "Component1",
+          "price": 10,
+          "suppliers": [
+            {
+              "contact": "123",
+              "id": "-OU4qhJOubmhuBi10VgD",
+              "name": "Fornitore"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        }
       ],
-      "id": "var_001_001",
-      "longName": "Milano 3 Posti Tessuto",
-      "price": 1200,
-      "seatsCount": 3,
-      "sofaId": "prod_001"
-    },
-    "var_001_002": {
-      "code": "MIL_3P_PEL",
-      "components": [
-        "comp_001",
-        "comp_003"
-      ],
-      "id": "var_001_002",
-      "longName": "Milano 3 Posti Pelle",
-      "price": 1800,
-      "seatsCount": 3,
-      "sofaId": "prod_001"
-    },
-    "var_002_001": {
-      "code": "ROM_REL_TES",
-      "components": [
-        "comp_004"
-      ],
-      "id": "var_002_001",
-      "longName": "Roma Relax Tessuto",
-      "price": 800,
-      "seatsCount": 1,
-      "sofaId": "prod_002"
-    },
-    "var_003_001": {
-      "code": "TOR_ANG_DX",
-      "components": [
-        "comp_001",
-        "comp_005"
-      ],
-      "id": "var_003_001",
-      "longName": "Torino Angolare Destro",
-      "price": 2200,
+      "id": "-OU53lS3z80TIvVJ_SSC",
+      "longName": "Variante",
+      "mattressWidth": 200,
+      "price": 0,
       "seatsCount": 5,
-      "sofaId": "prod_003"
+      "sofaId": "-OU53lDsOtzH-d7lmRSs"
     },
-    "var_003_002": {
-      "code": "TOR_ANG_SX",
+    "-OU5NCXbPNlTaYlC2dRw": {
       "components": [
-        "comp_001",
-        "comp_005"
+        {
+          "id": "-OU4quE6o7fj36g_sfKW",
+          "name": "Component1",
+          "price": 10,
+          "suppliers": [
+            {
+              "contact": "123",
+              "id": "-OU4qhJOubmhuBi10VgD",
+              "name": "Fornitore"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5N9jVhV70o8uGihFf",
+          "name": "ExampleComponent",
+          "price": 110,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        }
       ],
-      "id": "var_003_002",
-      "longName": "Torino Angolare Sinistro",
-      "price": 2200,
+      "id": "-OU5NCXbPNlTaYlC2dRw",
+      "longName": "Variante1",
+      "mattressWidth": 200,
+      "price": 0,
       "seatsCount": 5,
-      "sofaId": "prod_003"
+      "sofaId": "-OU5NCX7cbEfi2ACBxS_"
     },
-    "var_003_003": {
-      "code": "TOR_ANG_PEL",
+    "-OU5SHjipcBLj8Q7Br1-": {
       "components": [
-        "comp_001",
-        "comp_003"
+        {
+          "id": "-OU4quE6o7fj36g_sfKW",
+          "name": "Component1",
+          "price": 10,
+          "suppliers": [
+            {
+              "contact": "123",
+              "id": "-OU4qhJOubmhuBi10VgD",
+              "name": "Fornitore"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5N9jVhV70o8uGihFf",
+          "name": "ExampleComponent",
+          "price": 110,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        }
       ],
-      "id": "var_003_003",
-      "longName": "Torino Angolare Pelle",
-      "price": 3000,
+      "id": "-OU5SHjipcBLj8Q7Br1-",
+      "longName": "Variante",
+      "mattressWidth": 200,
+      "price": 0,
       "seatsCount": 5,
-      "sofaId": "prod_003"
+      "sofaId": "-OU5SHjExXnpHcGOemvP"
     },
-    "var_004_001": {
-      "code": "FIR_LET_140",
+    "-OU5TZzt3NDjSoVXzxg3": {
       "components": [
-        "comp_002",
-        "comp_004"
+        {
+          "id": "-OU4quE6o7fj36g_sfKW",
+          "name": "Component1",
+          "price": 10,
+          "suppliers": [
+            {
+              "contact": "123",
+              "id": "-OU4qhJOubmhuBi10VgD",
+              "name": "Fornitore"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5N9jVhV70o8uGihFf",
+          "name": "ExampleComponent",
+          "price": 110,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        }
       ],
-      "id": "var_004_001",
-      "longName": "Firenze Letto 140cm",
-      "mattressWidth": 140,
-      "price": 1500,
+      "id": "-OU5TZzt3NDjSoVXzxg3",
+      "longName": "Variante",
+      "mattressWidth": 200,
+      "price": 0,
+      "seatsCount": 5,
+      "sofaId": "-OU5TZz7h8Hz4OEmPA6N"
+    },
+    "-OU5UEwVGdXkb765gDWE": {
+      "components": [
+        {
+          "id": "-OU5U7NqAcAh42PMDQYq",
+          "name": "ExampleComponent",
+          "price": 600,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        }
+      ],
+      "id": "-OU5UEwVGdXkb765gDWE",
+      "longName": "Variante",
+      "mattressWidth": 200,
+      "price": 0,
+      "seatsCount": 123,
+      "sofaId": "-OU5UEvyeLGS8Q0bBDGX"
+    },
+    "-OU5XbrQ4_NNnpck8qI4": {
+      "components": [
+        {
+          "id": "-OU4quE6o7fj36g_sfKW",
+          "name": "Component1",
+          "price": 10,
+          "suppliers": [
+            {
+              "contact": "123",
+              "id": "-OU4qhJOubmhuBi10VgD",
+              "name": "Fornitore"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5N9jVhV70o8uGihFf",
+          "name": "ExampleComponent",
+          "price": 110,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        }
+      ],
+      "id": "-OU5XbrQ4_NNnpck8qI4",
+      "longName": "Variante",
+      "mattressWidth": 400,
+      "price": 0,
+      "seatsCount": 6,
+      "sofaId": "-OU5Xbqli9uSil9SM76r"
+    },
+    "-OU5e5KSHHYPdJYBtBHf": {
+      "components": [
+        {
+          "id": "-OU5N9jVhV70o8uGihFf",
+          "name": "ExampleComponent",
+          "price": 110,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        }
+      ],
+      "id": "-OU5e5KSHHYPdJYBtBHf",
+      "longName": "Variante",
+      "mattressWidth": 200,
+      "price": 0,
+      "seatsCount": 123,
+      "sofaId": "-OU5e38lRkBAXITWF5oh"
+    },
+    "-OU5h1yRaWk5jsTRwJ3T": {
+      "components": [
+        {
+          "id": "-OU5N9jVhV70o8uGihFf",
+          "name": "ExampleComponent",
+          "price": 110,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        }
+      ],
+      "id": "-OU5h1yRaWk5jsTRwJ3T",
+      "longName": "Prod1",
+      "mattressWidth": 160,
+      "price": 0,
       "seatsCount": 3,
-      "sofaId": "prod_004"
+      "sofaId": "-OU5h1xtFxy63KV4cIrx"
     },
-    "var_005_001": {
-      "code": "VEN_CHA_MIC",
+    "-OU5h1ySxdf5dIVBYjh5": {
       "components": [
-        "comp_002"
+        {
+          "id": "-OU5U7NqAcAh42PMDQYq",
+          "name": "ExampleComponent",
+          "price": 600,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        }
       ],
-      "id": "var_005_001",
-      "longName": "Venezia Chaise Microfibra",
-      "price": 900,
-      "seatsCount": 1,
-      "sofaId": "prod_005"
+      "id": "-OU5h1ySxdf5dIVBYjh5",
+      "longName": "Prod2",
+      "mattressWidth": 120,
+      "price": 0,
+      "seatsCount": 2,
+      "sofaId": "-OU5h1xtFxy63KV4cIrx"
+    },
+    "-OU5jo4_NASfQh8__A0l": {
+      "components": [
+        {
+          "id": "-OU5N9jVhV70o8uGihFf",
+          "name": "ExampleComponent",
+          "price": 110,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        }
+      ],
+      "id": "-OU5jo4_NASfQh8__A0l",
+      "longName": "ExampleVariant3",
+      "mattressWidth": 20,
+      "price": 0,
+      "seatsCount": 2,
+      "sofaId": "-OU5jljudqZ6DnZvpQIx"
+    },
+    "-OUFUzygDNFBaZ5ZHrTi": {
+      "components": [
+        {
+          "id": "-OU4quE6o7fj36g_sfKW",
+          "name": "Component1",
+          "price": 10,
+          "suppliers": [
+            {
+              "contact": "123",
+              "id": "-OU4qhJOubmhuBi10VgD",
+              "name": "Fornitore"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        }
+      ],
+      "id": "-OUFUzygDNFBaZ5ZHrTi",
+      "longName": "ExampleVariant123",
+      "mattressWidth": 120,
+      "price": 0,
+      "seatsCount": 5,
+      "sofaId": "-OUFUx4z8ine_ge4p5DW"
+    },
+    "-OUFVoo-Pk11-IzGSmr6": {
+      "components": [
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        }
+      ],
+      "id": "-OUFVoo-Pk11-IzGSmr6",
+      "longName": "123abc",
+      "mattressWidth": 150,
+      "price": 0,
+      "seatsCount": 120,
+      "sofaId": "-OUFVkFVB7uZ6j5b_69Q"
+    },
+    "-OUJc5b_vMpmxmZ2V_o-": {
+      "components": [
+        {
+          "id": "-OU4quE6o7fj36g_sfKW",
+          "name": "Component1",
+          "price": 10,
+          "suppliers": [
+            {
+              "contact": "123",
+              "id": "-OU4qhJOubmhuBi10VgD",
+              "name": "Fornitore"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5N9jVhV70o8uGihFf",
+          "name": "ExampleComponent",
+          "price": 110,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        },
+        {
+          "id": "-OU5N9jVhV70o8uGihFf",
+          "name": "ExampleComponent",
+          "price": 110,
+          "suppliers": {
+            "contact": "123",
+            "id": "-OU4qhJOubmhuBi10VgD",
+            "name": "Fornitore"
+          }
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        },
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        }
+      ],
+      "id": "-OUJc5b_vMpmxmZ2V_o-",
+      "longName": "Variante",
+      "mattressWidth": 123,
+      "price": 0,
+      "seatsCount": 123,
+      "sofaId": "-OUJc5aKXtxmxfUIq5O7"
+    },
+    "-OUJdSwB4zkfVWpA2mBQ": {
+      "components": [
+        {
+          "id": "-OU5X7DjER2KIDnKKg3l",
+          "name": "Alexandru Raul Raita",
+          "price": 770,
+          "suppliers": [
+            {
+              "contact": "",
+              "id": "-OU5X2sfmZJmdqb64pZ2",
+              "name": "Alex"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        }
+      ],
+      "id": "-OUJdSwB4zkfVWpA2mBQ",
+      "longName": "Variante",
+      "mattressWidth": 123,
+      "price": 0,
+      "seatsCount": 123,
+      "sofaId": "-OUJdSucefvvYotRyDPO"
+    },
+    "-OUJfU8svLHQAqhicV-t": {
+      "components": [
+        {
+          "id": "-OU4quE6o7fj36g_sfKW",
+          "name": "Component1",
+          "price": 10,
+          "suppliers": [
+            {
+              "contact": "123",
+              "id": "-OU4qhJOubmhuBi10VgD",
+              "name": "Fornitore"
+            }
+          ],
+          "type": "-OU4qm4bWKKLcg41vXaz"
+        }
+      ],
+      "id": "-OUJfU8svLHQAqhicV-t",
+      "longName": "Variante",
+      "mattressWidth": 123,
+      "price": 0,
+      "seatsCount": 123,
+      "sofaId": "-OUJfU7Plb0j4baXYr7z"
     }
   }
 }

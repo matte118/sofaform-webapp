@@ -1,0 +1,79 @@
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 1rem;
+}
+
+.login-card-wrapper {
+  width: 100%;
+  max-width: 450px;
+}
+
+.login-card {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+.logo-container {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo {
+  max-width: 180px;
+  height: auto;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #495057;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-field label {
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.error-message {
+  margin-bottom: 1rem;
+}
+
+:host ::ng-deep {
+  .p-inputtext,
+  .p-password {
+    width: 100%;
+  }
+
+  .p-card {
+    .p-card-content {
+      padding-top: 1rem;
+    }
+  }
+
+  .p-button {
+    min-width: 150px;
+    justify-content: center;
+  }
+}
