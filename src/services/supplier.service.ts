@@ -5,7 +5,7 @@ import { RealtimeDbService } from './realtime-db.service';
 import { Supplier } from '../models/supplier.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SupplierService {
   private isBrowser: boolean;
@@ -28,17 +28,25 @@ export class SupplierService {
     if (!this.isBrowser) {
       return of([]);
     }
-    
-    return new Observable(observer => {
-      this.dbService.getSuppliers(suppliers => {
-        const mappedSuppliers = suppliers.map(s => 
-          new Supplier(
-            s.id, 
-            s.data.name, 
-            s.data.contact
-          )
+
+    return new Observable((observer) => {
+      this.dbService.getSuppliers((suppliers) => {
+        const mappedSuppliers = suppliers.map(
+          (s) => new Supplier(s.id, s.data.name, s.data.contact)
         );
         observer.next(mappedSuppliers);
+      });
+    });
+  }
+
+  getSuppliersAsObservable(): Observable<Supplier[]> {
+    return new Observable<Supplier[]>((observer) => {
+      this.dbService.getSuppliers((suppliers: { id: string; data: any }[]) => {
+        const mappedSuppliers = suppliers.map(
+          (s) => new Supplier(s.id, s.data.name, s.data.contact)
+        );
+        observer.next(mappedSuppliers);
+        observer.complete();
       });
     });
   }

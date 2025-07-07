@@ -246,26 +246,90 @@
     }
   }
 
-  // Responsive design
-  @media (max-width: 768px) {
-    padding: 16px;
+  // Add styles for editing mode
+  .editing-mode {
+    border: 2px solid #2196f3;
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+    background-color: rgba(33, 150, 243, 0.05);
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
 
-    .supplier-form-card,
-    .supplier-table-section {
-      padding: 20px;
+    h2 {
+      color: #2196f3;
     }
+  }
 
-    .page-header h1 {
-      font-size: 2rem;
-    }
+  // Nuovi stili per garantire che le icone vengano visualizzate correttamente
+  .actions-cell {
+    min-width: 100px;
+    text-align: center !important;
 
-    ::ng-deep .p-datatable .p-datatable-header .table-header {
-      flex-direction: column;
-      align-items: stretch;
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
 
-      .search-container input {
-        min-width: 100%;
+      button {
+        margin: 0 2px;
+        visibility: visible !important;
+        opacity: 1 !important;
+
+        &.p-button {
+          width: 2rem;
+          height: 2rem;
+        }
       }
+    }
+  }
+
+  // Stile per la tabella
+  .suppliers-table {
+    width: 100%;
+
+    &.refreshing {
+      opacity: 0.95;
+    }
+
+    // Styling to ensure icons are visible
+    ::ng-deep .p-button-icon {
+      font-family: "PrimeIcons", sans-serif !important;
+      display: inline-block !important;
+      visibility: visible !important;
+    }
+
+    // Ensure rows are properly spaced
+    tr {
+      height: 3.5rem;
+    }
+  }
+
+  // Stile per il messaggio di caricamento
+  .loading-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+
+    p {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      color: #666;
+    }
+  }
+
+  // Apply a fixed position to the form on mobile
+  @media screen and (max-width: 768px) {
+    .supplier-form-card {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: white;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
   }
 

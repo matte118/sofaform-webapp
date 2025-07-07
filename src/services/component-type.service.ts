@@ -39,6 +39,18 @@ export class ComponentTypeService {
     });
   }
 
+  getComponentTypesAsObservable(): Observable<ComponentType[]> {
+    return new Observable<ComponentType[]>((observer) => {
+      this.dbService.getComponentTypes((types: { id: string; data: any }[]) => {
+        const mappedTypes = types.map(
+          (t: { id: string; data: any }) => new ComponentType(t.id, t.data.name)
+        );
+        observer.next(mappedTypes);
+        observer.complete();
+      });
+    });
+  }
+
   updateComponentType(
     id: string,
     componentType: ComponentType

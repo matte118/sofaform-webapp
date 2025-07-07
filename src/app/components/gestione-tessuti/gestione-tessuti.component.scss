@@ -21,7 +21,7 @@
       margin: 0;
     }
   }
-  
+
   // Form card
   .tessuto-form-card {
     background: white;
@@ -62,13 +62,15 @@
           font-size: 0.95rem;
         }
 
-        input, ::ng-deep .p-inputnumber {
+        input,
+        ::ng-deep .p-inputnumber {
           height: 48px;
           border: 2px solid #e9ecef;
           border-radius: 8px;
           transition: all 0.2s ease;
 
-          &:focus, &:focus-within {
+          &:focus,
+          &:focus-within {
             border-color: #007bff;
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
           }
@@ -117,7 +119,7 @@
       }
     }
   }
-  
+
   // Table section
   .tessuto-table-section {
     background: white;
@@ -250,7 +252,8 @@
   @media (max-width: 768px) {
     padding: 16px;
 
-    .tessuto-form-card, .tessuto-table-section {
+    .tessuto-form-card,
+    .tessuto-table-section {
       padding: 20px;
     }
 
@@ -269,19 +272,105 @@
   }
 
   // 1) Centra il testo dell’intestazione "Azioni"
-::ng-deep .p-datatable-thead > tr > th {
-  &:last-child {
-    text-align: center;
+  ::ng-deep .p-datatable-thead > tr > th {
+    &:last-child {
+      text-align: center;
+    }
   }
-}
 
-.actions-cell {
-  display: flex;
-  justify-content: center;  
-  align-items: center;      
-  gap: 0.5rem;              
-}
+  .actions-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+  }
 
+  // Add styles for editing mode
+  .editing-mode {
+    border: 2px solid #2196f3;
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+    background-color: rgba(33, 150, 243, 0.05);
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+
+    h2 {
+      color: #2196f3;
+    }
+  }
+
+  // Nuovi stili per garantire che le icone vengano visualizzate correttamente
+  .actions-cell {
+    min-width: 100px;
+    text-align: center !important;
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+
+      button {
+        margin: 0 2px;
+        visibility: visible !important;
+        opacity: 1 !important;
+
+        &.p-button {
+          width: 2rem;
+          height: 2rem;
+        }
+      }
+    }
+  }
+
+  // Stile per la tabella
+  .tessuti-table {
+    width: 100%;
+
+    &.refreshing {
+      opacity: 0.95;
+    }
+
+    // Styling to ensure icons are visible
+    ::ng-deep .p-button-icon {
+      font-family: "PrimeIcons", sans-serif !important;
+      display: inline-block !important;
+      visibility: visible !important;
+    }
+
+    // Ensure rows are properly spaced
+    tr {
+      height: 3.5rem;
+    }
+  }
+
+  // Stile per il messaggio di caricamento
+  .loading-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+
+    p {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      color: #666;
+    }
+  }
+
+  // Apply a fixed position to the form on mobile
+  @media screen and (max-width: 768px) {
+    .tessuto-form-card {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: white;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
 
   // Toast positioning
   :host ::ng-deep .p-toast {

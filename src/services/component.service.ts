@@ -31,6 +31,27 @@ export class ComponentService {
     });
   }
 
+  getComponentsAsObservable(): Observable<Component[]> {
+    return new Observable<Component[]>((observer) => {
+      this.dbService.getComponents(
+        (components: { id: string; data: any }[]) => {
+          const mappedComponents = components.map(
+            (c) =>
+              new Component(
+                c.id,
+                c.data.name,
+                c.data.price,
+                c.data.suppliers || [],
+                c.data.type
+              )
+          );
+          observer.next(mappedComponents);
+          observer.complete();
+        }
+      );
+    });
+  }
+
   updateComponent(id: string, component: Component): Observable<void> {
     return from(this.dbService.updateComponent(id, component));
   }
@@ -62,7 +83,9 @@ export class ComponentService {
           if (!c.data.suppliers || !Array.isArray(c.data.suppliers)) {
             return false;
           }
-          return c.data.suppliers.some((supplier: any) => supplier.id === supplierId);
+          return c.data.suppliers.some(
+            (supplier: any) => supplier.id === supplierId
+          );
         });
 
         const mappedComponents = componentsWithSupplier.map(

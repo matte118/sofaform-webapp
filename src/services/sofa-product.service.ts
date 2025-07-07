@@ -53,7 +53,11 @@ export class SofaProductService {
             p.data.name,
             p.data.description || '',
             p.data.variants || [],
-            p.data.photoUrl || ''
+            p.data.photoUrl || '',
+            p.data.seduta || '',
+            p.data.schienale || '',
+            p.data.meccanica || '',
+            p.data.materasso || ''
           );
           console.log('Mapped SofaProduct:', sofaProduct);
           return sofaProduct;
@@ -87,31 +91,29 @@ export class SofaProductService {
 
         if (product?.data.photoUrl) {
           // Delete the image first, then delete the product
-          this.uploadService
-            .deleteImage(product.data.photoUrl)
-            .subscribe({
-              next: () => {
-                // Image deleted successfully, now delete the product
-                from(this.dbService.deleteSofaProduct(id)).subscribe({
-                  next: () => {
-                    observer.next();
-                    observer.complete();
-                  },
-                  error: (error) => observer.error(error),
-                });
-              },
-              error: (imageError) => {
-                // Even if image deletion fails, still delete the product
-                console.warn('Failed to delete product image:', imageError);
-                from(this.dbService.deleteSofaProduct(id)).subscribe({
-                  next: () => {
-                    observer.next();
-                    observer.complete();
-                  },
-                  error: (error) => observer.error(error),
-                });
-              },
-            });
+          this.uploadService.deleteImage(product.data.photoUrl).subscribe({
+            next: () => {
+              // Image deleted successfully, now delete the product
+              from(this.dbService.deleteSofaProduct(id)).subscribe({
+                next: () => {
+                  observer.next();
+                  observer.complete();
+                },
+                error: (error) => observer.error(error),
+              });
+            },
+            error: (imageError) => {
+              // Even if image deletion fails, still delete the product
+              console.warn('Failed to delete product image:', imageError);
+              from(this.dbService.deleteSofaProduct(id)).subscribe({
+                next: () => {
+                  observer.next();
+                  observer.complete();
+                },
+                error: (error) => observer.error(error),
+              });
+            },
+          });
         } else {
           // No image to delete, just delete the product
           from(this.dbService.deleteSofaProduct(id)).subscribe({

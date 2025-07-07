@@ -5,7 +5,7 @@ import { RealtimeDbService } from './realtime-db.service';
 import { Rivestimento } from '../models/rivestimento.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RivestimentoService {
   private isBrowser: boolean;
@@ -28,19 +28,30 @@ export class RivestimentoService {
     if (!this.isBrowser) {
       return of([]);
     }
-    
-    return new Observable(observer => {
-      this.dbService.getRivestimenti(rivestimenti => {
-        const mappedRivestimenti = rivestimenti.map(r => 
-          new Rivestimento(
-            r.id, 
-            r.data.type,
-            r.data.mtPrice,
-            r.data.code
-          )
+
+    return new Observable((observer) => {
+      this.dbService.getRivestimenti((rivestimenti) => {
+        const mappedRivestimenti = rivestimenti.map(
+          (r) =>
+            new Rivestimento(r.id, r.data.type, r.data.mtPrice, r.data.code)
         );
         observer.next(mappedRivestimenti);
       });
+    });
+  }
+
+  getRivestimentiAsObservable(): Observable<Rivestimento[]> {
+    return new Observable<Rivestimento[]>((observer) => {
+      this.dbService.getRivestimenti(
+        (rivestimenti: { id: string; data: any }[]) => {
+          const mappedRivestimenti = rivestimenti.map(
+            (r) =>
+              new Rivestimento(r.id, r.data.type, r.data.mtPrice, r.data.code)
+          );
+          observer.next(mappedRivestimenti);
+          observer.complete();
+        }
+      );
     });
   }
 

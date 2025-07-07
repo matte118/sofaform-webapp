@@ -1,29 +1,51 @@
 <div class="home">
   <h1>Il nostro catalogo</h1>
 
+  <!-- Stato vuoto -->
   <div *ngIf="products.length === 0" class="empty-state">
     <i class="pi pi-inbox"></i>
     <p>Nessun prodotto aggiunto.</p>
   </div>
 
+  <!-- Griglia prodotti -->
   <div class="p-grid p-align-start p-mt-4" *ngIf="products.length > 0">
-    <div class="p-col-12 p-sm-6 p-md-4" *ngFor="let product of products; trackBy: trackById">
+    <div
+      class="p-col-12 p-sm-6 p-md-4"
+      *ngFor="let product of products; trackBy: trackById"
+    >
       <p-card [header]="product.name" styleClass="product-card">
         <!-- Azioni modifica / elimina -->
         <div class="card-actions">
-          <button pButton type="button" class="p-button-rounded p-button-text" icon="pi pi-pencil"
-            (click)="editProduct(product)"></button>
-          <button pButton type="button" class="p-button-rounded p-button-danger p-button-text" icon="pi pi-trash"
-            (click)="deleteProduct($event, product)"></button>
+          <button
+            pButton
+            type="button"
+            class="p-button-rounded p-button-text"
+            icon="pi pi-pencil"
+            (click)="openEditDialog(product, $event)"
+          ></button>
+
+          <button
+            pButton
+            type="button"
+            class="p-button-rounded p-button-danger p-button-text"
+            icon="pi pi-trash"
+            (click)="deleteProduct($event, product)"
+          ></button>
         </div>
 
         <!-- Header con immagine -->
         <ng-template pTemplate="header">
           <div class="product-image-container">
             <ng-container *ngIf="hasProductImage(product.id); else placeholder">
-              <img pCardImage [src]="getProductImageUrl(product.id)" [alt]="product.name" class="product-image"
-                (error)="onImageError(product.id)" />
+              <img
+                pCardImage
+                [src]="getProductImageUrl(product.id)"
+                [alt]="product.name"
+                class="product-image"
+                (error)="onImageError(product.id)"
+              />
             </ng-container>
+
             <ng-template #placeholder>
               <div class="product-image-placeholder">
                 <i class="pi pi-image"></i>
@@ -33,7 +55,7 @@
           </div>
         </ng-template>
 
-        <!-- Corpo card con descrizione e varianti -->
+        <!-- Contenuto card: descrizione e varianti -->
         <ng-template pTemplate="content">
           <p *ngIf="product.description" class="product-description">
             {{ product.description }}
@@ -41,62 +63,109 @@
 
           <h4 class="variants-title">Varianti</h4>
           <ul class="variants-list">
-            <li *ngFor="let variant of getProductVariants(product.id)" class="variant-item">
+            <li
+              *ngFor="let variant of getProductVariants(product.id)"
+              class="variant-item"
+            >
+              <!-- Intestazione variante -->
               <div class="variant-header">
                 <div class="variant-info">
                   <span class="variant-name">{{ variant.longName }}</span>
                 </div>
                 <div class="variant-meta">
-                  <span class="variant-price">€ {{ variant.price.toFixed(2) }}</span>
+                  <span class="variant-price"
+                    >€ {{ variant.price.toFixed(2) }}</span
+                  >
                   <small *ngIf="variant.seatsCount" class="variant-seats">
                     {{ variant.seatsCount }} posti
                   </small>
-                  <button pButton type="button" class="p-button-text p-button-sm variant-toggle" [icon]="
+                  <button
+                    pButton
+                    type="button"
+                    class="p-button-text p-button-sm variant-toggle"
+                    [icon]="
                       isVariantExpanded(variant.id)
                         ? 'pi pi-chevron-up'
                         : 'pi pi-chevron-down'
-                    " (click)="toggleVariantExpansion(variant.id)"></button>
+                    "
+                    (click)="toggleVariantExpansion(variant.id)"
+                  ></button>
                 </div>
               </div>
 
-              <div class="variant-details" *ngIf="isVariantExpanded(variant.id)">
+              <!-- Dettagli espansi -->
+              <div
+                class="variant-details"
+                *ngIf="isVariantExpanded(variant.id)"
+              >
                 <div class="variant-detail-row" *ngIf="variant.seatsCount">
                   <strong>Posti:</strong> {{ variant.seatsCount }}
                 </div>
                 <div class="variant-detail-row" *ngIf="variant.mattressWidth">
                   <strong>Larghezza materasso:</strong>
-                  {{ variant.mattressWidth }}cm
+                  {{ variant.mattressWidth }} cm
                 </div>
 
-                <div class="components-section" *ngIf="variant.components?.length">
+                <!-- Componenti -->
+                <div
+                  class="components-section"
+                  *ngIf="variant.components?.length"
+                >
                   <h5 class="components-title">Componenti:</h5>
                   <div class="components-list">
-                    <div class="component-item" *ngFor="let groupedComponent of getGroupedComponents(variant)">
+                    <div
+                      class="component-item"
+                      *ngFor="
+                        let groupedComponent of getGroupedComponents(variant)
+                      "
+                    >
                       <div class="component-header">
                         <span class="component-name">
-                          {{ groupedComponent.component.name }} 
-                          <span *ngIf="groupedComponent.quantity > 1" class="component-quantity">
+                          {{ groupedComponent.component.name }}
+                          <span
+                            *ngIf="groupedComponent.quantity > 1"
+                            class="component-quantity"
+                          >
                             ×{{ groupedComponent.quantity }}
                           </span>
                         </span>
-                        <span class="component-price">€ {{ groupedComponent.totalPrice.toFixed(2) }}</span>
+                        <span class="component-price">
+                          € {{ groupedComponent.totalPrice.toFixed(2) }}
+                        </span>
                       </div>
                       <div class="component-details">
-                        <div class="component-detail" *ngIf="groupedComponent.component.suppliers?.length">
+                        <div
+                          class="component-detail"
+                          *ngIf="groupedComponent.component.suppliers?.length"
+                        >
                           <strong>Fornitori:</strong>
-                          <span *ngFor="
-                              let supplier of groupedComponent.component.suppliers;
+                          <span
+                            *ngFor="
+                              let supplier of groupedComponent.component
+                                .suppliers;
                               let last = last
-                            ">
+                            "
+                          >
                             {{ supplier.name }}<span *ngIf="!last">, </span>
                           </span>
                         </div>
-                        <div class="component-detail" *ngIf="groupedComponent.component.type">
+                        <div
+                          class="component-detail"
+                          *ngIf="groupedComponent.component.type"
+                        >
                           <strong>Tipo:</strong>
-                          {{ getComponentTypeName(groupedComponent.component.type) }}
+                          {{
+                            getComponentTypeName(
+                              groupedComponent.component.type
+                            )
+                          }}
                         </div>
-                        <div class="component-detail" *ngIf="groupedComponent.quantity > 1">
-                          <strong>Prezzo unitario:</strong> € {{ groupedComponent.component.price.toFixed(2) }}
+                        <div
+                          class="component-detail"
+                          *ngIf="groupedComponent.quantity > 1"
+                        >
+                          <strong>Prezzo unitario:</strong>
+                          € {{ groupedComponent.component.price.toFixed(2) }}
                         </div>
                       </div>
                     </div>
@@ -107,98 +176,415 @@
           </ul>
         </ng-template>
 
-        <!-- Footer con pulsante listino -->
+        <!-- Footer: genera listino -->
         <ng-template pTemplate="footer">
-          <button pButton type="button" label="Genera Listino" (click)="generaListino(product)"></button>
+          <button
+            pButton
+            type="button"
+            label="Genera Listino"
+            (click)="generaListino(product)"
+          ></button>
         </ng-template>
       </p-card>
     </div>
   </div>
-</div>
 
-<!-- Dialog Selezione Rivestimento -->
-<p-dialog appendTo="body" [(visible)]="showRivestimentoDialog" header="Seleziona Rivestimento" [modal]="true"
-  [closable]="false" [baseZIndex]="10000" [style]="{ width: '800px', maxHeight: '90vh' }" [draggable]="false"
-  [resizable]="false" (onHide)="cancelRivestimento()">
-  <div class="p-fluid">
-    <div class="field">
-      <label for="rivestimento">Rivestimento:</label>
-      <p-dropdown id="rivestimento" [options]="availableRivestimenti" [(ngModel)]="selectedRivestimento"
-        optionLabel="code" placeholder="Seleziona un rivestimento" [showClear]="true" scrollHeight="300px"
-        [filter]="true" filterBy="code" [autoZIndex]="true" [baseZIndex]="10000" appendTo="body">
-        <ng-template pTemplate="selectedItem">
-          <div *ngIf="selectedRivestimento" class="selected-rivestimento">
-            <span class="rivestimento-code">{{ selectedRivestimento.code }}</span>
-            <span class="rivestimento-price">€{{ selectedRivestimento.mtPrice }}/mt</span>
+  <!-- Dialog Selezione Rivestimento -->
+  <p-dialog
+    appendTo="body"
+    [(visible)]="showRivestimentoDialog"
+    header="Seleziona Rivestimento"
+    [modal]="true"
+    [closable]="false"
+    [baseZIndex]="10000"
+    [style]="{ width: '800px', maxHeight: '90vh' }"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="cancelRivestimento()"
+  >
+    <div class="p-fluid">
+      <div class="field">
+        <label for="rivestimento">Rivestimento:</label>
+        <p-dropdown
+          id="rivestimento"
+          [options]="availableRivestimenti"
+          [(ngModel)]="selectedRivestimento"
+          optionLabel="code"
+          placeholder="Seleziona un rivestimento"
+          [showClear]="true"
+          scrollHeight="300px"
+          [filter]="true"
+          filterBy="code"
+          [autoZIndex]="true"
+          [baseZIndex]="10000"
+          appendTo="body"
+        >
+          <ng-template pTemplate="selectedItem">
+            <div *ngIf="selectedRivestimento" class="selected-rivestimento">
+              <span class="rivestimento-code">{{
+                selectedRivestimento.code
+              }}</span>
+              <span class="rivestimento-price">
+                €{{ selectedRivestimento.mtPrice }}/mt
+              </span>
+            </div>
+          </ng-template>
+          <ng-template let-rivestimento pTemplate="item">
+            <div class="rivestimento-item">
+              <span class="rivestimento-code">{{ rivestimento.code }}</span>
+              <span class="rivestimento-price">
+                €{{ rivestimento.mtPrice }}/mt
+              </span>
+            </div>
+          </ng-template>
+        </p-dropdown>
+      </div>
+
+      <div class="field" *ngIf="selectedRivestimento">
+        <label for="meters">Metri di rivestimento:</label>
+        <p-inputNumber
+          id="meters"
+          [(ngModel)]="metersOfRivestimento"
+          [min]="0.1"
+          [step]="0.1"
+          suffix=" mt"
+          placeholder="Inserisci i metri"
+        ></p-inputNumber>
+      </div>
+
+      <div
+        class="field"
+        *ngIf="selectedRivestimento && metersOfRivestimento > 0"
+      >
+        <strong>
+          Costo totale rivestimento: €{{
+            calculateRivestimentoCost().toFixed(2)
+          }}
+        </strong>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button
+        pButton
+        type="button"
+        label="Annulla"
+        class="p-button-danger"
+        (click)="cancelRivestimento()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Continua"
+        (click)="selectRivestimento()"
+        [disabled]="!selectedRivestimento || metersOfRivestimento <= 0"
+      ></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Dialog Configura Ricarico -->
+  <p-dialog
+    appendTo="body"
+    [(visible)]="showMarkupDialog"
+    header="Configura Ricarico"
+    [modal]="true"
+    [closable]="false"
+    [baseZIndex]="10000"
+    [style]="{ width: '450px' }"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="cancelMarkup()"
+    [dismissableMask]="false"
+    [closeOnEscape]="false"
+  >
+    <div class="p-fluid">
+      <div class="field">
+        <label for="markup">Percentuale di ricarico:</label>
+        <p-inputNumber
+          id="markup"
+          [(ngModel)]="markupPercentage"
+          [min]="0"
+          [max]="1000"
+          suffix="%"
+          placeholder="Inserisci la percentuale"
+        ></p-inputNumber>
+      </div>
+
+      <div class="field" *ngIf="selectedProduct">
+        <h4>Anteprima prezzi ({{ selectedProduct.name }}):</h4>
+
+        <div
+          *ngFor="let variant of getProductVariants(selectedProduct.id)"
+          class="variant-preview"
+        >
+          <div class="variant-preview-header">
+            <strong>{{ variant.longName }}</strong>
           </div>
-        </ng-template>
-        <ng-template let-rivestimento pTemplate="item">
-          <div class="rivestimento-item">
-            <span class="rivestimento-code">{{ rivestimento.code }}</span>
-            <span class="rivestimento-price">€{{ rivestimento.mtPrice }}/mt</span>
-          </div>
-        </ng-template>
-      </p-dropdown>
-    </div>
-
-    <div class="field" *ngIf="selectedRivestimento">
-      <label for="meters">Metri di rivestimento:</label>
-      <p-inputNumber id="meters" [(ngModel)]="metersOfRivestimento" [min]="0.1" [step]="0.1" suffix=" mt"
-        placeholder="Inserisci i metri"></p-inputNumber>
-    </div>
-
-    <div class="field" *ngIf="selectedRivestimento && metersOfRivestimento > 0">
-      <strong>
-        Costo totale rivestimento: €{{ calculateRivestimentoCost().toFixed(2) }}
-      </strong>
-    </div>
-  </div>
-
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Annulla" class="p-button-danger" (click)="cancelRivestimento()"></button>
-    <button pButton type="button" label="Continua" (click)="selectRivestimento()"
-      [disabled]="!selectedRivestimento || metersOfRivestimento <= 0"></button>
-  </ng-template>
-</p-dialog>
-
-<!-- Dialog Configura Ricarico -->
-<p-dialog appendTo="body" [(visible)]="showMarkupDialog" header="Configura Ricarico" [modal]="true" [closable]="false"
-  [baseZIndex]="10000" [style]="{ width: '450px' }" [draggable]="false" [resizable]="false" (onHide)="cancelMarkup()"
-  [dismissableMask]="false" [closeOnEscape]="false">
-  <div class="p-fluid">
-    <div class="field">
-      <label for="markup">Percentuale di ricarico:</label>
-      <p-inputNumber id="markup" [(ngModel)]="markupPercentage" [min]="0" [max]="1000" suffix="%"
-        placeholder="Inserisci la percentuale"></p-inputNumber>
-    </div>
-
-    <div class="field" *ngIf="selectedProduct">
-      <h4>Anteprima prezzi ({{ selectedProduct.name }}):</h4>
-      <div *ngFor="let variant of getProductVariants(selectedProduct.id)" class="variant-preview">
-        <div class="variant-preview-header">
-          <strong>{{ variant.longName }}</strong>
-        </div>
-        <div class="price-breakdown">
-          <div>Prezzo base: €{{ variant.price.toFixed(2) }}</div>
-          <div>Rivestimento: €{{ calculateRivestimentoCost().toFixed(2) }}</div>
-          <div class="total-price">
-            <strong>
-              Totale con ricarico ({{ markupPercentage }}%): €{{
-              ((variant.price + calculateRivestimentoCost()) /
-              ((100 - markupPercentage) / 100)).toFixed(2)
-              }}
-            </strong>
+          <div class="price-breakdown">
+            <div>Prezzo base: €{{ variant.price.toFixed(2) }}</div>
+            <div>
+              Rivestimento: €{{ calculateRivestimentoCost().toFixed(2) }}
+            </div>
+            <div class="total-price">
+              <strong>
+                Totale con ricarico ({{ markupPercentage }}%): €{{
+                  (
+                    (variant.price + calculateRivestimentoCost()) /
+                    ((100 - markupPercentage) / 100)
+                  ).toFixed(2)
+                }}
+              </strong>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Annulla" class="p-button-danger" (click)="cancelMarkup()"></button>
-    <button pButton type="button" label="Genera PDF" (click)="generateWithMarkup()"></button>
-  </ng-template>
-</p-dialog>
+    <ng-template pTemplate="footer">
+      <button
+        pButton
+        type="button"
+        label="Annulla"
+        class="p-button-danger"
+        (click)="cancelMarkup()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Genera PDF"
+        (click)="generateWithMarkup()"
+      ></button>
+    </ng-template>
+  </p-dialog>
 
-<p-toast></p-toast>
-<p-confirmDialog [closable]="false"></p-confirmDialog>
+  <!-- Dialog Modifica Prodotto -->
+  <p-dialog
+    [(visible)]="showEditProductDialog"
+    [header]="editProductDialogTitle"
+    [modal]="true"
+    [closable]="false"
+    [closeOnEscape]="true"
+    [style]="{ width: '90vw', maxWidth: '700px' }"
+    [breakpoints]="{ '960px': '95vw', '640px': '100vw' }"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="edit-product-dialog"
+    (onHide)="onEditDialogHide()"
+  >
+    <div class="edit-product-container" *ngIf="editingProduct">
+      <form #productForm="ngForm">
+        <div class="form-sections-wrapper">
+          <!-- Sezione Immagine -->
+          <div class="image-section">
+            <h3 class="section-title">Immagine Prodotto</h3>
+            <div class="image-upload-section">
+              <!-- Container immagine corrente con nuovi pulsanti -->
+              <div
+                class="current-image-container"
+                *ngIf="currentImageToShow && !uploadingNewImage"
+              >
+                <img
+                  [src]="currentImageToShow"
+                  alt="Immagine prodotto"
+                  class="current-image"
+                />
+                <div class="image-actions">
+                  <button
+                    type="button"
+                    pButton
+                    icon="pi pi-sync"
+                    class="p-button-rounded p-button-secondary image-reload-btn"
+                    (click)="showImageUpload()"
+                    pTooltip="Cambia immagine"
+                  ></button>
+                  <button
+                    type="button"
+                    pButton
+                    icon="pi pi-times"
+                    class="p-button-rounded p-button-danger image-remove-btn"
+                    (click)="removeProductImage()"
+                    pTooltip="Rimuovi immagine"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- Container placeholder e upload -->
+              <div
+                class="upload-container"
+                [ngClass]="{ 'upload-mode': isUploadMode }"
+                *ngIf="
+                  shouldShowImagePlaceholder ||
+                  uploadingNewImage ||
+                  isUploadMode
+                "
+              >
+                <!-- Placeholder migliorato con pulsante upload evidente -->
+                <div class="image-placeholder" *ngIf="!uploadingNewImage">
+                  <i class="pi pi-images"></i>
+                  <span>
+                    {{
+                      shouldShowImagePlaceholder
+                        ? "Nessuna immagine"
+                        : "Cambia immagine"
+                    }}
+                  </span>
+
+                  <!-- Pulsante di caricamento più visibile -->
+                  <button
+                    pButton
+                    type="button"
+                    label="Carica"
+                    icon="pi pi-upload"
+                    class="p-button-primary upload-image-btn"
+                    (click)="triggerFileInput()"
+                  ></button>
+
+                  <!-- Input file nascosto con riferimento -->
+                  <input
+                    #hiddenFileInput
+                    type="file"
+                    style="display: none"
+                    accept="image/*"
+                    (change)="onFileSelected($event)"
+                  />
+
+                  <button
+                    *ngIf="isUploadMode && !shouldShowImagePlaceholder"
+                    pButton
+                    type="button"
+                    label="Annulla"
+                    icon="pi pi-times"
+                    class="p-button-outlined p-button-secondary cancel-upload-btn"
+                    (click)="cancelImageUpload()"
+                  ></button>
+                </div>
+
+                <div class="upload-hint" *ngIf="!uploadingNewImage">
+                  <i class="pi pi-info-circle"></i>
+                  <span>Formati supportati: JPG, PNG. Max 5MB</span>
+                </div>
+
+                <div
+                  class="upload-progress"
+                  *ngIf="uploadProgress > 0 && uploadProgress < 100"
+                >
+                  <p-progressBar [value]="uploadProgress"></p-progressBar>
+                  <small>Caricamento in corso... {{ uploadProgress }}%</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sezione Informazioni -->
+          <div class="form-fields-wrapper">
+            <div class="form-section">
+              <h3 class="section-title">Informazioni Principali</h3>
+              <div class="form-field">
+                <label for="productName">Nome del Prodotto*</label>
+                <input
+                  id="productName"
+                  name="name"
+                  pInputText
+                  type="text"
+                  [(ngModel)]="editingProduct.name"
+                  required
+                  class="full-width"
+                />
+                <small
+                  *ngIf="productForm.submitted && !editingProduct.name"
+                  class="p-error"
+                >
+                  Nome obbligatorio
+                </small>
+              </div>
+              <div class="form-field">
+                <label for="productDescription">Descrizione</label>
+                <textarea
+                  id="productDescription"
+                  name="description"
+                  pInputTextarea
+                  rows="3"
+                  autoResize="true"
+                  [(ngModel)]="editingProduct.description"
+                  class="full-width"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3 class="section-title">Caratteristiche del Prodotto</h3>
+              <div class="form-field">
+                <label for="productSeduta">Seduta</label>
+                <input
+                  id="productSeduta"
+                  name="seduta"
+                  pInputText
+                  type="text"
+                  [(ngModel)]="editingProduct.seduta"
+                  class="full-width"
+                />
+              </div>
+              <div class="form-field">
+                <label for="productSchienale">Schienale</label>
+                <input
+                  id="productSchienale"
+                  name="schienale"
+                  pInputText
+                  type="text"
+                  [(ngModel)]="editingProduct.schienale"
+                  class="full-width"
+                />
+              </div>
+              <div class="form-field">
+                <label for="productMeccanica">Meccanica</label>
+                <input
+                  id="productMeccanica"
+                  name="meccanica"
+                  pInputText
+                  type="text"
+                  [(ngModel)]="editingProduct.meccanica"
+                  class="full-width"
+                />
+              </div>
+              <div class="form-field">
+                <label for="productMaterasso">Materasso</label>
+                <input
+                  id="productMaterasso"
+                  name="materasso"
+                  pInputText
+                  type="text"
+                  [(ngModel)]="editingProduct.materasso"
+                  class="full-width"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="dialog-footer">
+        <button
+          pButton
+          type="button"
+          label="Annulla"
+          class="p-button-text"
+          (click)="cancelEditProduct()"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Salva Modifiche"
+          class="p-button-primary"
+          [disabled]="productForm?.invalid || saving"
+          (click)="saveProductChanges()"
+          [loading]="saving"
+        ></button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <p-toast></p-toast>
+  <p-confirmDialog [closable]="false"></p-confirmDialog>
+</div>

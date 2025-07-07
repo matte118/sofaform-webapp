@@ -1,4 +1,12 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef,
+  NgZone,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -23,6 +31,8 @@ import { ComponentTypeService } from '../../../services/component-type.service';
 import { VariantService } from '../../../services/variant.service';
 import { SofaProductService } from '../../../services/sofa-product.service';
 import { DialogModule } from 'primeng/dialog';
+import { forkJoin, Observable, of, Subject } from 'rxjs';
+import { finalize, take, tap, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-gestione-componenti',
@@ -53,7 +63,9 @@ import { DialogModule } from 'primeng/dialog';
   templateUrl: './gestione-componenti.component.html',
   styleUrls: ['./gestione-componenti.component.scss'],
 })
-export class GestioneComponentiComponent implements OnInit {
+export class GestioneComponentiComponent implements OnInit, AfterViewInit {
+  @ViewChild('componentTable') componentTable?: ElementRef; // Make it optional with ?
+
   components: ComponentModel[] = [];
   newComponent: ComponentModel = new ComponentModel('', '', 0, []);
   availableSuppliers: Supplier[] = [];
@@ -61,8 +73,13 @@ export class GestioneComponentiComponent implements OnInit {
   availableComponentTypes: ComponentType[] = [];
   selectedComponentType: string | null = null;
   editingIndex: number = -1;
-  loading: boolean = false;
+  loading: boolean = true; // Start with loading true
+  dataLoaded: boolean = false; // Track when data is loaded
   saving: boolean = false;
+
+  // Tracking refresh
+  refreshNeeded: boolean = false;
+  private refresh$ = new Subject<void>();
 
   // Add form state tracking
   formSubmitted: boolean = false;
@@ -82,6 +99,7 @@ export class GestioneComponentiComponent implements OnInit {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private cd: ChangeDetectorRef,
+    private zone: NgZone,
     private supplierService: SupplierService,
     private componentTypeService: ComponentTypeService,
     private variantService: VariantService,
@@ -90,9 +108,118 @@ export class GestioneComponentiComponent implements OnInit {
 
   ngOnInit() {
     this.loading = true;
-    this.loadSuppliers();
-    this.loadComponentTypes();
-    this.loadComponents();
+    this.dataLoaded = false;
+    this.loadAllData();
+
+    // Setup refresh listener
+    this.refresh$.subscribe(() => {
+      this.loadAllData();
+    });
+  }
+
+  ngAfterViewInit() {
+    // If we have components but they're not displaying correctly, force a refresh
+    setTimeout(() => {
+      if (this.components.length > 0 && this.refreshNeeded) {
+        this.refreshTable();
+      }
+    }, 500);
+  }
+
+  // New method to load all data at once with proper error handling
+  loadAllData() {
+    this.loading = true;
+
+    // Create observables for each data type
+    const components$ = this.componentService.getComponentsAsObservable().pipe(
+      catchError((error) => {
+        console.error('Error loading components:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Errore caricamento componenti',
+        });
+        return of([]);
+      })
+    );
+
+    const suppliers$ = this.supplierService.getSuppliersAsObservable().pipe(
+      catchError((error) => {
+        console.error('Error loading suppliers:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Errore caricamento fornitori',
+        });
+        return of([]);
+      })
+    );
+
+    const types$ = this.componentTypeService
+      .getComponentTypesAsObservable()
+      .pipe(
+        catchError((error) => {
+          console.error('Error loading component types:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Errore',
+            detail: 'Errore caricamento tipi di componente',
+          });
+          return of([]);
+        })
+      );
+
+    // Use forkJoin to load all data simultaneously
+    forkJoin({
+      components: components$,
+      suppliers: suppliers$,
+      types: types$,
+    })
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          this.dataLoaded = true;
+
+          // Force detection in the Angular zone
+          this.zone.run(() => {
+            this.cd.detectChanges();
+
+            // Schedule another change detection after a small delay to ensure icons are rendered
+            setTimeout(() => {
+              this.cd.detectChanges();
+              this.refreshNeeded = false;
+            }, 100);
+          });
+        })
+      )
+      .subscribe((results) => {
+        this.components = results.components;
+        this.availableSuppliers = results.suppliers;
+        this.availableComponentTypes = results.types;
+
+        console.log(`Loaded ${this.components.length} components`);
+        console.log(`Loaded ${this.availableSuppliers.length} suppliers`);
+        console.log(
+          `Loaded ${this.availableComponentTypes.length} component types`
+        );
+
+        this.refreshNeeded = true;
+      });
+  }
+
+  // Utility method to force table refresh
+  refreshTable() {
+    if (this.componentTable) {
+      const tableElement = this.componentTable.nativeElement;
+      if (tableElement) {
+        // Toggle a class to force repaint
+        tableElement.classList.add('refreshing');
+        setTimeout(() => {
+          tableElement.classList.remove('refreshing');
+          this.cd.detectChanges();
+        }, 50);
+      }
+    }
   }
 
   loadComponents() {
@@ -180,7 +307,9 @@ export class GestioneComponentiComponent implements OnInit {
             ? 'Componente aggiornato con successo'
             : 'Componente creato con successo',
         });
-        this.loadComponents();
+
+        // Use our refresh subject instead of direct calls
+        this.refresh$.next();
         this.resetForm();
         this.saving = false;
       },
@@ -199,19 +328,52 @@ export class GestioneComponentiComponent implements OnInit {
   }
 
   editComponent(component: ComponentModel, index: number) {
+    console.log('Editing component:', component);
+
+    // Deep copy to avoid reference issues
     this.newComponent = new ComponentModel(
       component.id,
       component.name,
       component.price,
-      component.suppliers,
+      JSON.parse(JSON.stringify(component.suppliers || [])),
       component.type
     );
 
-    // Imposta il fornitore selezionato dal primo fornitore nell'array (se esiste)
-    this.selectedSupplier =
-      component.suppliers?.length > 0 ? component.suppliers[0] : null;
+    // Find matching supplier in availableSuppliers
+    if (component.suppliers?.length > 0) {
+      const supplierId = component.suppliers[0].id;
+      console.log('Looking for supplier with ID:', supplierId);
+
+      const matchingSupplier = this.availableSuppliers.find(
+        (s) => s.id === supplierId
+      );
+      this.selectedSupplier = matchingSupplier || null;
+
+      console.log('Selected supplier:', this.selectedSupplier);
+    } else {
+      this.selectedSupplier = null;
+    }
+
+    // Set component type
     this.selectedComponentType = component.type || null;
+    console.log('Selected component type:', this.selectedComponentType);
+
     this.editingIndex = index;
+
+    // Scroll to the top of the form
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+
+    // Focus the first input field after scrolling
+    setTimeout(() => {
+      const nameInput = document.getElementById('componentName');
+      if (nameInput) {
+        nameInput.focus();
+      }
+      this.cd.detectChanges();
+    }, 500);
   }
 
   private getProductsUsingComponent(componentId: string): Promise<string[]> {

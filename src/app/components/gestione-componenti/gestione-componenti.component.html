@@ -8,13 +8,15 @@
   </div>
 
   <!-- Scheda form componente -->
-  <div class="component-form-card">
+  <div class="component-form-card" [ngClass]="{ 'editing-mode': isEditing }">
     <h2>{{ formTitle }}</h2>
     <form class="component-form" #componentForm="ngForm">
       <!-- Prima riga: nome e prezzo -->
       <div class="form-row">
         <div class="form-group">
-          <label for="componentName">Nome <span class="required-field">*</span></label>
+          <label for="componentName"
+            >Nome <span class="required-field">*</span></label
+          >
           <input
             pInputText
             id="componentName"
@@ -24,13 +26,18 @@
             placeholder="Nome del componente"
             [class.ng-invalid]="shouldShowFieldError(newComponent.name)"
           />
-          <small *ngIf="shouldShowFieldError(newComponent.name)" class="p-error">
+          <small
+            *ngIf="shouldShowFieldError(newComponent.name)"
+            class="p-error"
+          >
             Il nome del componente è obbligatorio
           </small>
         </div>
 
         <div class="form-group">
-          <label for="componentPrice">Prezzo <span class="required-field">*</span></label>
+          <label for="componentPrice"
+            >Prezzo <span class="required-field">*</span></label
+          >
           <p-inputNumber
             id="componentPrice"
             [(ngModel)]="newComponent.price"
@@ -51,7 +58,9 @@
       <!-- Seconda riga: fornitore e tipo -->
       <div class="form-row">
         <div class="form-group">
-          <label for="componentSuppliers">Fornitore <span class="required-field">*</span></label>
+          <label for="componentSuppliers"
+            >Fornitore <span class="required-field">*</span></label
+          >
           <p-dropdown
             id="componentSuppliers"
             [options]="availableSuppliers"
@@ -65,7 +74,9 @@
         </div>
 
         <div class="form-group">
-          <label for="componentType">Tipo di Componente <span class="required-field">*</span></label>
+          <label for="componentType"
+            >Tipo di Componente <span class="required-field">*</span></label
+          >
           <p-dropdown
             id="componentType"
             [options]="availableComponentTypes"
@@ -118,10 +129,19 @@
   <!-- Tabella dei componenti -->
   <div class="component-table-section">
     <h3>Lista Componenti</h3>
+
+    <!-- Aggiungi messaggio di caricamento -->
+    <div *ngIf="loading" class="loading-message">
+      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+      <p>Caricamento componenti...</p>
+    </div>
+
     <p-table
       #dt
+      *ngIf="dataLoaded && !loading"
+      #componentTable
       [value]="components"
-      styleClass="p-datatable-sm"
+      styleClass="p-datatable-sm components-table"
       [paginator]="true"
       [rows]="10"
       [globalFilterFields]="['name', 'price']"
@@ -162,27 +182,30 @@
               {{ supplier.name ? supplier.name : "ND"
               }}<span *ngIf="!last">, </span>
             </span>
-            <span *ngIf="!component.suppliers.length" class="no-suppliers">
+            <span *ngIf="!component.suppliers?.length" class="no-suppliers">
               Nessun fornitore
             </span>
           </td>
           <td class="actions-cell">
-            <button
-              pButton
-              type="button"
-              icon="pi pi-pencil"
-              styleClass="icon-edit"
-              (click)="editComponent(component, i)"
-              pTooltip="Modifica"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-trash"
-              styleClass="icon-delete"
-              (click)="deleteComponent(component)"
-              pTooltip="Elimina"
-            ></button>
+            <!-- Wrapper per i pulsanti che garantisce la corretta visualizzazione -->
+            <div class="action-buttons">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-text p-button-sm action-edit"
+                (click)="editComponent(component, i)"
+                pTooltip="Modifica"
+              ></button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-danger p-button-text p-button-sm action-delete"
+                (click)="deleteComponent(component)"
+                pTooltip="Elimina"
+              ></button>
+            </div>
           </td>
         </tr>
       </ng-template>

@@ -6,26 +6,45 @@
     <p>Gestisci i tessuti per i rivestimenti dei divani</p>
   </div>
 
-  <div class="tessuto-form-card">
+  <div class="tessuto-form-card" [ngClass]="{ 'editing-mode': isEditing }">
     <h2>{{ formTitle }}</h2>
     <form class="tessuto-form" #tessutoForm="ngForm">
       <div class="form-row">
         <div class="form-group">
-          <label for="tessutoType">Tipo di Tessuto <span class="required-field">*</span></label>
-          <input pInputText id="tessutoType" type="text" [(ngModel)]="newTessuto.type" name="type"
+          <label for="tessutoType"
+            >Tipo di Tessuto <span class="required-field">*</span></label
+          >
+          <input
+            pInputText
+            id="tessutoType"
+            type="text"
+            [(ngModel)]="newTessuto.type"
+            name="type"
             placeholder="Tipo di tessuto (es. Cotone, Velluto)"
-            [class.ng-invalid]="shouldShowFieldError(newTessuto.type)" />
+            [class.ng-invalid]="shouldShowFieldError(newTessuto.type)"
+          />
           <small *ngIf="shouldShowFieldError(newTessuto.type)" class="p-error">
             Il tipo di tessuto è obbligatorio
           </small>
         </div>
 
         <div class="form-group">
-          <label for="tessutoCode">Codice <span class="required-field">*</span></label>
-          <input pInputText id="tessutoCode" type="text" [(ngModel)]="newTessuto.code" name="code"
+          <label for="tessutoCode"
+            >Codice <span class="required-field">*</span></label
+          >
+          <input
+            pInputText
+            id="tessutoCode"
+            type="text"
+            [(ngModel)]="newTessuto.code"
+            name="code"
             placeholder="Codice identificativo"
-            [class.ng-invalid]="shouldShowFieldError(newTessuto.code?.trim())" />
-          <small *ngIf="shouldShowFieldError(newTessuto.code?.trim())" class="p-error">
+            [class.ng-invalid]="shouldShowFieldError(newTessuto.code?.trim())"
+          />
+          <small
+            *ngIf="shouldShowFieldError(newTessuto.code?.trim())"
+            class="p-error"
+          >
             Il codice del tessuto è obbligatorio
           </small>
         </div>
@@ -33,34 +52,80 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="tessutoPrice">Prezzo al Metro <span class="required-field">*</span> (€)</label>
-          <p-inputNumber id="tessutoPrice" [(ngModel)]="newTessuto.mtPrice" name="mtPrice"
-            [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT"
-            [class.ng-invalid]="shouldShowFieldError(newTessuto.mtPrice > 0 ? newTessuto.mtPrice : null)">
+          <label for="tessutoPrice"
+            >Prezzo al Metro <span class="required-field">*</span> (€)</label
+          >
+          <p-inputNumber
+            id="tessutoPrice"
+            [(ngModel)]="newTessuto.mtPrice"
+            name="mtPrice"
+            [minFractionDigits]="2"
+            [maxFractionDigits]="2"
+            mode="currency"
+            currency="EUR"
+            locale="it-IT"
+            [class.ng-invalid]="
+              shouldShowFieldError(
+                newTessuto.mtPrice > 0 ? newTessuto.mtPrice : null
+              )
+            "
+          >
           </p-inputNumber>
-          <small *ngIf="formSubmitted && !formValid && newTessuto.mtPrice <= 0" class="p-error">
+          <small
+            *ngIf="formSubmitted && !formValid && newTessuto.mtPrice <= 0"
+            class="p-error"
+          >
             Il prezzo al metro deve essere maggiore di zero
           </small>
         </div>
       </div>
 
       <div class="form-actions">
-        <p-button [label]="submitButtonLabel" (onClick)="addTessuto()" styleClass="primary-button"></p-button>
-        <p-button *ngIf="isEditing" label="Annulla" (onClick)="resetForm()" styleClass="secondary-button"></p-button>
+        <p-button
+          [label]="submitButtonLabel"
+          (onClick)="addTessuto()"
+          styleClass="primary-button"
+        ></p-button>
+        <p-button
+          *ngIf="isEditing"
+          label="Annulla"
+          (onClick)="resetForm()"
+          styleClass="secondary-button"
+        ></p-button>
       </div>
     </form>
   </div>
 
   <div class="tessuto-table-section">
     <h3>Lista Tessuti</h3>
-    <p-table [value]="tessuti" styleClass="p-datatable-sm" [paginator]="true" [rows]="10"
-      [globalFilterFields]="['type', 'code', 'mtPrice']" [rowHover]="true" #dt>
+
+    <!-- Aggiungi messaggio di caricamento -->
+    <div *ngIf="loading" class="loading-message">
+      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+      <p>Caricamento tessuti...</p>
+    </div>
+
+    <p-table
+      *ngIf="dataLoaded && !loading"
+      #tessutoTable
+      [value]="tessuti"
+      styleClass="p-datatable-sm tessuti-table"
+      [paginator]="true"
+      [rows]="10"
+      [globalFilterFields]="['type', 'code', 'mtPrice']"
+      [rowHover]="true"
+      #dt
+    >
       <ng-template pTemplate="caption">
         <div class="table-header">
           <h4>Tessuti ({{ tessuti.length }})</h4>
           <div class="search-container">
-            <input pInputText type="text" placeholder="Cerca tessuto..."
-              (input)="onGlobalFilter($event, dt)" />
+            <input
+              pInputText
+              type="text"
+              placeholder="Cerca tessuto..."
+              (input)="onGlobalFilter($event, dt)"
+            />
           </div>
         </div>
       </ng-template>
@@ -78,21 +143,33 @@
         <tr>
           <td>{{ tessuto.type }}</td>
           <td>{{ tessuto.code }}</td>
-          <td>{{ tessuto.mtPrice | currency:'EUR' }}</td>
+          <td>{{ tessuto.mtPrice | currency : "EUR" }}</td>
           <td class="actions-cell">
-            <button pButton type="button" icon="pi pi-pencil" styleClass="icon-edit"
-              (click)="editTessuto(tessuto, i)" pTooltip="Modifica"></button>
-            <button pButton type="button" icon="pi pi-trash" styleClass="icon-delete"
-              (click)="deleteTessuto(tessuto)" pTooltip="Elimina"></button>
+            <div class="action-buttons">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-text p-button-sm action-edit"
+                (click)="editTessuto(tessuto, i)"
+                pTooltip="Modifica"
+              ></button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-danger p-button-text p-button-sm action-delete"
+                (click)="deleteTessuto(tessuto)"
+                pTooltip="Elimina"
+              ></button>
+            </div>
           </td>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="4" class="empty-message">
-            Nessun tessuto trovato
-          </td>
+          <td colspan="4" class="empty-message">Nessun tessuto trovato</td>
         </tr>
       </ng-template>
     </p-table>

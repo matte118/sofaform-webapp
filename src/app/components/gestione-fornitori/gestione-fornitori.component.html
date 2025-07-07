@@ -6,7 +6,7 @@
     <p>Gestisci i fornitori per i componenti dei prodotti</p>
   </div>
 
-  <div class="supplier-form-card">
+  <div class="supplier-form-card" [ngClass]="{ 'editing-mode': isEditing }">
     <h2>{{ formTitle }}</h2>
     <form class="supplier-form" #supplierForm="ngForm">
       <div class="form-row">
@@ -59,9 +59,18 @@
 
   <div class="supplier-table-section">
     <h3>Lista Fornitori</h3>
+
+    <!-- Aggiungi messaggio di caricamento -->
+    <div *ngIf="loading" class="loading-message">
+      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+      <p>Caricamento fornitori...</p>
+    </div>
+
     <p-table
       [value]="suppliers"
-      styleClass="p-datatable-sm"
+      *ngIf="dataLoaded && !loading"
+      #supplierTable
+      styleClass="p-datatable-sm suppliers-table"
       [paginator]="true"
       [rows]="10"
       [globalFilterFields]="['name', 'contact']"
@@ -86,31 +95,33 @@
         <tr>
           <th>Nome</th>
           <th>Contatto</th>
-          <th>Azioni</th> 
+          <th>Azioni</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-supplier let-i="rowIndex">
         <tr>
           <td>{{ supplier.name }}</td>
-          <td>{{ supplier.contact ? supplier.contact : 'ND' }}</td>
+          <td>{{ supplier.contact ? supplier.contact : "ND" }}</td>
           <td class="actions-cell">
-            <button
-              pButton
-              type="button"
-              icon="pi pi-pencil"
-              styleClass="icon-edit"
-              (click)="editSupplier(supplier, i)"
-              pTooltip="Modifica"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-trash"
-              styleClass="icon-delete"
-              (click)="deleteSupplier(supplier)"
-              pTooltip="Elimina"
-            ></button>
+            <div class="action-buttons">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-text p-button-sm action-edit"
+                (click)="editSupplier(supplier, i)"
+                pTooltip="Modifica"
+              ></button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-danger p-button-text p-button-sm action-delete"
+                (click)="deleteSupplier(supplier)"
+                pTooltip="Elimina"
+              ></button>
+            </div>
           </td>
         </tr>
       </ng-template>

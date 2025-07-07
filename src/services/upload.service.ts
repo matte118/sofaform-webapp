@@ -4,49 +4,59 @@ import {
   ref,
   uploadBytesResumable,
   getDownloadURL,
-  deleteObject
+  deleteObject,
+  UploadTaskSnapshot,
 } from '@angular/fire/storage';
 import { Observable } from 'rxjs';
+
+export interface UploadProgress {
+  progress: number;
+  downloadURL?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class PhotoUploadService {
   constructor(private storage: Storage) {}
 
   /**
-   * Carica il file su Firebase Storage, emettendo sia il progresso (0–100)
-   * sia, al termine, l’URL di download.
-   *
-   * @param file      Il file da caricare
-   * @param productId L’ID del prodotto (per organizzare le cartelle)
+   * Upload an image to the specified folder
    */
-  uploadProductImage(
-    file: File,
-    productId: string
-  ): Observable<{ progress: number; downloadURL?: string }> {
+  uploadImage(file: File, folder: string): Observable<UploadProgress> {
     const timestamp = Date.now();
-    const filePath = `products/${productId}/${timestamp}_${file.name}`;
+    const filePath = `${folder}/${timestamp}_${file.name}`;
     const storageRef = ref(this.storage, filePath);
     const task = uploadBytesResumable(storageRef, file);
 
-    return new Observable(observer => {
+    return new Observable<UploadProgress>((observer) => {
       task.on(
         'state_changed',
-        snapshot => {
-          const prog = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          observer.next({ progress: Math.round(prog) });
+        (snapshot: UploadTaskSnapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          observer.next({ progress: Math.round(progress) });
         },
-        error => {
+        (error: Error) => {
           observer.error(error);
         },
         () => {
-          // Al termine del caricamento, recupera l’URL di download
-          getDownloadURL(storageRef).then(url => {
+          // At the end of upload, get the download URL
+          getDownloadURL(storageRef).then((url: string) => {
             observer.next({ progress: 100, downloadURL: url });
             observer.complete();
           });
         }
       );
     });
+  }
+
+  /**
+   * Upload an image specifically for a product
+   */
+  uploadProductImage(
+    file: File,
+    productId: string
+  ): Observable<UploadProgress> {
+    return this.uploadImage(file, `products/${productId}`);
   }
 
   /**
@@ -58,13 +68,13 @@ export class PhotoUploadService {
    */
   deleteImage(imageUrl: string): Observable<void> {
     const storageRef = ref(this.storage, imageUrl);
-    return new Observable(observer => {
+    return new Observable((observer) => {
       deleteObject(storageRef)
         .then(() => {
           observer.next();
           observer.complete();
         })
-        .catch(err => observer.error(err));
+        .catch((err) => observer.error(err));
     });
   }
 
@@ -95,7 +105,7 @@ export class PhotoUploadService {
     productId: string,
     originalFile: File
   ): Observable<string> {
-    return new Observable(observer => {
+    return new Observable((observer) => {
       // Ottieni l'estensione del file originale
       const fileExtension = originalFile.name.split('.').pop() || 'jpg';
       const newFilePath = `products/${productId}/${productId}.${fileExtension}`;
@@ -106,19 +116,19 @@ export class PhotoUploadService {
         .then(() => {
           // Ottieni il nuovo URL
           getDownloadURL(newStorageRef)
-            .then(newUrl => {
+            .then((newUrl) => {
               // Elimina il file precedente
               const oldStorageRef = ref(this.storage, currentUrl);
-              deleteObject(oldStorageRef).catch(err => {
+              deleteObject(oldStorageRef).catch((err) => {
                 console.warn('Could not delete old image:', err);
               });
 
               observer.next(newUrl);
               observer.complete();
             })
-            .catch(err => observer.error(err));
+            .catch((err) => observer.error(err));
         })
-        .catch(err => observer.error(err));
+        .catch((err) => observer.error(err));
     });
   }
 }

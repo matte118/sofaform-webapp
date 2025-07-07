@@ -5,6 +5,8 @@ import {
   ChangeDetectorRef,
   PLATFORM_ID,
   Inject,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
@@ -13,13 +15,18 @@ import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
+import { FileUploadModule } from 'primeng/fileupload';
+import { ProgressBarModule } from 'primeng/progressbar';
+
+// Add these imports for Firebase Storage types
+import { UploadTask, UploadTaskSnapshot } from '@angular/fire/storage';
 
 import { SofaProduct } from '../../../models/sofa-product.model';
 import { SofaProductService } from '../../../services/sofa-product.service';
@@ -53,6 +60,8 @@ interface GroupedComponent {
     ConfirmDialogModule,
     DropdownModule,
     ToastModule,
+    FileUploadModule, // Aggiungi questo
+    ProgressBarModule, // Aggiungi questo
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -60,6 +69,8 @@ interface GroupedComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent implements OnInit {
+  @ViewChild('productForm') productForm?: NgForm;
+
   products: SofaProduct[] = [];
   productVariants: Map<string, Variant[]> = new Map();
   componentTypeMap = new Map<string, string>();
@@ -82,6 +93,24 @@ export class HomeComponent implements OnInit {
   // Image properties
   productImages: Map<string, string> = new Map();
   imageLoadErrors: Set<string> = new Set();
+
+  // Aggiungi queste proprietà
+  showEditProductDialog: boolean = false;
+  editingProduct?: SofaProduct;
+  uploadingNewImage: boolean = false;
+  uploadProgress: number = 0;
+  saving: boolean = false;
+
+  // Aggiungi queste nuove proprietà per la gestione locale delle immagini
+  tempImageFile?: File;
+  tempImageUrl?: string;
+  imageRemoved: boolean = false;
+
+  // Aggiungi questa proprietà per gestire la modalità di caricamento
+  isUploadMode: boolean = false;
+
+  @ViewChild('fileUpload') fileUpload?: any;
+  @ViewChild('hiddenFileInput') hiddenFileInput?: ElementRef;
 
   constructor(
     private router: Router,
@@ -296,21 +325,194 @@ export class HomeComponent implements OnInit {
     doc.save(`Listino_${product.name.replace(/\s+/g, '_')}.pdf`);
   }
 
+  // Modifica il metodo esistente per aprire il dialogo invece di navigare
   editProduct(product: SofaProduct) {
-    this.router.navigate(['/modifica-prodotto', product.id]);
+    // Non naviga più, apre il dialogo
+    this.openEditDialog(product);
   }
 
-  deleteProduct(event: Event, product: SofaProduct) {
-    event.stopPropagation();
-    this.confirmationService.confirm({
-      message: 'Sei sicuro di voler eliminare questo prodotto?',
-      acceptButtonStyleClass: 'p-button-primary',
-      rejectButtonStyleClass: 'p-button-danger',
-      accept: () => {
-        this.sofaProductService.deleteSofaProduct(product.id).subscribe(() => {
-          this.products = this.products.filter((p) => p.id !== product.id);
+  // Modifica il metodo per aprire il dialogo
+  openEditDialog(product: SofaProduct, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    // Crea una copia profonda del prodotto per non modificare quello originale
+    this.editingProduct = new SofaProduct(
+      product.id,
+      product.name,
+      product.description,
+      [...product.variants],
+      product.photoUrl,
+      product.seduta,
+      product.schienale,
+      product.meccanica,
+      product.materasso
+    );
+
+    // Reset delle variabili per la gestione dell'immagine
+    this.tempImageFile = undefined;
+    this.tempImageUrl = undefined;
+    this.imageRemoved = false;
+    this.uploadingNewImage = false;
+    this.uploadProgress = 0;
+
+    this.showEditProductDialog = true;
+    this.cdr.detectChanges();
+  }
+
+  // Chiusura del dialogo
+  onEditDialogHide() {
+    // Rilascia eventuali URL temporanei
+    if (this.tempImageUrl) {
+      URL.revokeObjectURL(this.tempImageUrl);
+    }
+    this.editingProduct = undefined;
+    this.tempImageFile = undefined;
+    this.tempImageUrl = undefined;
+    this.imageRemoved = false;
+    this.uploadingNewImage = false;
+    this.uploadProgress = 0;
+    this.isUploadMode = false; // Reset anche la modalità di upload
+  }
+
+  // Annulla modifica
+  cancelEditProduct(): void {
+    // Rilascia eventuali URL temporanei
+    if (this.tempImageUrl) {
+      URL.revokeObjectURL(this.tempImageUrl);
+    }
+
+    // Assicura che la modalità di dialog sia disattivata
+    this.showEditProductDialog = false;
+    this.cdr.detectChanges();
+
+    // Forza un aggiornamento del componente
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 100);
+  }
+
+  // Salva le modifiche
+  saveProductChanges() {
+    if (!this.editingProduct) return;
+
+    this.saving = true;
+
+    // Funzione per completare il salvataggio
+    const completeProductSave = () => {
+      this.sofaProductService
+        .updateSofaProduct(this.editingProduct!.id, this.editingProduct!)
+        .subscribe(
+          () => {
+            // Aggiorna il prodotto nella lista locale
+            const index = this.products.findIndex(
+              (p) => p.id === this.editingProduct!.id
+            );
+            if (index !== -1) {
+              this.products[index] = { ...this.editingProduct! };
+            }
+
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Prodotto Aggiornato',
+              detail: 'Modifiche salvate con successo',
+            });
+
+            this.showEditProductDialog = false;
+            this.saving = false;
+            this.cdr.detectChanges();
+          },
+          (error) => {
+            console.error('Errore durante il salvataggio:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Errore',
+              detail:
+                'Si è verificato un errore durante il salvataggio delle modifiche',
+            });
+            this.saving = false;
+            this.cdr.detectChanges();
+          }
+        );
+    };
+
+    // Verifica se bisogna gestire l'immagine
+    if (this.imageRemoved) {
+      // Se l'immagine è stata rimossa, elimina l'URL e salva
+      if (this.editingProduct.photoUrl) {
+        // Se c'era un'immagine precedente e vogliamo eliminarla
+        // Si potrebbe anche aggiungere codice per eliminarla dallo storage se necessario
+        this.editingProduct.photoUrl = undefined;
+      }
+      completeProductSave();
+    } else if (this.tempImageFile) {
+      // Se è stata caricata una nuova immagine, caricala prima di salvare
+      const uploadTask = this.uploadService.uploadProductImage(
+        this.tempImageFile,
+        this.editingProduct.id
+      );
+
+      uploadTask.subscribe({
+        next: (progress) => {
+          this.uploadProgress = Math.round(progress.progress || 0);
+
+          if (progress.downloadURL && progress.progress >= 100) {
+            // Quando l'upload è completato, aggiorna l'URL dell'immagine e salva
+            this.editingProduct!.photoUrl = progress.downloadURL;
+            completeProductSave();
+          }
+        },
+        error: (error) => {
+          console.error('Errore upload:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Errore',
+            detail: "Impossibile caricare l'immagine",
+          });
+          this.saving = false;
           this.cdr.detectChanges();
-        });
+        },
+      });
+    } else {
+      // Se non ci sono modifiche all'immagine, salva direttamente
+      completeProductSave();
+    }
+  }
+
+  // Gestione upload immagine
+  onUploadImage(event: any) {
+    const file = event.files[0];
+    if (!file) return;
+
+    this.tempImageFile = file;
+
+    // Crea un URL locale temporaneo per visualizzare l'anteprima
+    if (this.tempImageUrl) {
+      URL.revokeObjectURL(this.tempImageUrl);
+    }
+    this.tempImageUrl = URL.createObjectURL(file);
+    this.imageRemoved = false;
+    this.isUploadMode = false; // Esci dalla modalità di upload
+
+    this.cdr.detectChanges();
+  }
+
+  // Modifica il metodo per rimuovere l'immagine localmente
+  removeProductImage() {
+    this.confirmationService.confirm({
+      message: "Sei sicuro di voler rimuovere l'immagine del prodotto?",
+      header: 'Conferma rimozione',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        if (this.tempImageUrl) {
+          URL.revokeObjectURL(this.tempImageUrl);
+        }
+        this.tempImageFile = undefined;
+        this.tempImageUrl = undefined;
+        this.imageRemoved = true;
+        this.isUploadMode = false; // Reset anche la modalità di upload
+        this.cdr.detectChanges();
       },
     });
   }
@@ -380,5 +582,117 @@ export class HomeComponent implements OnInit {
 
     // Converti la mappa in un array di componenti raggruppati
     return Array.from(groupedMap.values());
+  }
+
+  get editProductDialogTitle(): string {
+    return this.editingProduct?.name
+      ? `Modifica ${this.editingProduct.name}`
+      : 'Modifica Prodotto';
+  }
+
+  // Add deleteProduct method
+  deleteProduct(event: Event, product: SofaProduct): void {
+    event.stopPropagation();
+
+    this.confirmationService.confirm({
+      message: `Sei sicuro di voler eliminare il prodotto "${product.name}"?`,
+      header: 'Conferma eliminazione',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.sofaProductService.deleteSofaProduct(product.id).subscribe(
+          () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Prodotto eliminato',
+              detail: 'Il prodotto è stato eliminato con successo',
+            });
+
+            // Remove from local array
+            this.products = this.products.filter((p) => p.id !== product.id);
+            this.cdr.detectChanges();
+          },
+          (error) => {
+            console.error('Error deleting product:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Errore',
+              detail:
+                "Si è verificato un errore durante l'eliminazione del prodotto",
+            });
+          }
+        );
+      },
+    });
+  }
+
+  // Getter per determinare quale immagine mostrare
+  get currentImageToShow(): string | undefined {
+    if (this.tempImageUrl) {
+      return this.tempImageUrl; // Mostra l'immagine temporanea se c'è
+    }
+    if (this.imageRemoved) {
+      return undefined; // Non mostrare nulla se l'immagine è stata rimossa
+    }
+    return this.editingProduct?.photoUrl; // Altrimenti mostra l'immagine originale
+  }
+
+  // Getter per determinare se mostrare il placeholder
+  get shouldShowImagePlaceholder(): boolean {
+    return (
+      this.imageRemoved ||
+      (!this.tempImageUrl && !this.editingProduct?.photoUrl)
+    );
+  }
+
+  // Nuovo metodo per mostrare l'interfaccia di upload
+  showImageUpload(): void {
+    this.isUploadMode = true;
+    this.cdr.detectChanges();
+
+    // Facoltativo: fai un focus sul pulsante di upload
+    setTimeout(() => {
+      if (this.fileUpload) {
+        const uploadButton = this.fileUpload.basicButtonEl?.nativeElement;
+        if (uploadButton) {
+          uploadButton.focus();
+        }
+      }
+    }, 100);
+  }
+
+  // Nuovo metodo per annullare il caricamento
+  cancelImageUpload(): void {
+    this.isUploadMode = false;
+    this.cdr.detectChanges();
+  }
+
+  // Metodo per attivare l'input file nascosto
+  triggerFileInput(): void {
+    if (this.hiddenFileInput) {
+      this.hiddenFileInput.nativeElement.click();
+    }
+  }
+
+  // Nuovo metodo per gestire la selezione dei file
+  onFileSelected(event: any): void {
+    const file = event?.target?.files?.[0];
+    if (file) {
+      this.tempImageFile = file;
+
+      // Crea un URL locale temporaneo per visualizzare l'anteprima
+      if (this.tempImageUrl) {
+        URL.revokeObjectURL(this.tempImageUrl);
+      }
+      this.tempImageUrl = URL.createObjectURL(file);
+      this.imageRemoved = false;
+      this.isUploadMode = false;
+
+      // Resetta l'input file per consentire di selezionare lo stesso file più volte
+      if (this.hiddenFileInput) {
+        this.hiddenFileInput.nativeElement.value = '';
+      }
+
+      this.cdr.detectChanges();
+    }
   }
 }

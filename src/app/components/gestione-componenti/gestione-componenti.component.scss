@@ -62,13 +62,16 @@
           font-size: 0.95rem;
         }
 
-        input, ::ng-deep .p-inputnumber, ::ng-deep .p-dropdown {
+        input,
+        ::ng-deep .p-inputnumber,
+        ::ng-deep .p-dropdown {
           height: 48px;
           border: 2px solid #e9ecef;
           border-radius: 8px;
           transition: all 0.2s ease;
 
-          &:focus, &:focus-within {
+          &:focus,
+          &:focus-within {
             border-color: #007bff;
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
           }
@@ -311,7 +314,7 @@
     .p-dialog-header {
       background: #f8f9fa;
       border-bottom: 1px solid #e9ecef;
-      
+
       .p-dialog-title {
         font-weight: 600;
         color: #495057;
@@ -320,7 +323,7 @@
 
     .p-dialog-content {
       padding: 24px;
-      
+
       .p-confirm-dialog-message {
         margin-left: 16px;
         font-size: 1rem;
@@ -380,7 +383,7 @@
               background: rgba(255, 255, 255, 0.7);
               border-radius: 8px;
               border: 1px solid #f8e7a1;
-              
+
               .product-item {
                 color: #495057;
                 margin-bottom: 8px;
@@ -388,7 +391,7 @@
                 list-style-type: none;
                 position: relative;
                 padding-left: 20px;
-                
+
                 &:before {
                   content: "•";
                   color: #f39c12;
@@ -451,11 +454,11 @@
       .p-button {
         margin-left: 8px;
         font-weight: 600;
-        
+
         &.p-button-danger {
           background-color: #dc3545;
           border-color: #dc3545;
-          
+
           &:hover {
             background-color: #c82333;
             border-color: #bd2130;
@@ -465,7 +468,7 @@
         &.p-button-primary {
           background-color: #007bff;
           border-color: #007bff;
-          
+
           &:hover {
             background-color: #0056b3;
             border-color: #0056b3;
@@ -519,6 +522,6 @@
 }
 
 .required-field {
-    color: red;
-    margin-left: 2px;
-  }
+  color: red;
+  margin-left: 2px;
+}

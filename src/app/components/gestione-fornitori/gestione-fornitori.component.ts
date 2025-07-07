@@ -1,4 +1,12 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef,
+  NgZone,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -14,6 +22,8 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { Supplier } from '../../../models/supplier.model';
 import { SupplierService } from '../../../services/supplier.service';
 import { ComponentService } from '../../../services/component.service';
+import { forkJoin, Observable, of, Subject } from 'rxjs';
+import { finalize, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-gestione-fornitori',
@@ -29,18 +39,25 @@ import { ComponentService } from '../../../services/component.service';
     DividerModule,
     ToastModule,
     ConfirmDialogModule,
-    TooltipModule
+    TooltipModule,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './gestione-fornitori.component.html',
-  styleUrl: './gestione-fornitori.component.scss'
+  styleUrls: ['./gestione-fornitori.component.scss'],
 })
-export class GestioneFornitoriComponent implements OnInit {
+export class GestioneFornitoriComponent implements OnInit, AfterViewInit {
+  @ViewChild('supplierTable') supplierTable?: ElementRef;
+
   suppliers: Supplier[] = [];
   newSupplier: Supplier = new Supplier('', '', '');
   editingIndex: number = -1;
-  loading: boolean = false;
+  loading: boolean = true; // Start with loading true
+  dataLoaded: boolean = false; // Track when data is loaded
   saving: boolean = false;
+
+  // Tracking refresh
+  refreshNeeded: boolean = false;
+  private refresh$ = new Subject<void>();
 
   // Add form state tracking
   formSubmitted: boolean = false;
@@ -51,26 +68,101 @@ export class GestioneFornitoriComponent implements OnInit {
     private componentService: ComponentService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private cd: ChangeDetectorRef
-  ) { }
+    private cd: ChangeDetectorRef,
+    private zone: NgZone
+  ) {}
 
   ngOnInit() {
     this.loading = true;
-    this.loadSuppliers();
+    this.dataLoaded = false;
+    this.loadAllData();
+
+    // Setup refresh listener
+    this.refresh$.subscribe(() => {
+      this.loadAllData();
+    });
   }
 
+  ngAfterViewInit() {
+    // If we have suppliers but they're not displaying correctly, force a refresh
+    setTimeout(() => {
+      if (this.suppliers.length > 0 && this.refreshNeeded) {
+        this.refreshTable();
+      }
+    }, 500);
+  }
+
+  // New method to load all data at once with proper error handling
+  loadAllData() {
+    this.loading = true;
+
+    // Create observable for suppliers
+    const suppliers$ = this.supplierService.getSuppliersAsObservable().pipe(
+      catchError((error) => {
+        console.error('Error loading suppliers:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Errore caricamento fornitori',
+        });
+        return of([]);
+      })
+    );
+
+    // Load suppliers
+    suppliers$
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          this.dataLoaded = true;
+
+          // Force detection in the Angular zone
+          this.zone.run(() => {
+            this.cd.detectChanges();
+
+            // Schedule another change detection after a small delay to ensure icons are rendered
+            setTimeout(() => {
+              this.cd.detectChanges();
+              this.refreshNeeded = false;
+            }, 100);
+          });
+        })
+      )
+      .subscribe((suppliers) => {
+        this.suppliers = suppliers;
+        console.log(`Loaded ${this.suppliers.length} suppliers`);
+        this.refreshNeeded = true;
+      });
+  }
+
+  // Utility method to force table refresh
+  refreshTable() {
+    if (this.supplierTable) {
+      const tableElement = this.supplierTable.nativeElement;
+      if (tableElement) {
+        // Toggle a class to force repaint
+        tableElement.classList.add('refreshing');
+        setTimeout(() => {
+          tableElement.classList.remove('refreshing');
+          this.cd.detectChanges();
+        }, 50);
+      }
+    }
+  }
+
+  // Existing loadSuppliers method for backward compatibility
   loadSuppliers() {
     this.supplierService.getSuppliers().subscribe(
-      suppliers => {
+      (suppliers) => {
         this.suppliers = suppliers;
         this.cd.detectChanges();
         this.loading = false;
       },
-      error => {
+      (error) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
-          detail: 'Errore caricamento fornitori'
+          detail: 'Errore caricamento fornitori',
         });
         console.error('Error loading suppliers:', error);
         this.loading = false;
@@ -91,27 +183,33 @@ export class GestioneFornitoriComponent implements OnInit {
       this.newSupplier.name.trim(),
       this.newSupplier.contact?.trim() ?? '' // Utilizzo dell'operatore optional chaining e coalescenza nulla
     );
-    
+
     const operation = this.isEditing
       ? this.supplierService.updateSupplier(supplier.id, supplier)
       : this.supplierService.addSupplier(supplier);
-      
+
     operation.subscribe(
       () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Successo',
-          detail: this.isEditing ? 'Fornitore aggiornato con successo' : 'Fornitore creato con successo'
+          detail: this.isEditing
+            ? 'Fornitore aggiornato con successo'
+            : 'Fornitore creato con successo',
         });
-        this.loadSuppliers();
+
+        // Use our refresh subject instead of direct calls
+        this.refresh$.next();
         this.resetForm();
         this.saving = false;
       },
-      error => {
+      (error) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
-          detail: this.isEditing ? 'Errore durante l\'aggiornamento del fornitore' : 'Errore durante la creazione del fornitore'
+          detail: this.isEditing
+            ? "Errore durante l'aggiornamento del fornitore"
+            : 'Errore durante la creazione del fornitore',
         });
         console.error('Error saving supplier:', error);
         this.saving = false;
@@ -120,20 +218,41 @@ export class GestioneFornitoriComponent implements OnInit {
   }
 
   editSupplier(supplier: Supplier, index: number) {
+    console.log('Editing supplier:', supplier);
+
+    // Deep copy to avoid reference issues
     this.newSupplier = new Supplier(
       supplier.id,
       supplier.name,
       supplier.contact
     );
+
     this.editingIndex = index;
+
+    // Scroll to the top of the form
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+
+    // Focus the first input field after scrolling
+    setTimeout(() => {
+      const nameInput = document.getElementById('supplierName');
+      if (nameInput) {
+        nameInput.focus();
+      }
+      this.cd.detectChanges();
+    }, 500);
   }
 
   private getComponentsUsingSupplier(supplierId: string): Promise<string[]> {
     return new Promise((resolve) => {
-      this.componentService.getComponentsBySupplier(supplierId).subscribe((components) => {
-        const componentNames = components.map(component => component.name);
-        resolve(componentNames);
-      });
+      this.componentService
+        .getComponentsBySupplier(supplierId)
+        .subscribe((components) => {
+          const componentNames = components.map((component) => component.name);
+          resolve(componentNames);
+        });
     });
   }
 
@@ -148,19 +267,25 @@ export class GestioneFornitoriComponent implements OnInit {
             this.messageService.add({
               severity: 'success',
               summary: 'Successo',
-              detail: 'Fornitore eliminato con successo'
+              detail: 'Fornitore eliminato con successo',
             });
-            this.loadSuppliers();
-            if (this.editingIndex >= 0 && this.suppliers[this.editingIndex]?.id === supplier.id) {
+
+            // Use our refresh subject
+            this.refresh$.next();
+
+            if (
+              this.editingIndex >= 0 &&
+              this.suppliers[this.editingIndex]?.id === supplier.id
+            ) {
               this.resetForm();
             }
             this.saving = false;
           },
-          error => {
+          (error) => {
             this.messageService.add({
               severity: 'error',
               summary: 'Errore',
-              detail: 'Errore durante l\'eliminazione del fornitore'
+              detail: "Errore durante l'eliminazione del fornitore",
             });
             console.error('Error deleting supplier:', error);
             this.saving = false;
@@ -178,7 +303,9 @@ export class GestioneFornitoriComponent implements OnInit {
             </div>
             
             <ul class="component-list">
-              ${componentNames.map(name => `<li class="component-item">${name}</li>`).join('')}
+              ${componentNames
+                .map((name) => `<li class="component-item">${name}</li>`)
+                .join('')}
             </ul>
             
             <div class="removal-warning">
@@ -201,49 +328,55 @@ export class GestioneFornitoriComponent implements OnInit {
         rejectButtonStyleClass: 'p-button-danger',
         accept: () => {
           this.saving = true;
-          
+
           // First delete all components that use this supplier
-          this.componentService.deleteComponentsBySupplier(supplier.id).subscribe(
-            () => {
-              // Then delete the supplier itself
-              this.supplierService.deleteSupplier(supplier.id).subscribe(
-                () => {
-                  this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successo',
-                    detail: 'Fornitore e componenti associati eliminati con successo'
-                  });
-                  this.loadSuppliers();
-                  if (this.editingIndex >= 0 && this.suppliers[this.editingIndex]?.id === supplier.id) {
-                    this.resetForm();
+          this.componentService
+            .deleteComponentsBySupplier(supplier.id)
+            .subscribe(
+              () => {
+                // Then delete the supplier itself
+                this.supplierService.deleteSupplier(supplier.id).subscribe(
+                  () => {
+                    this.messageService.add({
+                      severity: 'success',
+                      summary: 'Successo',
+                      detail:
+                        'Fornitore e componenti associati eliminati con successo',
+                    });
+                    this.loadSuppliers();
+                    if (
+                      this.editingIndex >= 0 &&
+                      this.suppliers[this.editingIndex]?.id === supplier.id
+                    ) {
+                      this.resetForm();
+                    }
+                    this.saving = false;
+                  },
+                  (error) => {
+                    this.messageService.add({
+                      severity: 'error',
+                      summary: 'Errore',
+                      detail: "Errore durante l'eliminazione del fornitore",
+                    });
+                    console.error('Error deleting supplier:', error);
+                    this.saving = false;
                   }
-                  this.saving = false;
-                },
-                error => {
-                  this.messageService.add({
-                    severity: 'error',
-                    summary: 'Errore',
-                    detail: 'Errore durante l\'eliminazione del fornitore'
-                  });
-                  console.error('Error deleting supplier:', error);
-                  this.saving = false;
-                }
-              );
-            },
-            error => {
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Errore',
-                detail: 'Errore durante l\'eliminazione dei componenti'
-              });
-              console.error('Error deleting components:', error);
-              this.saving = false;
-            }
-          );
+                );
+              },
+              (error) => {
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Errore',
+                  detail: "Errore durante l'eliminazione dei componenti",
+                });
+                console.error('Error deleting components:', error);
+                this.saving = false;
+              }
+            );
         },
         reject: () => {
           console.log('Eliminazione annullata');
-        }
+        },
       });
     });
   }
@@ -283,20 +416,23 @@ export class GestioneFornitoriComponent implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Errore di Validazione',
-        detail: 'Il nome del fornitore è obbligatorio'
+        detail: 'Il nome del fornitore è obbligatorio',
       });
       return false;
     }
 
-    const duplicate = this.suppliers.find((supp, idx) =>
-      supp.name.toLowerCase() === this.newSupplier.name.trim().toLowerCase() && idx !== this.editingIndex
+    const duplicate = this.suppliers.find(
+      (supp, idx) =>
+        supp.name.toLowerCase() ===
+          this.newSupplier.name.trim().toLowerCase() &&
+        idx !== this.editingIndex
     );
 
     if (duplicate) {
       this.messageService.add({
         severity: 'error',
         summary: 'Errore di Validazione',
-        detail: 'Esiste già un fornitore con questo nome'
+        detail: 'Esiste già un fornitore con questo nome',
       });
       return false;
     }
@@ -304,4 +440,3 @@ export class GestioneFornitoriComponent implements OnInit {
     return true;
   }
 }
-
