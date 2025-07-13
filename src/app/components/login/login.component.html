@@ -6,16 +6,16 @@
       </div>
 
       <h2>Accesso al Gestionale</h2>
-
-      <p-toast></p-toast>
+      
+      <p-toast position="top-center"></p-toast>
 
       <div class="error-message" *ngIf="errorMessage">
-        <p-message severity="error" [text]="errorMessage"></p-message>
+        <p-message severity="error" [text]="errorMessage" styleClass="w-full"></p-message>
       </div>
 
       <form (ngSubmit)="login()" #loginForm="ngForm" class="login-form">
         <div class="form-field">
-          <label for="email">Email</label>
+          <label for="email" class="form-label">Email</label>
           <div class="p-input-icon-left">
             <i class="pi pi-user"></i>
             <input
@@ -24,7 +24,7 @@
               pInputText
               [(ngModel)]="email"
               name="email"
-              placeholder="Email"
+              placeholder="Inserisci email"
               required
               autocomplete="username"
               [disabled]="isLoggingIn"
@@ -33,14 +33,14 @@
         </div>
 
         <div class="form-field">
-          <label for="password">Password</label>
+          <label for="password" class="form-label">Password</label>
           <div class="p-input-icon-left">
             <i class="pi pi-lock"></i>
             <p-password
               id="password"
               [(ngModel)]="password"
               name="password"
-              placeholder="Password"
+              placeholder="Inserisci password"
               [feedback]="false"
               [toggleMask]="true"
               required
@@ -56,11 +56,13 @@
         <div class="form-actions">
           <button
             pButton
+            pRipple
             type="submit"
             label="Accedi"
             icon="pi pi-sign-in"
             [loading]="isLoggingIn"
             [disabled]="loginForm.invalid || isLoggingIn"
+            class="p-button-raised"
           ></button>
         </div>
       </form>

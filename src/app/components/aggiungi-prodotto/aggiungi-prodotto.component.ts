@@ -521,7 +521,6 @@ export class AggiungiProdottoComponent implements OnInit {
       (productId) => {
         // Update the product ID
         this.newSofaProduct.id = productId;
-        this.saveProgress = 'Prodotto creato, rinominando immagine...';
 
         // If we have an uploaded image, rename it with the product ID
         if (this.newSofaProduct.photoUrl && this.selectedFile) {

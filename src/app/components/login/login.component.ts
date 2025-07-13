@@ -13,6 +13,8 @@ import { MessagesModule } from 'primeng/messages';
 import { MessageModule } from 'primeng/message';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { DividerModule } from 'primeng/divider';
+import { RippleModule } from 'primeng/ripple';
 
 @Component({
   selector: 'app-login',
@@ -27,6 +29,8 @@ import { MessageService } from 'primeng/api';
     MessagesModule,
     MessageModule,
     ToastModule,
+    DividerModule,
+    RippleModule,
   ],
   providers: [MessageService],
   templateUrl: './login.component.html',

@@ -45,9 +45,10 @@ h2 {
   gap: 0.5rem;
 }
 
-.form-field label {
+.form-label {
   font-weight: 500;
   color: #6c757d;
+  margin-bottom: 0.25rem;
 }
 
 .form-actions {
@@ -70,10 +71,58 @@ h2 {
     .p-card-content {
       padding-top: 1rem;
     }
+    .p-card-body {
+      border-radius: 8px;
+    }
   }
 
   .p-button {
     min-width: 150px;
     justify-content: center;
+    &.p-button-raised {
+      box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .p-password-input {
+    width: 100%;
+  }
+  
+  .p-float-label {
+    margin-bottom: 1rem;
+  }
+
+  .p-inputtext::placeholder {
+    opacity: 0.7;
+  }
+  
+  .p-password input::placeholder {
+    opacity: 0.7;
+  }
+
+  .p-inputtext,
+  .p-password .p-password-input {
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    font-weight: normal !important;
+    transition: none !important;
+    &:focus,
+    &.p-filled {
+      font-size: 1rem !important;
+      font-weight: normal !important;
+    }
+  }
+  
+  .p-input-icon-left {
+    i {
+      font-size: 1rem;
+      color: #6c757d;
+    }
+  }
+
+  // Ensure consistent height for inputs
+  input.p-inputtext,
+  .p-password .p-password-input {
+    height: 40px !important;
   }
 }
