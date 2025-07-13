@@ -288,13 +288,23 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     // Creare un array di fornitori dal singolo fornitore selezionato (se presente)
     const suppliers = this.selectedSupplier ? [this.selectedSupplier] : [];
 
+    // Find the actual component type object that matches the selected ID
+    const selectedTypeObj = this.selectedComponentType
+      ? this.availableComponentTypes.find(
+          (type) => type.id === this.selectedComponentType
+        )
+      : null;
+
     const component = new ComponentModel(
       this.isEditing ? this.components[this.editingIndex].id : '',
       this.newComponent.name.trim(),
       this.newComponent.price || 0,
       suppliers,
-      this.selectedComponentType || undefined
+      selectedTypeObj ? selectedTypeObj.name : undefined // Use the name property instead of the ID
     );
+
+    console.log('Saving component with type:', component.type); // Debug log
+
     const operation = this.isEditing
       ? this.componentService.updateComponent(component.id, component)
       : this.componentService.addComponent(component);
@@ -674,5 +684,12 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   openComponentTypeDialog() {
     this.newComponentType = new ComponentType('', '');
     this.showComponentTypeDialog = true;
+  }
+
+  // Add this method to track component type changes
+  onComponentTypeChange(event: any) {
+    console.log('Selected component type:', event.value);
+    console.log('Full component type object:', 
+      this.availableComponentTypes.find(type => type.id === event.value));
   }
 }

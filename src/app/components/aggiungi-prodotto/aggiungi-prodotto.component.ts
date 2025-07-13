@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
+import { Component as NgComponent, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,23 +18,29 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { FileUploadModule } from 'primeng/fileupload';
+import { MessagesModule } from 'primeng/messages';
+import { MessageModule } from 'primeng/message';    // Add this for p-message component
+import { HttpClientModule } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
+import { Router } from '@angular/router';
 
 import { SofaProduct } from '../../../models/sofa-product.model';
 import { Variant } from '../../../models/variant.model';
 import { Component as ComponentModel } from '../../../models/component.model';
 import { Supplier } from '../../../models/supplier.model';
 import { ComponentType } from '../../../models/component-type.model';
+import { Rivestimento } from '../../../models/rivestimento.model';
+
 import { SofaProductService } from '../../../services/sofa-product.service';
 import { VariantService } from '../../../services/variant.service';
 import { ComponentService } from '../../../services/component.service';
 import { SupplierService } from '../../../services/supplier.service';
 import { PhotoUploadService } from '../../../services/upload.service';
-import { FileUploadEvent, FileUploadModule } from 'primeng/fileupload';
-import { HttpClientModule } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { RivestimentoService } from '../../../services/rivestimento.service';
 
-@Component({
+@NgComponent({
   selector: 'app-aggiungi-prodotto',
   standalone: true,
   imports: [
@@ -56,6 +62,9 @@ import { Router } from '@angular/router';
     FileUploadModule,
     HttpClientModule,
     ProgressSpinnerModule,
+    MultiSelectModule,
+    MessagesModule,
+    MessageModule,  // Add this module to fix the p-message error
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './aggiungi-prodotto.component.html',
@@ -68,24 +77,44 @@ export class AggiungiProdottoComponent implements OnInit {
     { label: 'Componenti' },
   ];
 
-  currentStep = 0;
+  // 1) Selezioni singole
+  selectedFusto?: ComponentModel;
+  selectedGomma?: ComponentModel;
+  selectedMeccanismo?: ComponentModel;
+  selectedMaterasso?: ComponentModel;
+  selectedImballo?: ComponentModel;
+  selectedScatola?: ComponentModel;
 
-  value1 = 1; // Cambiato da 0 a 1 per inizializzare con il valore minimo
+  // 2) Piedini (minimo 2)
+  selectedPiedini?: ComponentModel;
+  piediniQty = 2;
+  piediniQuantityOptions: number[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16];
+
+  // 3) Liste multiple
+  ferramentaList: ComponentModel[] = [];
+  varieList: ComponentModel[] = [];
+
+  // 4) Rivestimenti
+  rivestimentiList: Rivestimento[] = [];
+  selectedRivestimenti: Rivestimento[] = [];
+
+  currentStep = 0;
+  value1 = 1;
 
   // Product basic information
   newSofaProduct = new SofaProduct('', '', '');
 
   // Variants management
   variants: Variant[] = [];
-  newVariant: Variant = new Variant('', '', '', 0);
+  newVariant = new Variant('', '', '', 0);
   selectedVariant?: Variant;
-  editingVariantIndex: number = -1;
+  editingVariantIndex = -1;
 
   // Components management
   availableComponents: ComponentModel[] = [];
   selectedComponent?: ComponentModel;
-  newComponent: ComponentModel = new ComponentModel('', '', 0, [], undefined);
-  editingComponentIndex: number = -1;
+  newComponent = new ComponentModel('', '', 0, [], undefined);
+  editingComponentIndex = -1;
 
   // Suppliers
   availableSuppliers: Supplier[] = [];
@@ -93,634 +122,444 @@ export class AggiungiProdottoComponent implements OnInit {
 
   // Component types
   componentTypes: ComponentType[] = [];
-  selectedComponentType?: ComponentType; // Single component type
+  selectedComponentType?: ComponentType;
 
   // Markup and pricing
-  markupPercentage: number = 30; // Default markup
-  finalPrices: Map<string, number> = new Map(); // Variant ID to final price
+  markupPercentage = 30;
+  finalPrices = new Map<string, number>();
 
   // Supplier dialog
   showAddSupplierDialog = false;
-  newSupplier: Supplier = new Supplier('', '', '');
+  newSupplier = new Supplier('', '', '');
 
-  // Image upload properties
+  // Image upload
   selectedFile: File | null = null;
   imagePreview: string | null = null;
-  isUploading: boolean = false;
-  uploadComplete: boolean = false;
+  isUploading = false;
+  uploadComplete = false;
 
-  // Save product loading properties
-  isSavingProduct: boolean = false;
-  saveProgress: string = '';
+  // Save progress
+  isSavingProduct = false;
+  saveProgress = '';
 
-  // Dialogs visibility
+  // Dialog visibility
   showSedutaDialog = false;
   showSchienaleDialog = false;
   showMeccanicaDialog = false;
   showMaterassoDialog = false;
 
-  // Add form state tracking
-  formSubmitted: boolean = false;
-  formValid: boolean = true;
-  variantFormSubmitted: boolean = false;
-  variantFormValid: boolean = true;
-  componentFormSubmitted: boolean = false;
-  componentFormValid: boolean = true;
+  // Form tracking
+  formSubmitted = false;
+  formValid = true;
+  variantFormSubmitted = false;
+  variantFormValid = true;
+  componentFormSubmitted = false;
+  componentFormValid = true;
 
   isBrowser: boolean;
 
-  // Add a map to track component quantities
-  componentQuantities: Map<string, number> = new Map();
+  // Component quantities map
+  componentQuantities = new Map<string, number>();
+
+  // Add a cache for component types
+  private componentsByTypeCache = new Map<string, ComponentModel[]>();
 
   constructor(
     private sofaProductService: SofaProductService,
     private variantService: VariantService,
+    private rivestimentoService: RivestimentoService,
     private componentService: ComponentService,
     private supplierService: SupplierService,
     private uploadService: PhotoUploadService,
-    private router: Router,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
+    private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
   ngOnInit() {
-    // Only load data on the browser
     if (this.isBrowser) {
       this.loadInitialData();
+      this.rivestimentoService.getRivestimenti().subscribe(list => {
+        this.rivestimentiList = list;
+      });
     }
   }
 
-  loadInitialData() {
-    this.componentService.getComponents().subscribe((components) => {
+  private loadInitialData() {
+    this.componentService.getComponents().subscribe(components => {
       this.availableComponents = components;
+      this.componentsByTypeCache.clear(); // Clear cache when components change
     });
-
-    this.supplierService.getSuppliers().subscribe((suppliers) => {
+    this.supplierService.getSuppliers().subscribe(suppliers => {
       this.availableSuppliers = suppliers;
     });
   }
 
   prevStep(): void {
-    if (this.currentStep > 0) {
-      this.currentStep--;
-    }
+    if (this.currentStep > 0) this.currentStep--;
   }
 
   nextStep(): void {
     if (this.currentStep < this.steps.length - 1) {
-      if (!this.validateCurrentStep()) {
-        return;
-      }
-      if (this.currentStep === 3) {
-        this.calculateFinalPrices();
-      }
-
+      if (!this.validateCurrentStep()) return;
+      if (this.currentStep === 2) this.calculateFinalPrices();
       this.currentStep++;
     }
   }
 
-  validateCurrentStep(): boolean {
-    switch (this.currentStep) {
-      case 0: // Product info
-        if (!this.newSofaProduct.name.trim()) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: 'Inserisci il nome del prodotto',
-          });
-          return false;
-        }
+  get canApplyComponents(): boolean {
+    // Prima verifica che sia stata selezionata una variante
+    if (!this.selectedVariant) return false;
 
-        // Se un'immagine è in caricamento, impedisci l'avanzamento
-        if (this.isUploading) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Attendere',
-            detail: "Attendere il completamento del caricamento dell'immagine",
-          });
-          return false;
-        }
-
-        return true;
-
-      case 1: // Variants
-        if (this.variants.length === 0) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: 'Aggiungi almeno una variante',
-          });
-          return false;
-        }
-        return true;
-
-      case 2: // Components
-        let allVariantsHaveComponents = true;
-        this.variants.forEach((variant) => {
-          if (variant.components.length === 0) {
-            allVariantsHaveComponents = false;
-          }
-        });
-
-        if (!allVariantsHaveComponents) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: 'Ogni variante deve avere almeno un componente',
-          });
-          return false;
-        }
-        return true;
-
-      default:
-        return true;
-    }
+    // Abilita il pulsante se almeno un componente è stato selezionato
+    return !!this.selectedFusto ||
+      !!this.selectedGomma ||
+      !!this.selectedMeccanismo ||
+      !!this.selectedMaterasso ||
+      !!this.selectedImballo ||
+      !!this.selectedScatola ||
+      !!this.selectedPiedini ||
+      this.ferramentaList.length > 0 ||
+      this.varieList.length > 0 ||
+      this.selectedRivestimenti.length > 0;
   }
 
-  // Variant management
+  getComponentQuantity(component: ComponentModel): number {
+    if (!this.selectedVariant) return 0;
+
+    return this.selectedVariant.components.filter(c =>
+      (c.id && c.id === component.id) ||
+      (!c.id && !component.id && c.name === component.name)
+    ).length;
+  }
+
+  validateCurrentStep(): boolean {
+    if (this.currentStep === 0) {
+      if (!this.newSofaProduct.name.trim()) {
+        this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Inserisci il nome del prodotto' });
+        return false;
+      }
+      if (this.isUploading) {
+        this.messageService.add({ severity: 'warn', summary: 'Attendere', detail: 'Attendere il completamento del caricamento dell\'immagine' });
+        return false;
+      }
+      return true;
+    }
+    if (this.currentStep === 1 && this.variants.length === 0) {
+      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Aggiungi almeno una variante' });
+      return false;
+    }
+    if (this.currentStep === 2) {
+      if (this.variants.length === 0) {
+        this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Aggiungi almeno una variante prima di continuare' });
+        return false;
+      }
+
+      const allHaveComponents = this.variants.every(v => v.components.length > 0);
+      if (!allHaveComponents) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Ogni variante deve avere almeno un componente. Applica i componenti a tutte le varianti.'
+        });
+        return false;
+      }
+    }
+    return true;
+  }
+
   addVariant(): void {
     this.variantFormSubmitted = true;
     if (!this.newVariant.longName.trim()) {
       this.variantFormValid = false;
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore',
-        detail: 'Completa tutti i campi obbligatori',
-      });
+      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Completa tutti i campi obbligatori' });
       return;
     }
     this.variantFormValid = true;
-
-    const variant = new Variant(
-      '', // ID will be generated by Firebase
-      this.newSofaProduct.id || '', // Will be updated when sofa is saved
-      this.newVariant.longName,
-      this.newVariant.price,
-      [], // Components will be added later
-      this.newVariant.seatsCount,
-      this.newVariant.mattressWidth
-    );
+    const variant = new Variant('', this.newSofaProduct.id || '', this.newVariant.longName, this.newVariant.price, [], this.newVariant.seatsCount, this.newVariant.mattressWidth);
     if (this.editingVariantIndex >= 0) {
       this.variants[this.editingVariantIndex] = variant;
       this.editingVariantIndex = -1;
     } else {
       this.variants.push(variant);
     }
-
-    // Reset form
     this.newVariant = new Variant('', '', '', 0);
     this.variantFormSubmitted = false;
-    this.variantFormValid = true;
   }
 
   editVariant(index: number): void {
     this.editingVariantIndex = index;
-    const variant = this.variants[index];
-    this.newVariant = new Variant(
-      variant.id,
-      variant.sofaId,
-      variant.longName,
-      variant.price,
-      variant.components,
-      variant.seatsCount,
-      variant.mattressWidth
-    );
+    const v = this.variants[index];
+    this.newVariant = new Variant(v.id, v.sofaId, v.longName, v.price, v.components, v.seatsCount, v.mattressWidth);
   }
 
   deleteVariant(index: number): void {
-    this.confirmationService.confirm({
-      message: 'Sei sicuro di voler eliminare questa variante?',
-      acceptButtonStyleClass: 'p-button-primary',
-      rejectButtonStyleClass: 'p-button-danger',
-      accept: () => {
-        const removedVariant = this.variants.splice(index, 1)[0];
-
-        if (this.editingVariantIndex === index) {
-          this.editingVariantIndex = -1;
-          this.newVariant = new Variant('', '', '', 0);
-        }
-      },
-    });
+    this.confirmationService.confirm({ message: 'Sei sicuro?', accept: () => this.variants.splice(index, 1) });
   }
 
-  // Component management
   selectVariantForComponents(variant: Variant): void {
     this.selectedVariant = variant;
-
-    // Reset and rebuild the component quantities map for this variant
     this.componentQuantities.clear();
 
-    // Group components by ID or name and count them
-    const componentCounts = new Map<string, number>();
-    variant.components.forEach(comp => {
-      const key = comp.id || comp.name;
-      componentCounts.set(key, (componentCounts.get(key) || 0) + 1);
-    });
+    // Reset component selections when changing variant
+    this.resetComponentSelections();
 
-    // Store unique components with their counts
-    const uniqueComponents = new Map<string, ComponentModel>();
-    variant.components.forEach(comp => {
-      const key = comp.id || comp.name;
-      if (!uniqueComponents.has(key)) {
-        uniqueComponents.set(key, comp);
-        // Set the quantity in our tracking map
-        this.componentQuantities.set(key, componentCounts.get(key) || 0);
-      }
-    });
-  }
-
-  // Update the addComponentToVariant method to handle quantities correctly
-  addComponentToVariant(component: ComponentModel): void {
-    if (!this.selectedVariant || !component) return;
-    const qty = this.value1;
-
-    // Aggiungi `qty` volte lo stesso componente nell'array
-    for (let i = 0; i < qty; i++) {
-      this.selectedVariant.components.push(component);
+    // If the variant has components, try to pre-populate the selection fields
+    if (variant.components && variant.components.length > 0) {
+      this.populateComponentSelections(variant.components);
     }
 
-    // Aggiorna il prezzo
-    this.selectedVariant.updatePrice();
+    const counts = new Map<string, number>();
+    variant.components.forEach(c => counts.set(c.id || c.name, (counts.get(c.id || c.name) || 0) + 1));
+    counts.forEach((qty, key) => this.componentQuantities.set(key, qty));
+  }
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Componente aggiunto',
-      detail: `${component.name} ×${qty}`
+  // Helper to reset all component selections
+  private resetComponentSelections(): void {
+    this.selectedFusto = undefined;
+    this.selectedGomma = undefined;
+    this.selectedMeccanismo = undefined;
+    this.selectedMaterasso = undefined;
+    this.selectedImballo = undefined;
+    this.selectedScatola = undefined;
+    this.selectedPiedini = undefined;
+    this.piediniQty = 2;
+    this.ferramentaList = [];
+    this.varieList = [];
+  }
+
+  // Helper to populate component selections from existing components
+  private populateComponentSelections(components: ComponentModel[]): void {
+    // Group components by type
+    const compsByType = new Map<string, ComponentModel[]>();
+    components.forEach(comp => {
+      if (!comp.type) return;
+      const type = comp.type.toLowerCase();
+      if (!compsByType.has(type)) compsByType.set(type, []);
+      compsByType.get(type)?.push(comp);
     });
 
-    // Reset quantità a 1
-    this.value1 = 1;
-  }
+    // Set single components
+    this.selectedFusto = this.findMatchingComponent('fusto', compsByType);
+    this.selectedGomma = this.findMatchingComponent('gomma', compsByType);
+    this.selectedMeccanismo = this.findMatchingComponent('meccanismo', compsByType);
+    this.selectedMaterasso = this.findMatchingComponent('materasso', compsByType);
+    this.selectedImballo = this.findMatchingComponent('imballo', compsByType);
+    this.selectedScatola = this.findMatchingComponent('scatola', compsByType);
 
-  get groupedComponents(): { component: ComponentModel; quantity: number }[] {
-    if (!this.selectedVariant) {
-      return [];
-    }
-    const map = new Map<string, { component: ComponentModel; quantity: number }>();
-
-    for (const comp of this.selectedVariant.components) {
-      const key = comp.id || comp.name;
-      if (!map.has(key)) {
-        map.set(key, { component: comp, quantity: 1 });
-      } else {
-        map.get(key)!.quantity++;
-      }
+    // Handle piedini specially to get quantity
+    const piedini = compsByType.get('piedini');
+    if (piedini?.length) {
+      this.selectedPiedini = piedini[0];
+      this.piediniQty = piedini.length;
     }
 
-    return Array.from(map.values());
+    // Multi-selects
+    this.ferramentaList = compsByType.get('ferramenta') || [];
+    this.varieList = compsByType.get('varie') || [];
+
+    // Also look for rivestimenti
+    const rivestimentiComponents = components.filter(c => c.type && c.type.toLowerCase() === 'rivestimento');
+    if (rivestimentiComponents.length > 0) {
+      // Try to match rivestimenti from components to available rivestimenti list
+      this.selectedRivestimenti = rivestimentiComponents.map(c => {
+        const nameParts = c.name.split(' ');
+        if (nameParts.length >= 2) {
+          const rivestimentoType = nameParts[1];
+          const codeMatch = c.name.match(/\(([^)]+)\)/); // extract code in parentheses if any
+          const code = codeMatch ? codeMatch[1] : '';
+          return this.rivestimentiList.find(r => r.type === rivestimentoType && (!code || r.code === code)) || null;
+        }
+        return null;
+      }).filter(r => r !== null);
+    }
   }
 
-  removeComponentGroup(component: ComponentModel): void {
-    if (!this.selectedVariant) return;
-    // Filtra fuori tutte le occorrenze
-    this.selectedVariant.components = this.selectedVariant.components
-      .filter(c => (c.id || c.name) !== (component.id || component.name));
+  // Helper to find a component in the availableComponents list
+  private findMatchingComponent(type: string, compsByType: Map<string, ComponentModel[]>): ComponentModel | undefined {
+    const compsOfType = compsByType.get(type);
+    if (!compsOfType?.length) return undefined;
 
-    // Ricalcola prezzo
-    this.selectedVariant.updatePrice();
-
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Componente rimosso',
-      detail: `Tutte le istanze di ${component.name} sono state eliminate`
-    });
-  }
-
-  // Update getComponentQuantity to use the quantity map
-  getComponentQuantity(comp: ComponentModel): number {
-    if (!this.selectedVariant) return 0;
-
-    const componentKey = comp.id || comp.name;
-    return this.componentQuantities.get(componentKey) || 0;
-  }
-
-  // Update the removeComponentFromVariant method to also clean up from the quantities map
-  removeComponentFromVariant(variantIndex: number, componentIdentifier: string): void {
-    if (!this.selectedVariant) return;
-
-    const variant = this.variants[variantIndex];
-    const component = variant.components.find(c =>
-      c.id === componentIdentifier || c.name === componentIdentifier
+    // Find the matching available component
+    const comp = compsOfType[0];
+    return this.availableComponents.find(c =>
+      (comp.id && c.id === comp.id) ||
+      (!comp.id && c.name === comp.name)
     );
-
-    if (component) {
-      // Remove from components array
-      variant.components = variant.components.filter(c =>
-        (c.id && c.id !== componentIdentifier) ||
-        (!c.id && c.name !== componentIdentifier)
-      );
-
-      // Remove from quantities map
-      this.componentQuantities.delete(componentIdentifier);
-
-      // Update variant price
-      variant.updatePrice();
-
-      // Show confirmation message
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Componente rimosso',
-        detail: `${component.name} rimosso dalla variante`
-      });
-    }
   }
 
-  // Create new component
-  createComponent(): void {
-    this.componentFormSubmitted = true;
-    if (!this.newComponent.name.trim()) {
-      this.componentFormValid = false;
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore',
-        detail: 'Inserisci il nome del componente',
-      });
-      return;
+  /**
+   * Verifica se sono stati selezionati tutti i componenti obbligatori
+   * @returns true se tutti i componenti obbligatori sono selezionati
+   */
+  hasSelectedComponents(): boolean {
+    // Verifica che tutti i componenti obbligatori siano selezionati
+    return !!(this.selectedFusto && 
+              this.selectedGomma && 
+              this.selectedPiedini && 
+              this.selectedMeccanismo && 
+              this.selectedMaterasso && 
+              this.selectedImballo && 
+              this.selectedScatola &&
+              this.selectedRivestimenti && 
+              this.selectedRivestimenti.length > 0);
+    
+    // I campi opzionali (ferramentaList e varieList) non influiscono sulla validazione
+  }
+
+  /**
+   * Verifica se ci sono errori sui campi obbligatori dei componenti
+   * @returns un array con i nomi dei campi mancanti
+   */
+  getMissingRequiredComponents(): string[] {
+    const missingComponents = [];
+    if (!this.selectedFusto) missingComponents.push('Fusto');
+    if (!this.selectedGomma) missingComponents.push('Gomma');
+    if (!this.selectedPiedini) missingComponents.push('Piedini');
+    if (!this.selectedMeccanismo) missingComponents.push('Meccanismo');
+    if (!this.selectedMaterasso) missingComponents.push('Materasso');
+    if (!this.selectedImballo) missingComponents.push('Imballo');
+    if (!this.selectedScatola) missingComponents.push('Scatola');
+    if (!this.selectedRivestimenti || this.selectedRivestimenti.length === 0) missingComponents.push('Rivestimenti');
+    return missingComponents;
+  }
+
+  // Aggiorniamo anche la funzione applySpecialComponents per usare la nuova funzione di validazione
+  applySpecialComponents(silent: boolean = false): boolean {
+    if (!this.selectedVariant) return false;
+
+    // Less strict validation - allow the product to be saved with just one component
+    const missingComponents = [];
+    if (!this.selectedFusto && !this.selectedGomma && !this.selectedPiedini &&
+      !this.selectedMeccanismo && !this.selectedMaterasso && !this.selectedImballo &&
+      !this.selectedScatola && this.ferramentaList.length === 0 && this.varieList.length === 0) {
+      missingComponents.push('almeno un componente');
     }
-    this.componentFormValid = true;
 
-    // Ensure selectedSuppliers is an array
-    const suppliersList = Array.isArray(this.selectedSuppliers) ? this.selectedSuppliers : [];
+    // Controlla se i rivestimenti sono stati selezionati
+    if (!this.selectedRivestimenti || this.selectedRivestimenti.length === 0) {
+      missingComponents.push('almeno un rivestimento');
+    }
 
-    const component = new ComponentModel(
-      '', // ID will be generated by Firebase
-      this.newComponent.name,
-      this.newComponent.price,
-      suppliersList, // Ensure it's an array
-      this.selectedComponentType?.id
-    );
-
-    if (this.editingComponentIndex >= 0) {
-      // Update existing component
-      this.componentService
-        .updateComponent(component.id, component)
-        .subscribe(() => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Successo',
-            detail: 'Componente aggiornato',
-          });
-          this.loadInitialData(); // Refresh components list
-          this.editingComponentIndex = -1;
-        });
-    } else {
-      // Create new component
-      this.componentService.addComponent(component).subscribe(() => {
+    if (missingComponents.length > 0) {
+      if (!silent) {
         this.messageService.add({
-          severity: 'success',
-          summary: 'Successo',
-          detail: 'Nuovo componente creato',
+          severity: 'warn',
+          summary: 'Componenti mancanti',
+          detail: `È necessario selezionare ${missingComponents.join(', ')}`,
+          life: 5000
         });
-        this.loadInitialData(); // Refresh components list
+      }
+      return false;
+    }
+
+    const comps: ComponentModel[] = [];
+    // singoli e piedini
+    [this.selectedFusto, this.selectedGomma, this.selectedMeccanismo, this.selectedMaterasso, this.selectedImballo, this.selectedScatola]
+      .forEach(c => c && comps.push(c));
+    if (this.selectedPiedini) for (let i = 0; i < Math.max(2, this.piediniQty); i++) comps.push(this.selectedPiedini);
+    // liste multiple
+    this.ferramentaList.forEach(c => comps.push(c));
+    this.varieList.forEach(c => comps.push(c));
+    // rivestimenti
+    this.selectedRivestimenti.forEach(r => comps.push(new ComponentModel(r.id, `Rivestimento ${r.type}${r.code ? ` (${r.code})` : ''}`, r.mtPrice, [], 'rivestimento')));
+
+    this.selectedVariant.components = comps;
+    
+    // Salva i rivestimenti selezionati nella variante
+    this.selectedVariant.rivestimenti = [...this.selectedRivestimenti];
+    
+    this.selectedVariant.updatePrice();
+
+    if (!silent) {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Componenti Applicati',
+        detail: `${this.selectedVariant.longName} aggiornato`
       });
     }
 
-    // Reset form
-    this.newComponent = new ComponentModel('', '', 0, [], undefined);
-    this.selectedSuppliers = [];
-    this.selectedComponentType = undefined;
-    this.componentFormSubmitted = false;
-    this.componentFormValid = true;
-  }
-  // Price calculations
-  // Update calculateComponentCost to use the variant's own method
-  calculateComponentCost(variant: Variant): number {
-    return variant.calculatePriceFromComponents();
+    return true;
   }
 
   calculateFinalPrices(): void {
     this.finalPrices.clear();
-
-    this.variants.forEach((variant) => {
-      // Ensure variant price is up to date with its components
-      variant.updatePrice();
-      const componentCost = variant.price; // Use the calculated price directly
-
-      // Apply markup: price = cost / ((100 - markup) / 100)
-      const finalPrice = componentCost / ((100 - this.markupPercentage) / 100);
-      this.finalPrices.set(
-        variant.longName,
-        Math.round(finalPrice * 100) / 100
-      ); // Round to 2 decimals
+    this.variants.forEach(v => {
+      v.updatePrice();
+      const cost = v.price;
+      const final = cost / ((100 - this.markupPercentage) / 100);
+      this.finalPrices.set(v.longName, Math.round(final * 100) / 100);
     });
   }
-  // Save complete product
+
   saveProduct(): void {
-    if (!this.validateCurrentStep()) {
-      return;
+    // Auto-apply components to each variant that has selections but no components
+    if (this.variants.length > 0) {
+      // Remember the currently selected variant
+      const previouslySelected = this.selectedVariant;
+
+      // Check each variant
+      for (const variant of this.variants) {
+        // If this variant has no components, try to auto-apply
+        if (!variant.components || variant.components.length === 0) {
+          this.selectedVariant = variant;
+
+          // Only try to auto-apply if there are selected components
+          const hasSelections = this.selectedFusto || this.selectedGomma || this.selectedPiedini ||
+            this.selectedMeccanismo || this.selectedMaterasso ||
+            this.selectedImballo || this.selectedScatola ||
+            this.ferramentaList.length > 0 || this.varieList.length > 0;
+
+          if (hasSelections) {
+            this.applySpecialComponents(true); // Apply silently
+          }
+        }
+      }
+
+      // Restore the previously selected variant
+      this.selectedVariant = previouslySelected;
     }
 
+    if (!this.validateCurrentStep()) return;
+
+    // Continue with normal save process
     this.isSavingProduct = true;
     this.saveProgress = 'Preparazione dati...';
-
-    // First create the sofa product and get its ID
-    this.sofaProductService.createProduct(this.newSofaProduct).subscribe(
-      (productId) => {
-        // Update the product ID
-        this.newSofaProduct.id = productId;
-
-        // If we have an uploaded image, rename it with the product ID
-        if (this.newSofaProduct.photoUrl && this.selectedFile) {
-          this.uploadService.renameProductImage(this.newSofaProduct.photoUrl, productId, this.selectedFile).subscribe({
-            next: (newUrl) => {
-              this.newSofaProduct.photoUrl = newUrl;
-              // Update the product with the new image URL
-              this.sofaProductService.updateProduct(productId, this.newSofaProduct).subscribe(() => {
-                this.saveProgress = 'Immagine aggiornata, creazione varianti...';
-                this.createVariants(productId);
-              });
-            },
-            error: (error) => {
-              console.error('Error renaming image:', error);
-              // Continue with variants creation even if image rename fails
-              this.saveProgress = 'Creazione varianti...';
-              this.createVariants(productId);
-            }
-          });
-        } else {
-          this.saveProgress = 'Creazione varianti...';
-          this.createVariants(productId);
-        }
-      },
-      (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: 'Errore durante il salvataggio del prodotto',
-        });
-        console.error('Error saving product:', error);
-        this.isSavingProduct = false;
-        this.saveProgress = '';
-      }
-    );
+    this.sofaProductService.createProduct(this.newSofaProduct).subscribe(pid => {
+      this.newSofaProduct.id = pid;
+      this.saveProgress = 'Creazione varianti...';
+      this.createVariants(pid);
+    }, err => {
+      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Salvataggio fallito' });
+      this.isSavingProduct = false;
+    });
   }
 
   private createVariants(productId: string): void {
-    // Create variants and collect their observables
-    const variantObservables = this.variants.map((variant) => {
-      // Update variant with final price and sofa ID
-      variant.price = this.finalPrices.get(variant.longName) || 0;
-      variant.sofaId = productId;
-
-      return this.variantService.createVariant(variant);
+    const calls = this.variants.map(v => {
+      v.sofaId = productId; v.price = this.finalPrices.get(v.longName) || 0;
+      return this.variantService.createVariant(v);
     });
-
-    // Wait for all variants to be created using forkJoin
-    forkJoin(variantObservables).subscribe(
-      (variantIds) => {
-        this.saveProgress = 'Collegamento varianti al prodotto...';
-        // Update the product with variant IDs
-        this.sofaProductService
-          .updateProductVariants(productId, variantIds)
-          .subscribe(
-            () => {
-              this.saveProgress = 'Completamento...';
-
-              // Small delay to show completion message
-              setTimeout(() => {
-                this.isSavingProduct = false;
-                this.saveProgress = '';
-                // Navigate to products list page
-                this.router.navigate(['/prodotti']);
-              }, 1000);
-            },
-            (error) => {
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Errore',
-                detail: `Errore durante l'associazione delle varianti: ${error.message || 'Verifica la connessione'}`,
-              });
-              console.error('Error updating product variants:', error);
-              this.isSavingProduct = false;
-              this.saveProgress = '';
-
-              // Offer retry option
-              this.confirmationService.confirm({
-                message: 'Vuoi riprovare ad associare le varianti al prodotto?',
-                header: 'Riprova',
-                icon: 'pi pi-exclamation-triangle',
-                acceptLabel: 'Sì, riprova',
-                rejectLabel: 'No, torna alla lista prodotti',
-                accept: () => {
-                  // Retry updating product variants
-                  this.isSavingProduct = true;
-                  this.saveProgress = 'Riprovo collegamento varianti...';
-                  this.sofaProductService
-                    .updateProductVariants(productId, variantIds)
-                    .subscribe(
-                      () => {
-                        this.messageService.add({
-                          severity: 'success',
-                          summary: 'Successo',
-                          detail: 'Prodotto salvato con successo',
-                        });
-                        this.isSavingProduct = false;
-                        this.saveProgress = '';
-                        this.router.navigate(['/prodotti']);
-                      },
-                      (error) => {
-                        this.messageService.add({
-                          severity: 'error',
-                          summary: 'Errore',
-                          detail: 'Errore persistente, prova più tardi',
-                        });
-                        this.isSavingProduct = false;
-                        this.saveProgress = '';
-                      }
-                    );
-                },
-                reject: () => {
-                  // Navigate to products list even if save was incomplete
-                  this.router.navigate(['/prodotti']);
-                }
-              });
-            }
-          );
-      },
-      (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: `Errore durante la creazione delle varianti: ${error.message || 'Controlla i dati inseriti'}`,
-        });
-        console.error('Error creating variants:', error);
-        this.isSavingProduct = false;
-        this.saveProgress = '';
-
-        // Offer option to navigate away or try again
-        this.confirmationService.confirm({
-          message: 'Le varianti non sono state create correttamente. Vuoi riprovare?',
-          header: 'Errore Salvataggio',
-          icon: 'pi pi-exclamation-triangle',
-          acceptLabel: 'Riprova',
-          rejectLabel: 'Torna alla lista prodotti',
-          accept: () => {
-            // Retry variant creation
-            this.createVariants(productId);
-          },
-          reject: () => {
-            // Navigate to products list
-            this.router.navigate(['/prodotti']);
-          }
-        });
-      }
-    );
+    forkJoin(calls).subscribe(ids => {
+      this.sofaProductService.updateProductVariants(productId, ids).subscribe(() => {
+        this.router.navigate(['/prodotti']);
+      });
+    });
   }
 
-  // Image upload methods
-  onFileSelect(event: any): void {
-    const file = event.files[0];
-    if (file) {
-      this.selectedFile = file;
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.imagePreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
-
-      // Carica immediatamente l'immagine
-      this.uploadImageImmediately(file);
-    }
+  shouldShowProductFieldError(fieldValue: any): boolean {
+    return this.formSubmitted && !this.formValid && !fieldValue?.trim();
   }
 
-  private uploadImageImmediately(file: File): void {
-    // Genera un ID temporaneo per il prodotto se non esiste
-    const tempProductId = this.newSofaProduct.id || `temp_${Date.now()}`;
+  shouldShowVariantFieldError(fieldValue: any): boolean {
+    return this.variantFormSubmitted && !this.variantFormValid && !fieldValue?.trim();
+  }
 
-    this.isUploading = true;
-    this.uploadComplete = false;
-
-    this.uploadService.uploadProductImage(file, tempProductId).subscribe({
-      next: (result) => {
-        // Se abbiamo ricevuto l'URL di download, l'upload è completato
-        if (result.downloadURL) {
-          this.newSofaProduct.photoUrl = result.downloadURL;
-          this.uploadComplete = true;
-          this.isUploading = false;
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Successo',
-            detail: 'Immagine caricata con successo',
-          });
-        }
-      },
-      error: (error) => {
-        this.isUploading = false;
-        this.uploadComplete = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: "Errore durante il caricamento dell'immagine",
-        });
-        console.error('Error uploading image:', error);
-      },
-    });
+  shouldShowComponentFieldError(fieldValue: any): boolean {
+    return this.componentFormSubmitted && !this.componentFormValid && !fieldValue?.trim();
   }
 
   removeImage(): void {
@@ -743,10 +582,21 @@ export class AggiungiProdottoComponent implements OnInit {
     this.uploadComplete = false;
   }
 
-  // Supplier management
-  openAddSupplierDialog(): void {
-    this.newSupplier = new Supplier('', '', '');
-    this.showAddSupplierDialog = true;
+  onFileSelect(event: any): void {
+    const file = event.files[0];
+    if (file) {
+      this.selectedFile = file;
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      // Carica immediatamente l'immagine
+      this.uploadImageImmediately(file);
+    }
   }
 
   cancelAddSupplier(): void {
@@ -801,24 +651,59 @@ export class AggiungiProdottoComponent implements OnInit {
     );
   }
 
-  // Handle file upload from p-fileUpload component
-  async onUpload(event: any) {
-    // This method can be used for alternative upload handling if needed
-    console.log('Upload event:', event);
+  private uploadImageImmediately(file: File): void {
+    // Genera un ID temporaneo per il prodotto se non esiste
+    const tempProductId = this.newSofaProduct.id || `temp_${Date.now()}`;
+
+    this.isUploading = true;
+    this.uploadComplete = false;
+
+    this.uploadService.uploadProductImage(file, tempProductId).subscribe({
+      next: (result) => {
+        // Se abbiamo ricevuto l'URL di download, l'upload è completato
+        if (result.downloadURL) {
+          this.newSofaProduct.photoUrl = result.downloadURL;
+          this.uploadComplete = true;
+          this.isUploading = false;
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Successo',
+            detail: 'Immagine caricata con successo',
+          });
+        }
+      },
+      error: (error) => {
+        this.isUploading = false;
+        this.uploadComplete = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: "Errore durante il caricamento dell'immagine",
+        });
+        console.error('Error uploading image:', error);
+      },
+    });
   }
 
-  // Add methods to check field errors
-  shouldShowProductFieldError(fieldValue: any): boolean {
-    return this.formSubmitted && !this.formValid && !fieldValue?.trim();
+  // Make method explicitly public for template access
+  public getComponentsByType(type: string): ComponentModel[] {
+    // Check cache first
+    const lowerType = type.toLowerCase();
+
+    if (!this.componentsByTypeCache.has(lowerType)) {
+      // Cache miss - filter the components and store in cache
+      const filtered = this.availableComponents.filter(c =>
+        c.type && c.type.toLowerCase() === lowerType
+      );
+      this.componentsByTypeCache.set(lowerType, filtered);
+    }
+
+    // Return from cache
+    return this.componentsByTypeCache.get(lowerType) || [];
   }
 
-  shouldShowVariantFieldError(fieldValue: any): boolean {
-    return this.variantFormSubmitted && !this.variantFormValid && !fieldValue?.trim();
-  }
-
-  shouldShowComponentFieldError(fieldValue: any): boolean {
-    return this.componentFormSubmitted && !this.componentFormValid && !fieldValue?.trim();
+  onComponentSelected(type: string, component: any): void {
+    console.log(`Componente ${type} selezionato:`, component);
   }
 }
-
-

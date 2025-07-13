@@ -91,6 +91,7 @@
             [emptyFilterMessage]="'Nessun tipo trovato'"
             styleClass="w-100"
             (onFilter)="onComponentTypeFilter($event)"
+            (onChange)="onComponentTypeChange($event)"
           >
             <ng-template pTemplate="emptyfilter">
               <div class="p-dropdown-empty-message p-py-2 p-px-3">

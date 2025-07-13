@@ -1,4 +1,5 @@
 import { Component } from './component.model';
+import { Rivestimento } from './rivestimento.model';
 
 export class Variant {
   constructor(
@@ -8,7 +9,8 @@ export class Variant {
     public price: number = 0,
     public components: Component[] = [],
     public seatsCount?: number,
-    public mattressWidth?: number
+    public mattressWidth?: number,
+    public rivestimenti: Rivestimento[] = []
   ) {}
 
   // Calculate price from components
