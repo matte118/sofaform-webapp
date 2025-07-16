@@ -140,6 +140,17 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
           detail: 'Errore caricamento componenti',
         });
         return of([]);
+      }),
+      tap(components => {
+        // Add logging to check the measure values
+        console.log('Components with measures:', components.map(c => ({
+          name: c.name,
+          measure: c.measure,
+          measureType: typeof c.measure,
+          isEmpty: c.measure === '',
+          isNull: c.measure === null,
+          isUndefined: c.measure === undefined
+        })));
       })
     );
 
@@ -300,10 +311,11 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       this.newComponent.name.trim(),
       this.newComponent.price || 0,
       suppliers,
-      selectedTypeObj ? selectedTypeObj.name : undefined // Use the name property instead of the ID
+      selectedTypeObj ? selectedTypeObj.name : undefined,
+      this.newComponent.measure
     );
 
-    console.log('Saving component with type:', component.type); // Debug log
+    console.log('Saving component with measure:', component.measure, 'Type:', typeof component.measure); // Debug log
 
     const operation = this.isEditing
       ? this.componentService.updateComponent(component.id, component)
@@ -346,7 +358,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       component.name,
       component.price,
       JSON.parse(JSON.stringify(component.suppliers || [])),
-      component.type
+      component.type,
+      component.measure // Include the measure/dimension field
     );
 
     // Find matching supplier in availableSuppliers

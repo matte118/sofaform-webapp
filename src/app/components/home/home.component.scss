@@ -678,17 +678,19 @@
   .p-dialog-content {
     padding: 0;
     background: white;
+    max-height: 70vh;
+    overflow-y: auto;
 
     .edit-product-container {
       padding: 1.5rem;
 
       .form-sections-wrapper {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         gap: 2rem;
 
-        @media (max-width: 767px) {
-          flex-direction: column;
+        @media (min-width: 768px) {
+          flex-direction: row;
         }
 
         .image-section {
@@ -707,6 +709,9 @@
 
       .form-section {
         margin-bottom: 2rem;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1.5rem;
 
         &:last-child {
           margin-bottom: 0;
@@ -767,8 +772,110 @@
           }
 
           textarea {
-            min-height: 100px;
+            min-height: 80px;
+            resize: vertical;
           }
+        }
+      }
+
+      // Variant form styles
+      .variant-form {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+
+        .p-grid {
+          gap: 1rem;
+        }
+      }
+
+      .variants-list {
+        .variants-table {
+          width: 100%;
+          border-collapse: collapse;
+          border-radius: 6px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+          th,
+          td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+          }
+
+          th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+          }
+
+          td {
+            background: white;
+            font-size: 0.9rem;
+          }
+
+          tr:hover td {
+            background: #f8f9fa;
+          }
+        }
+
+        .variant-components {
+          background: #f8f9fa !important;
+          padding: 1rem;
+
+          .components-container {
+            h5 {
+              margin: 0 0 0.75rem 0;
+              color: #4a5568;
+              font-size: 0.9rem;
+            }
+
+            .component-chips {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.5rem;
+
+              .component-chip {
+                display: inline-flex;
+                align-items: center;
+                background: #e3f2fd;
+                color: #1976d2;
+                padding: 0.25rem 0.5rem;
+                border-radius: 16px;
+                font-size: 0.85rem;
+                border: 1px solid #bbdefb;
+
+                .remove-component {
+                  background: none;
+                  border: none;
+                  color: #d32f2f;
+                  margin-left: 0.5rem;
+                  padding: 0;
+                  cursor: pointer;
+                  font-size: 0.75rem;
+                  border-radius: 50%;
+                  width: 16px;
+                  height: 16px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+
+                  &:hover {
+                    background: #ffebee;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .components-count {
+          font-size: 0.85rem;
+          color: #666;
+          margin-right: 0.5rem;
         }
       }
 
@@ -976,4 +1083,80 @@
 /* Make sure dialog overlay appears above everything else */
 ::ng-deep .p-dialog-mask {
   z-index: 1000;
+}
+
+/* Styles for variant components dialog */
+::ng-deep .variant-components-dialog {
+  .p-dialog-content {
+    padding: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+
+    .variant-components-container {
+      padding: 1.5rem;
+
+      .p-field {
+        margin-bottom: 1.5rem;
+        align-items: center;
+
+        label {
+          font-weight: 500;
+          color: #4a5568;
+          display: flex;
+          align-items: center;
+
+          .required-field {
+            color: #e53e3e;
+            margin-left: 0.25rem;
+          }
+        }
+
+        .p-dropdown,
+        .p-multiselect {
+          width: 100%;
+        }
+
+        small.p-error {
+          color: #e53e3e;
+          font-size: 0.75rem;
+          margin-top: 0.25rem;
+          display: block;
+        }
+      }
+
+      /* Grid layout for form fields */
+      .p-grid {
+        margin: 0;
+
+        .p-col-12 {
+          padding: 0.5rem;
+        }
+      }
+    }
+  }
+
+  .p-dialog-footer {
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+
+    .dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+  }
+}
+
+/* Required field indicator */
+.required-field {
+  color: #e53e3e;
+  font-weight: bold;
+  margin-left: 0.25rem;
+}
+
+/* Make dropdown and multiselect panels appear above dialog */
+::ng-deep .p-dropdown-panel,
+::ng-deep .p-multiselect-panel {
+  z-index: 10001 !important;
 }

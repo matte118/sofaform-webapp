@@ -22,7 +22,8 @@ export class ComponentService {
               c.data.name,
               c.data.price,
               c.data.suppliers || [],
-              c.data.type
+              c.data.type,
+              c.data.measure // Add the measure field
             )
         );
         console.log('ComponentService: Mapped components', mappedComponents);
@@ -42,7 +43,8 @@ export class ComponentService {
                 c.data.name,
                 c.data.price,
                 c.data.suppliers || [],
-                c.data.type
+                c.data.type,
+                c.data.measure // Add the measure field
               )
           );
           observer.next(mappedComponents);
@@ -95,7 +97,8 @@ export class ComponentService {
               c.data.name,
               c.data.price,
               c.data.suppliers || [],
-              c.data.type
+              c.data.type,
+              c.data.measure // Add the measure field
             )
         );
 

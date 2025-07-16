@@ -374,7 +374,7 @@ export class AggiungiProdottoComponent implements OnInit {
           return this.rivestimentiList.find(r => r.type === rivestimentoType && (!code || r.code === code)) || null;
         }
         return null;
-      }).filter(r => r !== null);
+      }).filter((r): r is Rivestimento => r !== null);
     }
   }
 
@@ -705,5 +705,21 @@ export class AggiungiProdottoComponent implements OnInit {
 
   onComponentSelected(type: string, component: any): void {
     console.log(`Componente ${type} selezionato:`, component);
+  }
+
+  /**
+   * Format component name with measure if available
+   * @param component The component to format
+   * @returns Formatted name with measure
+   */
+  formatComponentName(component: ComponentModel): string {
+    if (!component) return '';
+    if (!component.measure) return component.name;
+    return `${component.name} (${component.measure})`;
+  }
+
+  // Add this method to modify how components are displayed in dropdowns
+  customComponentTemplate(component: ComponentModel): string {
+    return this.formatComponentName(component);
   }
 }

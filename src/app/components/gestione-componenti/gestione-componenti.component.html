@@ -110,6 +110,21 @@
         </div>
       </div>
 
+      <!-- Nuova riga: dimensioni -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="componentMeasure">Dimensioni</label>
+          <input
+            pInputText
+            id="componentMeasure"
+            type="text"
+            [(ngModel)]="newComponent.measure"
+            name="measure"
+            placeholder="es: 120x80 cm"
+          />
+        </div>
+      </div>
+
       <!-- Azioni form -->
       <div class="form-actions">
         <p-button
@@ -169,6 +184,7 @@
           <th>Nome</th>
           <th>Prezzo</th>
           <th>Fornitori</th>
+          <th>Dimensioni</th>
           <th>Azioni</th>
         </tr>
       </ng-template>
@@ -187,6 +203,7 @@
               Nessun fornitore
             </span>
           </td>
+          <td>{{ component.measure !== undefined && component.measure !== null && component.measure !== '' ? component.measure : 'Non specificato' }}</td>
           <td class="actions-cell">
             <!-- Wrapper per i pulsanti che garantisce la corretta visualizzazione -->
             <div class="action-buttons">
@@ -214,7 +231,7 @@
       <!-- Messaggio vuoto -->
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="4" class="empty-message">Nessun componente trovato</td>
+          <td colspan="5" class="empty-message">Nessun componente trovato</td>
         </tr>
       </ng-template>
     </p-table>

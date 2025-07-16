@@ -240,10 +240,21 @@
               <div class="p-field p-grid">
                 <label class="p-col-12 p-md-2">Fusto <span class="required-field">*</span></label>
                 <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('fusto') || []" [(ngModel)]="selectedFusto"
-                    optionLabel="name" placeholder="Seleziona fusto" [showClear]="true"
-                    [disabled]="(getComponentsByType('fusto') || []).length === 0"
-                    (onChange)="onComponentSelected('fusto', $event.value)" name="fusto"></p-dropdown>
+                  <p-dropdown [options]="getComponentsByType('fusto') || []" 
+                              [(ngModel)]="selectedFusto"
+                              optionLabel="name" 
+                              placeholder="Seleziona fusto" 
+                              [showClear]="true"
+                              [disabled]="(getComponentsByType('fusto') || []).length === 0"
+                              (onChange)="onComponentSelected('fusto', $event.value)" 
+                              name="fusto">
+                    <ng-template let-item pTemplate="item">
+                      {{ formatComponentName(item) }}
+                    </ng-template>
+                    <ng-template let-selectedItem pTemplate="selectedItem">
+                      {{ formatComponentName(selectedItem) }}
+                    </ng-template>
+                  </p-dropdown>
                   <small *ngIf="(getComponentsByType('fusto') || []).length === 0" class="p-error">
                     Nessun componente di tipo fusto disponibile
                   </small>
@@ -254,10 +265,21 @@
               <div class="p-field p-grid">
                 <label class="p-col-12 p-md-2">Gomma <span class="required-field">*</span></label>
                 <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('gomma') || []" [(ngModel)]="selectedGomma"
-                    optionLabel="name" placeholder="Seleziona gomma" [showClear]="true"
-                    [disabled]="(getComponentsByType('gomma') || []).length === 0"
-                    (onChange)="onComponentSelected('gomma', $event.value)" name="gomma"></p-dropdown>
+                  <p-dropdown [options]="getComponentsByType('gomma') || []" 
+                              [(ngModel)]="selectedGomma"
+                              optionLabel="name" 
+                              placeholder="Seleziona gomma" 
+                              [showClear]="true"
+                              [disabled]="(getComponentsByType('gomma') || []).length === 0"
+                              (onChange)="onComponentSelected('gomma', $event.value)" 
+                              name="gomma">
+                    <ng-template let-item pTemplate="item">
+                      {{ formatComponentName(item) }}
+                    </ng-template>
+                    <ng-template let-selectedItem pTemplate="selectedItem">
+                      {{ formatComponentName(selectedItem) }}
+                    </ng-template>
+                  </p-dropdown>
                   <small *ngIf="(getComponentsByType('gomma') || []).length === 0" class="p-error">
                     Nessun componente di tipo gomma disponibile
                   </small>
@@ -269,10 +291,22 @@
                 <label class="p-col-12 p-md-2">Piedini (min 2) <span class="required-field">*</span></label>
                 <div class="p-col-12 p-md-5 p-d-flex p-jc-between">
                   <div class="p-mr-2" style="width: 70%">
-                    <p-dropdown [options]="getComponentsByType('piedini')" [(ngModel)]="selectedPiedini"
-                      optionLabel="name" placeholder="Scegli piedini" [showClear]="true"
-                      [disabled]="getComponentsByType('piedini').length === 0" [style]="{width: '100%'}"
-                      (onChange)="onComponentSelected('piedini', $event.value)" name="piedini"></p-dropdown>
+                    <p-dropdown [options]="getComponentsByType('piedini')" 
+                                [(ngModel)]="selectedPiedini"
+                                optionLabel="name" 
+                                placeholder="Scegli piedini" 
+                                [showClear]="true"
+                                [disabled]="getComponentsByType('piedini').length === 0" 
+                                [style]="{width: '100%'}"
+                                (onChange)="onComponentSelected('piedini', $event.value)" 
+                                name="piedini">
+                      <ng-template let-item pTemplate="item">
+                        {{ formatComponentName(item) }}
+                      </ng-template>
+                      <ng-template let-selectedItem pTemplate="selectedItem">
+                        {{ formatComponentName(selectedItem) }}
+                      </ng-template>
+                    </p-dropdown>
                     <small *ngIf="getComponentsByType('piedini').length === 0" class="p-error">
                       Nessun componente di tipo piedini disponibile
                     </small>
@@ -289,10 +323,21 @@
               <div class="p-field p-grid">
                 <label class="p-col-12 p-md-2">Meccanismo <span class="required-field">*</span></label>
                 <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('meccanismo') || []" [(ngModel)]="selectedMeccanismo"
-                    optionLabel="name" placeholder="Seleziona meccanismo" [showClear]="true"
-                    [disabled]="(getComponentsByType('meccanismo') || []).length === 0"
-                    (onChange)="onComponentSelected('meccanismo', $event.value)" name="meccanismo"></p-dropdown>
+                  <p-dropdown [options]="getComponentsByType('meccanismo') || []" 
+                              [(ngModel)]="selectedMeccanismo"
+                              optionLabel="name" 
+                              placeholder="Seleziona meccanismo" 
+                              [showClear]="true"
+                              [disabled]="(getComponentsByType('meccanismo') || []).length === 0"
+                              (onChange)="onComponentSelected('meccanismo', $event.value)" 
+                              name="meccanismo">
+                    <ng-template let-item pTemplate="item">
+                      {{ formatComponentName(item) }}
+                    </ng-template>
+                    <ng-template let-selectedItem pTemplate="selectedItem">
+                      {{ formatComponentName(selectedItem) }}
+                    </ng-template>
+                  </p-dropdown>
                   <small *ngIf="(getComponentsByType('meccanismo') || []).length === 0" class="p-error">
                     Nessun componente di tipo meccanismo disponibile
                   </small>
@@ -306,7 +351,14 @@
                   <p-dropdown [options]="getComponentsByType('materasso') || []" [(ngModel)]="selectedMaterasso"
                     optionLabel="name" placeholder="Seleziona materasso" [showClear]="true"
                     [disabled]="(getComponentsByType('materasso') || []).length === 0"
-                    (onChange)="onComponentSelected('materasso', $event.value)" name="materasso"></p-dropdown>
+                    (onChange)="onComponentSelected('materasso', $event.value)" name="materasso">
+                    <ng-template let-item pTemplate="item">
+                      {{ formatComponentName(item) }}
+                    </ng-template>
+                    <ng-template let-selectedItem pTemplate="selectedItem">
+                      {{ formatComponentName(selectedItem) }}
+                    </ng-template>
+                  </p-dropdown>
                   <small *ngIf="(getComponentsByType('materasso') || []).length === 0" class="p-error">
                     Nessun componente di tipo materasso disponibile
                   </small>
@@ -415,7 +467,7 @@
                   </ng-template>
                   <ng-template pTemplate="body" let-component>
                     <tr>
-                      <td>{{ component.name }}</td>
+                      <td>{{ formatComponentName(component) }}</td>
                       <td>{{ component.type || 'N/A' }}</td>
                       <td>{{ component.price | currency:'EUR' }}</td>
                       <td>{{ getComponentQuantity(component) }}</td>

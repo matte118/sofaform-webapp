@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard, ManagerGuard } from './guards/auth.guard';
+import { LoginGuard } from './guards/login.guard';
 
 export const routes: Routes = [
   {
@@ -8,6 +9,7 @@ export const routes: Routes = [
       import('./components/login/login.component').then(
         (m) => m.LoginComponent
       ),
+    canActivate: [() => LoginGuard()], // Add the login guard
   },
   {
     path: 'home',

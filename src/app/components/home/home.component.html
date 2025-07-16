@@ -121,7 +121,7 @@
                     >
                       <div class="component-header">
                         <span class="component-name">
-                          {{ groupedComponent.component.name }}
+                          {{ formatComponentName(groupedComponent.component) }}
                           <span
                             *ngIf="groupedComponent.quantity > 1"
                             class="component-quantity"
@@ -364,7 +364,7 @@
     [modal]="true"
     [closable]="false"
     [closeOnEscape]="true"
-    [style]="{ width: '90vw', maxWidth: '700px' }"
+    [style]="{ width: '95vw', maxWidth: '1200px', height: '90vh' }"
     [breakpoints]="{ '960px': '95vw', '640px': '100vw' }"
     [draggable]="false"
     [resizable]="false"
@@ -515,47 +515,186 @@
               <h3 class="section-title">Caratteristiche del Prodotto</h3>
               <div class="form-field">
                 <label for="productSeduta">Seduta</label>
-                <input
+                <textarea
                   id="productSeduta"
                   name="seduta"
-                  pInputText
-                  type="text"
+                  pInputTextarea
+                  rows="2"
+                  autoResize="true"
                   [(ngModel)]="editingProduct.seduta"
                   class="full-width"
-                />
+                ></textarea>
               </div>
               <div class="form-field">
                 <label for="productSchienale">Schienale</label>
-                <input
+                <textarea
                   id="productSchienale"
                   name="schienale"
-                  pInputText
-                  type="text"
+                  pInputTextarea
+                  rows="2"
+                  autoResize="true"
                   [(ngModel)]="editingProduct.schienale"
                   class="full-width"
-                />
+                ></textarea>
               </div>
               <div class="form-field">
                 <label for="productMeccanica">Meccanica</label>
-                <input
+                <textarea
                   id="productMeccanica"
                   name="meccanica"
-                  pInputText
-                  type="text"
+                  pInputTextarea
+                  rows="2"
+                  autoResize="true"
                   [(ngModel)]="editingProduct.meccanica"
                   class="full-width"
-                />
+                ></textarea>
               </div>
               <div class="form-field">
                 <label for="productMaterasso">Materasso</label>
-                <input
+                <textarea
                   id="productMaterasso"
                   name="materasso"
-                  pInputText
-                  type="text"
+                  pInputTextarea
+                  rows="2"
+                  autoResize="true"
                   [(ngModel)]="editingProduct.materasso"
                   class="full-width"
-                />
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Sezione Varianti -->
+            <div class="form-section">
+              <h3 class="section-title">Gestione Varianti</h3>
+              
+              <!-- Form per aggiungere/modificare varianti -->
+              <div class="variant-form">
+                <div class="p-grid p-align-end">
+                  <div class="p-col-12 p-md-4">
+                    <label for="variantName">Nome Variante</label>
+                    <input
+                      id="variantName"
+                      pInputText
+                      [(ngModel)]="newVariant.longName"
+                      name="variantName"
+                      placeholder="Nome della variante"
+                      class="full-width"
+                    />
+                  </div>
+                  <div class="p-col-12 p-md-2">
+                    <label for="variantSeats">Posti</label>
+                    <p-inputNumber
+                      id="variantSeats"
+                      [(ngModel)]="newVariant.seatsCount"
+                      name="variantSeats"
+                      [min]="1"
+                      [max]="20"
+                      class="full-width"
+                    ></p-inputNumber>
+                  </div>
+                  <div class="p-col-12 p-md-3">
+                    <label for="variantWidth">Larghezza (cm)</label>
+                    <p-inputNumber
+                      id="variantWidth"
+                      [(ngModel)]="newVariant.mattressWidth"
+                      name="variantWidth"
+                      [min]="1"
+                      [max]="500"
+                      suffix=" cm"
+                      class="full-width"
+                    ></p-inputNumber>
+                  </div>
+                  <div class="p-col-12 p-md-3">
+                    <p-button
+                      [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'"
+                      [icon]="editingVariantIndex >= 0 ? 'pi pi-check' : 'pi pi-plus'"
+                      (onClick)="addVariantToProduct()"
+                      [disabled]="!newVariant.longName.trim()"
+                      class="full-width"
+                    ></p-button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lista varianti esistenti -->
+              <div class="variants-list" *ngIf="editingVariants.length > 0">
+                <table class="variants-table">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Posti</th>
+                      <th>Larghezza</th>
+                      <th>Prezzo</th>
+                      <th>Componenti</th>
+                      <th>Azioni</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <ng-container *ngFor="let variant of editingVariants; let i = index">
+                      <tr>
+                        <td>{{ variant.longName }}</td>
+                        <td>{{ variant.seatsCount || '-' }}</td>
+                        <td>{{ variant.mattressWidth ? variant.mattressWidth + ' cm' : '-' }}</td>
+                        <td>€{{ variant.price.toFixed(2) }}</td>
+                        <td>
+                          <span class="components-count">
+                            {{ variant.components.length || 0 }} componenti
+                          </span>
+                          <button
+                            pButton
+                            type="button"
+                            icon="pi pi-plus"
+                            class="p-button-sm p-button-text"
+                            (click)="openAddComponentToVariant(variant)"
+                            pTooltip="Aggiungi componente"
+                          ></button>
+                        </td>
+                        <td>
+                          <button
+                            pButton
+                            type="button"
+                            icon="pi pi-pencil"
+                            class="p-button-sm p-button-text"
+                            (click)="editVariantInProduct(i)"
+                            pTooltip="Modifica variante"
+                          ></button>
+                          <button
+                            pButton
+                            type="button"
+                            icon="pi pi-trash"
+                            class="p-button-sm p-button-text p-button-danger"
+                            (click)="deleteVariantFromProduct(i)"
+                            pTooltip="Elimina variante"
+                          ></button>
+                        </td>
+                      </tr>
+                      <!-- Expanded row for components -->
+                      <tr *ngIf="variant.components && variant.components.length > 0">
+                        <td colspan="6" class="variant-components">
+                          <div class="components-container">
+                            <h5>Componenti della variante:</h5>
+                            <div class="component-chips">
+                              <span
+                                *ngFor="let component of variant.components; let j = index"
+                                class="component-chip"
+                              >
+                                {{ formatComponentName(component) }}
+                                <button
+                                  type="button"
+                                  class="remove-component"
+                                  (click)="removeComponentFromVariant(variant, j)"
+                                  title="Rimuovi componente"
+                                >
+                                  <i class="pi pi-times"></i>
+                                </button>
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -580,6 +719,355 @@
           [disabled]="productForm?.invalid || saving"
           (click)="saveProductChanges()"
           [loading]="saving"
+        ></button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Dialog per aggiungere componenti alle varianti -->
+  <p-dialog
+    [(visible)]="showAddComponentDialog"
+    header="Aggiungi Componente alla Variante"
+    [modal]="true"
+    [style]="{ width: '500px' }"
+    [closable]="false"
+  >
+    <div class="p-fluid">
+      <div class="p-field">
+        <label for="componentSelect">Componente</label>
+        <p-dropdown
+          id="componentSelect"
+          [options]="availableComponents"
+          [(ngModel)]="selectedComponentForVariant"
+          optionLabel="name"
+          placeholder="Seleziona un componente"
+          [showClear]="true"
+          [filter]="true"
+          filterBy="name"
+        >
+          <ng-template let-component pTemplate="item">
+            {{ formatComponentName(component) }}
+          </ng-template>
+          <ng-template let-selectedComponent pTemplate="selectedItem">
+            {{ formatComponentName(selectedComponent) }}
+          </ng-template>
+        </p-dropdown>
+      </div>
+      
+      <div class="p-field">
+        <label for="componentQuantity">Quantità</label>
+        <p-inputNumber
+          id="componentQuantity"
+          [(ngModel)]="componentQuantityForVariant"
+          [min]="1"
+          [max]="50"
+        ></p-inputNumber>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button
+        pButton
+        type="button"
+        icon="pi pi-times"
+        label="Annulla"
+        (click)="cancelAddComponent()"
+        class="p-button-text"
+      ></button>
+      <button
+        pButton
+        type="button"
+        icon="pi pi-check"
+        label="Aggiungi"
+        (click)="addComponentToVariant()"
+        [disabled]="!selectedComponentForVariant"
+      ></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Dialog per configurare componenti di nuova variante -->
+  <p-dialog
+    [(visible)]="showVariantComponentsDialog"
+    [header]="variantComponentsDialogTitle"
+    [modal]="true"
+    [style]="{ width: '90vw', maxWidth: '800px', height: '85vh' }"
+    [closable]="false"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="variant-components-dialog"
+  >
+    <div class="variant-components-container">
+      <div class="p-fluid">
+        
+        <!-- Fusto (obbligatorio) -->
+        <div class="p-field p-grid">
+          <label class="p-col-12 p-md-3">Fusto <span class="required-field">*</span></label>
+          <div class="p-col-12 p-md-9">
+            <p-dropdown 
+              [options]="getComponentsByType('fusto')" 
+              [(ngModel)]="selectedFusto"
+              optionLabel="name" 
+              placeholder="Seleziona fusto" 
+              [showClear]="true"
+              [disabled]="getComponentsByType('fusto').length === 0"
+              (onChange)="onVariantComponentSelected('fusto', $event.value)"
+              [style]="{width: '100%'}">
+              <ng-template let-item pTemplate="item">
+                {{ formatComponentName(item) }}
+              </ng-template>
+              <ng-template let-selectedItem pTemplate="selectedItem">
+                {{ formatComponentName(selectedItem) }}
+              </ng-template>
+            </p-dropdown>
+            <small *ngIf="getComponentsByType('fusto').length === 0" class="p-error">
+              Nessun componente di tipo fusto disponibile
+            </small>
+          </div>
+        </div>
+
+        <!-- Gomma (obbligatorio) -->
+        <div class="p-field p-grid">
+          <label class="p-col-12 p-md-3">Gomma <span class="required-field">*</span></label>
+          <div class="p-col-12 p-md-9">
+            <p-dropdown 
+              [options]="getComponentsByType('gomma')" 
+              [(ngModel)]="selectedGomma"
+              optionLabel="name" 
+              placeholder="Seleziona gomma" 
+              [showClear]="true"
+              [disabled]="getComponentsByType('gomma').length === 0"
+              (onChange)="onVariantComponentSelected('gomma', $event.value)"
+              [style]="{width: '100%'}">
+              <ng-template let-item pTemplate="item">
+                {{ formatComponentName(item) }}
+              </ng-template>
+              <ng-template let-selectedItem pTemplate="selectedItem">
+                {{ formatComponentName(selectedItem) }}
+              </ng-template>
+            </p-dropdown>
+            <small *ngIf="getComponentsByType('gomma').length === 0" class="p-error">
+              Nessun componente di tipo gomma disponibile
+            </small>
+          </div>
+        </div>
+
+        <!-- Piedini + Quantità (obbligatorio) -->
+        <div class="p-field p-grid">
+          <label class="p-col-12 p-md-3">Piedini <span class="required-field">*</span></label>
+          <div class="p-col-12 p-md-6">
+            <p-dropdown 
+              [options]="getComponentsByType('piedini')" 
+              [(ngModel)]="selectedPiedini"
+              optionLabel="name" 
+              placeholder="Seleziona piedini" 
+              [showClear]="true"
+              [disabled]="getComponentsByType('piedini').length === 0"
+              (onChange)="onVariantComponentSelected('piedini', $event.value)"
+              [style]="{width: '100%'}">
+              <ng-template let-item pTemplate="item">
+                {{ formatComponentName(item) }}
+              </ng-template>
+              <ng-template let-selectedItem pTemplate="selectedItem">
+                {{ formatComponentName(selectedItem) }}
+              </ng-template>
+            </p-dropdown>
+            <small *ngIf="getComponentsByType('piedini').length === 0" class="p-error">
+              Nessun componente di tipo piedini disponibile
+            </small>
+          </div>
+          <div class="p-col-12 p-md-3">
+            <p-dropdown 
+              [options]="piediniQuantityOptions" 
+              [(ngModel)]="piediniQty" 
+              placeholder="Quantità"
+              [disabled]="!selectedPiedini"
+              [style]="{width: '100%'}">
+            </p-dropdown>
+          </div>
+        </div>
+
+        <!-- Meccanismo (obbligatorio) -->
+        <div class="p-field p-grid">
+          <label class="p-col-12 p-md-3">Meccanismo <span class="required-field">*</span></label>
+          <div class="p-col-12 p-md-9">
+            <p-dropdown 
+              [options]="getComponentsByType('meccanismo')" 
+              [(ngModel)]="selectedMeccanismo"
+              optionLabel="name" 
+              placeholder="Seleziona meccanismo" 
+              [showClear]="true"
+              [disabled]="getComponentsByType('meccanismo').length === 0"
+              (onChange)="onVariantComponentSelected('meccanismo', $event.value)"
+              [style]="{width: '100%'}">
+              <ng-template let-item pTemplate="item">
+                {{ formatComponentName(item) }}
+              </ng-template>
+              <ng-template let-selectedItem pTemplate="selectedItem">
+                {{ formatComponentName(selectedItem) }}
+              </ng-template>
+            </p-dropdown>
+            <small *ngIf="getComponentsByType('meccanismo').length === 0" class="p-error">
+              Nessun componente di tipo meccanismo disponibile
+            </small>
+          </div>
+        </div>
+
+        <!-- Materasso (obbligatorio) -->
+        <div class="p-field p-grid">
+          <label class="p-col-12 p-md-3">Materasso <span class="required-field">*</span></label>
+          <div class="p-col-12 p-md-9">
+            <p-dropdown 
+              [options]="getComponentsByType('materasso')" 
+              [(ngModel)]="selectedMaterasso"
+              optionLabel="name" 
+              placeholder="Seleziona materasso" 
+              [showClear]="true"
+              [disabled]="getComponentsByType('materasso').length === 0"
+              (onChange)="onVariantComponentSelected('materasso', $event.value)"
+              [style]="{width: '100%'}">
+              <ng-template let-item pTemplate="item">
+                {{ formatComponentName(item) }}
+              </ng-template>
+              <ng-template let-selectedItem pTemplate="selectedItem">
+                {{ formatComponentName(selectedItem) }}
+              </ng-template>
+            </p-dropdown>
+            <small *ngIf="getComponentsByType('materasso').length === 0" class="p-error">
+              Nessun componente di tipo materasso disponibile
+            </small>
+          </div>
+        </div>
+
+        <!-- Ferramenta (obbligatorio) -->
+        <div class="p-field p-grid">
+          <label class="p-col-12 p-md-3">Ferramenta <span class="required-field">*</span></label>
+          <div class="p-col-12 p-md-9">
+            <p-multiSelect 
+              [options]="getComponentsByType('ferramenta')" 
+              [(ngModel)]="ferramentaList"
+              optionLabel="name" 
+              placeholder="Seleziona ferramenta"
+              [disabled]="getComponentsByType('ferramenta').length === 0"
+              [style]="{width: '100%'}">
+              <ng-template let-item pTemplate="item">
+                {{ formatComponentName(item) }}
+              </ng-template>
+            </p-multiSelect>
+            <small *ngIf="getComponentsByType('ferramenta').length === 0" class="p-error">
+              Nessun componente di tipo ferramenta disponibile
+            </small>
+          </div>
+        </div>
+
+        <!-- Imballo (obbligatorio) -->
+        <div class="p-field p-grid">
+          <label class="p-col-12 p-md-3">Imballo <span class="required-field">*</span></label>
+          <div class="p-col-12 p-md-9">
+            <p-dropdown 
+              [options]="getComponentsByType('imballo')" 
+              [(ngModel)]="selectedImballo"
+              optionLabel="name" 
+              placeholder="Seleziona imballo" 
+              [showClear]="true"
+              [disabled]="getComponentsByType('imballo').length === 0"
+              (onChange)="onVariantComponentSelected('imballo', $event.value)"
+              [style]="{width: '100%'}">
+              <ng-template let-item pTemplate="item">
+                {{ formatComponentName(item) }}
+              </ng-template>
+              <ng-template let-selectedItem pTemplate="selectedItem">
+                {{ formatComponentName(selectedItem) }}
+              </ng-template>
+            </p-dropdown>
+            <small *ngIf="getComponentsByType('imballo').length === 0" class="p-error">
+              Nessun componente di tipo imballo disponibile
+            </small>
+          </div>
+        </div>
+
+        <!-- Scatola -->
+        <div class="p-field p-grid">
+          <label class="p-col-12 p-md-3">Scatola</label>
+          <div class="p-col-12 p-md-9">
+            <p-dropdown 
+              [options]="getComponentsByType('scatola')" 
+              [(ngModel)]="selectedScatola"
+              optionLabel="name" 
+              placeholder="Seleziona scatola" 
+              [showClear]="true"
+              [disabled]="getComponentsByType('scatola').length === 0"
+              (onChange)="onVariantComponentSelected('scatola', $event.value)"
+              [style]="{width: '100%'}">
+              <ng-template let-item pTemplate="item">
+                {{ formatComponentName(item) }}
+              </ng-template>
+              <ng-template let-selectedItem pTemplate="selectedItem">
+                {{ formatComponentName(selectedItem) }}
+              </ng-template>
+            </p-dropdown>
+            <small *ngIf="getComponentsByType('scatola').length === 0" class="p-error">
+              Nessun componente di tipo scatola disponibile
+            </small>
+          </div>
+        </div>
+
+        <!-- Varie (opzionale) -->
+        <div class="p-field p-grid">
+          <label class="p-col-12 p-md-3">Varie</label>
+          <div class="p-col-12 p-md-9">
+            <p-multiSelect 
+              [options]="getComponentsByType('varie')" 
+              [(ngModel)]="varieList"
+              optionLabel="name" 
+              placeholder="Seleziona eventuali extra"
+              [disabled]="getComponentsByType('varie').length === 0"
+              [style]="{width: '100%'}">
+              <ng-template let-item pTemplate="item">
+                {{ formatComponentName(item) }}
+              </ng-template>
+            </p-multiSelect>
+            <small *ngIf="getComponentsByType('varie').length === 0" class="p-error">
+              Nessun componente di tipo varie disponibile
+            </small>
+          </div>
+        </div>
+
+        <!-- Rivestimenti (obbligatorio) -->
+        <div class="p-field p-grid">
+          <label class="p-col-12 p-md-3">Rivestimenti <span class="required-field">*</span></label>
+          <div class="p-col-12 p-md-9">
+            <p-multiSelect 
+              [options]="rivestimentiList" 
+              [(ngModel)]="selectedRivestimentiForVariant"
+              optionLabel="name" 
+              placeholder="Seleziona rivestimenti"
+              [disabled]="rivestimentiList.length === 0"
+              [style]="{width: '100%'}">
+            </p-multiSelect>
+            <small *ngIf="rivestimentiList.length === 0" class="p-error">
+              Nessun rivestimento disponibile
+            </small>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="dialog-footer">
+        <button
+          pButton
+          type="button"
+          label="Annulla"
+          class="p-button-text"
+          (click)="cancelVariantComponentsDialog()"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Aggiungi Variante"
+          class="p-button-primary"
+          (click)="applyComponentsToNewVariant()"
         ></button>
       </div>
     </ng-template>

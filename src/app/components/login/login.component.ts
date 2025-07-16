@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { take } from 'rxjs/operators';
 
 // PrimeNG imports
 import { CardModule } from 'primeng/card';
@@ -36,7 +37,7 @@ import { RippleModule } from 'primeng/ripple';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   email: string = '';
   password: string = '';
   isLoggingIn: boolean = false;
@@ -47,6 +48,19 @@ export class LoginComponent {
     private router: Router,
     private messageService: MessageService
   ) {}
+
+  ngOnInit(): void {
+    // Check if user is already authenticated
+    this.authService
+      .isAuthenticated()
+      .pipe(take(1)) // Take only the first emission
+      .subscribe((isAuthenticated) => {
+        if (isAuthenticated) {
+          // User is already authenticated, redirect to home
+          this.router.navigate(['/home']);
+        }
+      });
+  }
 
   login() {
     this.errorMessage = '';
