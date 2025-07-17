@@ -38,7 +38,6 @@ import { SofaProductService } from '../../../services/sofa-product.service';
 import { VariantService } from '../../../services/variant.service';
 import { Variant } from '../../../models/variant.model';
 import { Rivestimento } from '../../../models/rivestimento.model';
-import { RivestimentoType } from '../../../models/rivestimento-type.model';
 import { RivestimentoService } from '../../../services/rivestimento.service';
 import { ComponentTypeService } from '../../../services/component-type.service';
 import { ComponentType } from '../../../models/component-type.model';
@@ -84,7 +83,7 @@ export class HomeComponent implements OnInit {
 
   products: SofaProduct[] = [];
   productVariants: Map<string, Variant[]> = new Map();
-  componentTypeMap = new Map<string, string>();
+  componentTypeMap = new Map<ComponentType, string>();
   showMarkupDialog = false;
   selectedProduct?: SofaProduct;
   markupPercentage = 30;
@@ -93,9 +92,7 @@ export class HomeComponent implements OnInit {
   // Rivestimento properties
   availableRivestimenti: Rivestimento[] = [];
   selectedRivestimento?: Rivestimento;
-  selectedRivestimentoType: RivestimentoType | null = null;
   metersOfRivestimento: number = 1;
-  rivestimentoTypes = Object.values(RivestimentoType);
   showRivestimentoDialog = false;
 
   // Variant expansion
@@ -200,14 +197,22 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // Add missing method
+  // Update method to work with ComponentType enum
   loadComponentTypes(): void {
-    this.componentTypeService.getComponentTypes().subscribe((types) => {
-      types.forEach((type) => {
-        this.componentTypeMap.set(type.id, type.name);
-      });
-      this.cdr.detectChanges();
-    });
+    // Initialize the map with ComponentType enum values and their display names
+    this.componentTypeMap.set(ComponentType.FUSTO, 'Fusto');
+    this.componentTypeMap.set(ComponentType.GOMMA, 'Gomma');
+    this.componentTypeMap.set(ComponentType.RETE, 'Rete');
+    this.componentTypeMap.set(ComponentType.MATERASSO, 'Materasso');
+    this.componentTypeMap.set(ComponentType.TAPPEZZERIA, 'Tappezzeria');
+    this.componentTypeMap.set(ComponentType.PIEDINI, 'Piedini');
+    this.componentTypeMap.set(ComponentType.FERRAMENTA, 'Ferramenta');
+    this.componentTypeMap.set(ComponentType.VARIE, 'Varie');
+    this.componentTypeMap.set(ComponentType.IMBALLO_PLASTICA, 'Imballo Plastica');
+    this.componentTypeMap.set(ComponentType.SCATOLA, 'Scatola');
+    this.componentTypeMap.set(ComponentType.TELA_MARCHIATA, 'Tela Marchiata');
+    this.componentTypeMap.set(ComponentType.TRASPORTO, 'Trasporto');
+    this.cdr.detectChanges();
   }
 
   loadRivestimenti(): void {
@@ -370,7 +375,7 @@ export class HomeComponent implements OnInit {
       });
       if (this.selectedRivestimento) {
         rows.push([
-          `Rivestimento: ${this.selectedRivestimento.code || 'N/A'}`,
+          `Rivestimento: ${this.selectedRivestimento.name || 'N/A'}`,
           `${this.metersOfRivestimento} mt`,
           this.selectedRivestimento.mtPrice.toFixed(2),
           rivestimentoCost.toFixed(2),
@@ -560,10 +565,9 @@ export class HomeComponent implements OnInit {
     this.selectedRivestimentiForVariant.forEach(r => {
       components.push(new ComponentModel(
         r.id,
-        `Rivestimento ${r.type}${r.code ? ` (${r.code})` : ''}`,
+        `Rivestimento ${r.mtPrice}${r.id ? ` (${r.id})` : ''}`,
         r.mtPrice,
         [],
-        'rivestimento'
       ));
     });
 
@@ -598,105 +602,54 @@ export class HomeComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Get components by type (same logic as aggiungi-prodotto)
-  getComponentsByType(type: string): ComponentModel[] {
-    const lowerType = type.toLowerCase();
+  // Update method to work with ComponentType enum
+  public getComponentsByType(type: string): ComponentModel[] {
+    // Convert string to ComponentType enum
+    const componentType = this.getComponentTypeFromString(type);
+    if (componentType === undefined) return [];
 
-    if (!this.componentsByTypeCache.has(lowerType)) {
+    const typeKey = type.toLowerCase();
+
+    if (!this.componentsByTypeCache.has(typeKey)) {
       // Cache miss - filter the components and store in cache
       const filtered = this.availableComponents.filter(c => {
-        // Ensure c.type exists and matches (case-insensitive)
-        return c.type && c.type.toLowerCase() === lowerType;
+        return c.type === componentType;
       });
-      this.componentsByTypeCache.set(lowerType, filtered);
+      this.componentsByTypeCache.set(typeKey, filtered);
       
       // Debug logging to help troubleshoot
       console.log(`Filtering components for type '${type}':`, {
         totalComponents: this.availableComponents.length,
         filteredComponents: filtered.length,
-        availableTypes: this.availableComponents.map(c => c.type).filter(t => t),
+        componentType: componentType,
         filtered: filtered.map(c => ({ name: c.name, type: c.type }))
       });
     }
 
-    return this.componentsByTypeCache.get(lowerType) || [];
+    return this.componentsByTypeCache.get(typeKey) || [];
   }
 
-
-
-  // Component selection handler
-  onVariantComponentSelected(type: string, component: any): void {
-    console.log(`Componente ${type} selezionato per variante:`, component);
+  // Helper method to convert string to ComponentType enum
+  private getComponentTypeFromString(type: string): ComponentType | undefined {
+    const typeMap: { [key: string]: ComponentType } = {
+      'fusto': ComponentType.FUSTO,
+      'gomma': ComponentType.GOMMA,
+      'rete': ComponentType.RETE,
+      'materasso': ComponentType.MATERASSO,
+      'tappezzeria': ComponentType.TAPPEZZERIA,
+      'piedini': ComponentType.PIEDINI,
+      'ferramenta': ComponentType.FERRAMENTA,
+      'varie': ComponentType.VARIE,
+      'imballo': ComponentType.IMBALLO_PLASTICA,
+      'scatola': ComponentType.SCATOLA,
+      'meccanismo': ComponentType.RETE, // Map meccanismo to RETE for now
+    };
+    return typeMap[type.toLowerCase()];
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /**
-   * Format component name with measure if available
-   * @param component The component to format
-   * @returns Formatted name with measure
-   */
-  formatComponentName(component: ComponentModel): string {
-    if (!component) return '';
-    if (!component.measure) return component.name;
-    return `${component.name} (${component.measure})`;
-  }
-
-  // Add missing methods for variant expansion
-  isVariantExpanded(variantId: string): boolean {
-    return this.expandedVariants.has(variantId);
-  }
-
-  toggleVariantExpansion(variantId: string): void {
-    if (this.expandedVariants.has(variantId)) {
-      this.expandedVariants.delete(variantId);
-    } else {
-      this.expandedVariants.add(variantId);
-    }
-    this.cdr.detectChanges();
-  }
-
-  // Add missing method for grouping components
-  getGroupedComponents(variant: Variant): GroupedComponent[] {
-    const componentMap = new Map<string, GroupedComponent>();
-
-    variant.components.forEach((component) => {
-      const key = `${component.id}-${component.name}`;
-      if (componentMap.has(key)) {
-        const existing = componentMap.get(key)!;
-        existing.quantity++;
-        existing.totalPrice += component.price;
-      } else {
-        componentMap.set(key, {
-          component: component,
-          quantity: 1,
-          totalPrice: component.price,
-        });
-      }
-    });
-
-    return Array.from(componentMap.values());
-  }
-
-  // Add missing method for component type names
-  getComponentTypeName(typeId: string): string {
-    return this.componentTypeMap.get(typeId) || 'Tipo sconosciuto';
+  // Update method to work with ComponentType enum
+  getComponentTypeName(type: ComponentType): string {
+    return this.componentTypeMap.get(type) || 'Tipo sconosciuto';
   }
 
   // Add missing method for delete product
@@ -1034,5 +987,57 @@ export class HomeComponent implements OnInit {
     this.showEditProductDialog = false;
     this.saving = false;
     this.cdr.detectChanges();
+  }
+
+  // Component selection handler
+  onVariantComponentSelected(type: string, component: any): void {
+    console.log(`Componente ${type} selezionato per variante:`, component);
+  }
+
+  /**
+   * Format component name with measure if available
+   * @param component The component to format
+   * @returns Formatted name with measure
+   */
+  formatComponentName(component: ComponentModel): string {
+    if (!component) return '';
+    if (!component.measure) return component.name;
+    return `${component.name} (${component.measure})`;
+  }
+
+  // Add missing methods for variant expansion
+  isVariantExpanded(variantId: string): boolean {
+    return this.expandedVariants.has(variantId);
+  }
+
+  toggleVariantExpansion(variantId: string): void {
+    if (this.expandedVariants.has(variantId)) {
+      this.expandedVariants.delete(variantId);
+    } else {
+      this.expandedVariants.add(variantId);
+    }
+    this.cdr.detectChanges();
+  }
+
+  // Add missing method for grouping components
+  getGroupedComponents(variant: Variant): GroupedComponent[] {
+    const componentMap = new Map<string, GroupedComponent>();
+
+    variant.components.forEach((component) => {
+      const key = `${component.id}-${component.name}`;
+      if (componentMap.has(key)) {
+        const existing = componentMap.get(key)!;
+        existing.quantity++;
+        existing.totalPrice += component.price;
+      } else {
+        componentMap.set(key, {
+          component: component,
+          quantity: 1,
+          totalPrice: component.price,
+        });
+      }
+    });
+
+    return Array.from(componentMap.values());
   }
 }

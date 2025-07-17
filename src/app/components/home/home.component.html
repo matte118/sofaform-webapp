@@ -151,14 +151,10 @@
                         </div>
                         <div
                           class="component-detail"
-                          *ngIf="groupedComponent.component.type"
+                          *ngIf="groupedComponent.component.type !== undefined && groupedComponent.component.type !== null"
                         >
                           <strong>Tipo:</strong>
-                          {{
-                            getComponentTypeName(
-                              groupedComponent.component.type
-                            )
-                          }}
+                          {{ getComponentTypeName(groupedComponent.component.type) }}
                         </div>
                         <div
                           class="component-detail"
@@ -221,8 +217,8 @@
         >
           <ng-template pTemplate="selectedItem">
             <div *ngIf="selectedRivestimento" class="selected-rivestimento">
-              <span class="rivestimento-code">{{
-                selectedRivestimento.code
+              <span class="rivestimento-name">{{
+                selectedRivestimento.name
               }}</span>
               <span class="rivestimento-price">
                 €{{ selectedRivestimento.mtPrice }}/mt
@@ -231,7 +227,7 @@
           </ng-template>
           <ng-template let-rivestimento pTemplate="item">
             <div class="rivestimento-item">
-              <span class="rivestimento-code">{{ rivestimento.code }}</span>
+              <span class="rivestimento-name">{{ rivestimento.name }}</span>
               <span class="rivestimento-price">
                 €{{ rivestimento.mtPrice }}/mt
               </span>

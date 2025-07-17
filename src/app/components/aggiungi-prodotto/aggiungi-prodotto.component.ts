@@ -21,7 +21,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { FileUploadModule } from 'primeng/fileupload';
 import { MessagesModule } from 'primeng/messages';
-import { MessageModule } from 'primeng/message';    // Add this for p-message component
+import { MessageModule } from 'primeng/message';
 import { HttpClientModule } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { Router } from '@angular/router';
@@ -31,14 +31,12 @@ import { Variant } from '../../../models/variant.model';
 import { Component as ComponentModel } from '../../../models/component.model';
 import { Supplier } from '../../../models/supplier.model';
 import { ComponentType } from '../../../models/component-type.model';
-import { Rivestimento } from '../../../models/rivestimento.model';
 
 import { SofaProductService } from '../../../services/sofa-product.service';
 import { VariantService } from '../../../services/variant.service';
 import { ComponentService } from '../../../services/component.service';
 import { SupplierService } from '../../../services/supplier.service';
 import { PhotoUploadService } from '../../../services/upload.service';
-import { RivestimentoService } from '../../../services/rivestimento.service';
 
 @NgComponent({
   selector: 'app-aggiungi-prodotto',
@@ -64,7 +62,7 @@ import { RivestimentoService } from '../../../services/rivestimento.service';
     ProgressSpinnerModule,
     MultiSelectModule,
     MessagesModule,
-    MessageModule,  // Add this module to fix the p-message error
+    MessageModule,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './aggiungi-prodotto.component.html',
@@ -94,9 +92,9 @@ export class AggiungiProdottoComponent implements OnInit {
   ferramentaList: ComponentModel[] = [];
   varieList: ComponentModel[] = [];
 
-  // 4) Rivestimenti
-  rivestimentiList: Rivestimento[] = [];
-  selectedRivestimenti: Rivestimento[] = [];
+  // 4) Remove rivestimenti properties
+  // rivestimentiList: Rivestimento[] = [];
+  // selectedRivestimenti: Rivestimento[] = [];
 
   currentStep = 0;
   value1 = 1;
@@ -167,7 +165,6 @@ export class AggiungiProdottoComponent implements OnInit {
   constructor(
     private sofaProductService: SofaProductService,
     private variantService: VariantService,
-    private rivestimentoService: RivestimentoService,
     private componentService: ComponentService,
     private supplierService: SupplierService,
     private uploadService: PhotoUploadService,
@@ -182,9 +179,7 @@ export class AggiungiProdottoComponent implements OnInit {
   ngOnInit() {
     if (this.isBrowser) {
       this.loadInitialData();
-      this.rivestimentoService.getRivestimenti().subscribe(list => {
-        this.rivestimentiList = list;
-      });
+      // Remove rivestimento service call
     }
   }
 
@@ -211,10 +206,8 @@ export class AggiungiProdottoComponent implements OnInit {
   }
 
   get canApplyComponents(): boolean {
-    // Prima verifica che sia stata selezionata una variante
     if (!this.selectedVariant) return false;
 
-    // Abilita il pulsante se almeno un componente è stato selezionato
     return !!this.selectedFusto ||
       !!this.selectedGomma ||
       !!this.selectedMeccanismo ||
@@ -223,8 +216,7 @@ export class AggiungiProdottoComponent implements OnInit {
       !!this.selectedScatola ||
       !!this.selectedPiedini ||
       this.ferramentaList.length > 0 ||
-      this.varieList.length > 0 ||
-      this.selectedRivestimenti.length > 0;
+      this.varieList.length > 0;
   }
 
   getComponentQuantity(component: ComponentModel): number {
@@ -333,49 +325,72 @@ export class AggiungiProdottoComponent implements OnInit {
 
   // Helper to populate component selections from existing components
   private populateComponentSelections(components: ComponentModel[]): void {
-    // Group components by type
     const compsByType = new Map<string, ComponentModel[]>();
     components.forEach(comp => {
-      if (!comp.type) return;
-      const type = comp.type.toLowerCase();
-      if (!compsByType.has(type)) compsByType.set(type, []);
-      compsByType.get(type)?.push(comp);
+      if (comp.type === undefined || comp.type === null) return;
+      
+      // Convert ComponentType enum to string for mapping
+      let typeString = '';
+      switch (comp.type) {
+        case ComponentType.FUSTO:
+          typeString = 'fusto';
+          break;
+        case ComponentType.GOMMA:
+          typeString = 'gomma';
+          break;
+        case ComponentType.RETE:
+          typeString = 'rete';
+          break;
+        case ComponentType.MATERASSO:
+          typeString = 'materasso';
+          break;
+        case ComponentType.TAPPEZZERIA:
+          typeString = 'tappezzeria';
+          break;
+        case ComponentType.PIEDINI:
+          typeString = 'piedini';
+          break;
+        case ComponentType.FERRAMENTA:
+          typeString = 'ferramenta';
+          break;
+        case ComponentType.VARIE:
+          typeString = 'varie';
+          break;
+        case ComponentType.IMBALLO_PLASTICA:
+          typeString = 'imballo';
+          break;
+        case ComponentType.SCATOLA:
+          typeString = 'scatola';
+          break;
+        case ComponentType.TELA_MARCHIATA:
+          typeString = 'tela_marchiata';
+          break;
+        case ComponentType.TRASPORTO:
+          typeString = 'trasporto';
+          break;
+        default:
+          return; // Skip unknown types
+      }
+      
+      if (!compsByType.has(typeString)) compsByType.set(typeString, []);
+      compsByType.get(typeString)?.push(comp);
     });
 
-    // Set single components
     this.selectedFusto = this.findMatchingComponent('fusto', compsByType);
     this.selectedGomma = this.findMatchingComponent('gomma', compsByType);
-    this.selectedMeccanismo = this.findMatchingComponent('meccanismo', compsByType);
+    this.selectedMeccanismo = this.findMatchingComponent('rete', compsByType); // Use 'rete' for meccanismo
     this.selectedMaterasso = this.findMatchingComponent('materasso', compsByType);
     this.selectedImballo = this.findMatchingComponent('imballo', compsByType);
     this.selectedScatola = this.findMatchingComponent('scatola', compsByType);
 
-    // Handle piedini specially to get quantity
     const piedini = compsByType.get('piedini');
     if (piedini?.length) {
       this.selectedPiedini = piedini[0];
       this.piediniQty = piedini.length;
     }
 
-    // Multi-selects
     this.ferramentaList = compsByType.get('ferramenta') || [];
     this.varieList = compsByType.get('varie') || [];
-
-    // Also look for rivestimenti
-    const rivestimentiComponents = components.filter(c => c.type && c.type.toLowerCase() === 'rivestimento');
-    if (rivestimentiComponents.length > 0) {
-      // Try to match rivestimenti from components to available rivestimenti list
-      this.selectedRivestimenti = rivestimentiComponents.map(c => {
-        const nameParts = c.name.split(' ');
-        if (nameParts.length >= 2) {
-          const rivestimentoType = nameParts[1];
-          const codeMatch = c.name.match(/\(([^)]+)\)/); // extract code in parentheses if any
-          const code = codeMatch ? codeMatch[1] : '';
-          return this.rivestimentiList.find(r => r.type === rivestimentoType && (!code || r.code === code)) || null;
-        }
-        return null;
-      }).filter((r): r is Rivestimento => r !== null);
-    }
   }
 
   // Helper to find a component in the availableComponents list
@@ -403,9 +418,7 @@ export class AggiungiProdottoComponent implements OnInit {
               this.selectedMeccanismo && 
               this.selectedMaterasso && 
               this.selectedImballo && 
-              this.selectedScatola &&
-              this.selectedRivestimenti && 
-              this.selectedRivestimenti.length > 0);
+              this.selectedScatola);
     
     // I campi opzionali (ferramentaList e varieList) non influiscono sulla validazione
   }
@@ -423,7 +436,6 @@ export class AggiungiProdottoComponent implements OnInit {
     if (!this.selectedMaterasso) missingComponents.push('Materasso');
     if (!this.selectedImballo) missingComponents.push('Imballo');
     if (!this.selectedScatola) missingComponents.push('Scatola');
-    if (!this.selectedRivestimenti || this.selectedRivestimenti.length === 0) missingComponents.push('Rivestimenti');
     return missingComponents;
   }
 
@@ -431,7 +443,6 @@ export class AggiungiProdottoComponent implements OnInit {
   applySpecialComponents(silent: boolean = false): boolean {
     if (!this.selectedVariant) return false;
 
-    // Less strict validation - allow the product to be saved with just one component
     const missingComponents = [];
     if (!this.selectedFusto && !this.selectedGomma && !this.selectedPiedini &&
       !this.selectedMeccanismo && !this.selectedMaterasso && !this.selectedImballo &&
@@ -439,10 +450,7 @@ export class AggiungiProdottoComponent implements OnInit {
       missingComponents.push('almeno un componente');
     }
 
-    // Controlla se i rivestimenti sono stati selezionati
-    if (!this.selectedRivestimenti || this.selectedRivestimenti.length === 0) {
-      missingComponents.push('almeno un rivestimento');
-    }
+    // Remove rivestimenti validation
 
     if (missingComponents.length > 0) {
       if (!silent) {
@@ -457,20 +465,16 @@ export class AggiungiProdottoComponent implements OnInit {
     }
 
     const comps: ComponentModel[] = [];
-    // singoli e piedini
     [this.selectedFusto, this.selectedGomma, this.selectedMeccanismo, this.selectedMaterasso, this.selectedImballo, this.selectedScatola]
       .forEach(c => c && comps.push(c));
     if (this.selectedPiedini) for (let i = 0; i < Math.max(2, this.piediniQty); i++) comps.push(this.selectedPiedini);
-    // liste multiple
     this.ferramentaList.forEach(c => comps.push(c));
     this.varieList.forEach(c => comps.push(c));
-    // rivestimenti
-    this.selectedRivestimenti.forEach(r => comps.push(new ComponentModel(r.id, `Rivestimento ${r.type}${r.code ? ` (${r.code})` : ''}`, r.mtPrice, [], 'rivestimento')));
+    // Remove rivestimenti logic
 
     this.selectedVariant.components = comps;
     
-    // Salva i rivestimenti selezionati nella variante
-    this.selectedVariant.rivestimenti = [...this.selectedRivestimenti];
+    // Remove rivestimenti assignment
     
     this.selectedVariant.updatePrice();
 
@@ -692,15 +696,36 @@ export class AggiungiProdottoComponent implements OnInit {
     const lowerType = type.toLowerCase();
 
     if (!this.componentsByTypeCache.has(lowerType)) {
+      // Convert string to ComponentType enum for filtering
+      const componentType = this.getComponentTypeFromString(type);
+      
       // Cache miss - filter the components and store in cache
       const filtered = this.availableComponents.filter(c =>
-        c.type && c.type.toLowerCase() === lowerType
+        c.type === componentType
       );
       this.componentsByTypeCache.set(lowerType, filtered);
     }
 
     // Return from cache
     return this.componentsByTypeCache.get(lowerType) || [];
+  }
+
+  // Helper method to convert string to ComponentType enum
+  private getComponentTypeFromString(type: string): ComponentType | undefined {
+    const typeMap: { [key: string]: ComponentType } = {
+      'fusto': ComponentType.FUSTO,
+      'gomma': ComponentType.GOMMA,
+      'rete': ComponentType.RETE,
+      'materasso': ComponentType.MATERASSO,
+      'tappezzeria': ComponentType.TAPPEZZERIA,
+      'piedini': ComponentType.PIEDINI,
+      'ferramenta': ComponentType.FERRAMENTA,
+      'varie': ComponentType.VARIE,
+      'imballo': ComponentType.IMBALLO_PLASTICA,
+      'scatola': ComponentType.SCATOLA,
+      'meccanismo': ComponentType.RETE, // Map meccanismo to RETE for now
+    };
+    return typeMap[type.toLowerCase()];
   }
 
   onComponentSelected(type: string, component: any): void {
@@ -716,6 +741,25 @@ export class AggiungiProdottoComponent implements OnInit {
     if (!component) return '';
     if (!component.measure) return component.name;
     return `${component.name} (${component.measure})`;
+  }
+
+  // Add method to get ComponentType display name for table
+  getComponentTypeDisplayName(type: ComponentType): string {
+    const typeNames: { [key in ComponentType]: string } = {
+      [ComponentType.FUSTO]: 'Fusto',
+      [ComponentType.GOMMA]: 'Gomma',
+      [ComponentType.RETE]: 'Rete',
+      [ComponentType.MATERASSO]: 'Materasso',
+      [ComponentType.TAPPEZZERIA]: 'Tappezzeria',
+      [ComponentType.PIEDINI]: 'Piedini',
+      [ComponentType.FERRAMENTA]: 'Ferramenta',
+      [ComponentType.VARIE]: 'Varie',
+      [ComponentType.IMBALLO_PLASTICA]: 'Imballo Plastica',
+      [ComponentType.SCATOLA]: 'Scatola',
+      [ComponentType.TELA_MARCHIATA]: 'Tela Marchiata',
+      [ComponentType.TRASPORTO]: 'Trasporto'
+    };
+    return typeNames[type] || 'Sconosciuto';
   }
 
   // Add this method to modify how components are displayed in dropdowns

@@ -27,7 +27,6 @@ import { Supplier } from '../../../models/supplier.model';
 import { ComponentType } from '../../../models/component-type.model';
 import { ComponentService } from '../../../services/component.service';
 import { SupplierService } from '../../../services/supplier.service';
-import { ComponentTypeService } from '../../../services/component-type.service';
 import { VariantService } from '../../../services/variant.service';
 import { SofaProductService } from '../../../services/sofa-product.service';
 import { DialogModule } from 'primeng/dialog';
@@ -58,7 +57,7 @@ import { finalize, take, tap, catchError } from 'rxjs/operators';
     MessageService,
     ConfirmationService,
     SupplierService,
-    ComponentTypeService,
+    // Remove ComponentTypeService since it's not needed anymore
   ],
   templateUrl: './gestione-componenti.component.html',
   styleUrls: ['./gestione-componenti.component.scss'],
@@ -70,8 +69,11 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   newComponent: ComponentModel = new ComponentModel('', '', 0, []);
   availableSuppliers: Supplier[] = [];
   selectedSupplier: Supplier | null = null;
-  availableComponentTypes: ComponentType[] = [];
-  selectedComponentType: string | null = null;
+  
+  // Change to work with enum values and display names
+  availableComponentTypes: { value: ComponentType; label: string }[] = [];
+  selectedComponentType: ComponentType | null = null;
+
   editingIndex: number = -1;
   loading: boolean = true; // Start with loading true
   dataLoaded: boolean = false; // Track when data is loaded
@@ -88,11 +90,11 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   // Add missing property for dialog visibility
   showComponentTypeDialog = false;
 
-  // Add the missing property for new component type
-  newComponentType: ComponentType = new ComponentType('', '');
-
   // Add a property to store the current filter value
   currentFilterValue: string = '';
+
+  // Add missing property for new component type
+  newComponentType: ComponentType = ComponentType.FUSTO;
 
   constructor(
     private componentService: ComponentService,
@@ -101,7 +103,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     private cd: ChangeDetectorRef,
     private zone: NgZone,
     private supplierService: SupplierService,
-    private componentTypeService: ComponentTypeService,
+    // Remove componentTypeService since we're loading types directly
     private variantService: VariantService,
     private sofaProductService: SofaProductService
   ) {}
@@ -166,25 +168,13 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       })
     );
 
-    const types$ = this.componentTypeService
-      .getComponentTypesAsObservable()
-      .pipe(
-        catchError((error) => {
-          console.error('Error loading component types:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: 'Errore caricamento tipi di componente',
-          });
-          return of([]);
-        })
-      );
+    // Load component types directly instead of using service
+    this.loadComponentTypes();
 
     // Use forkJoin to load all data simultaneously
     forkJoin({
       components: components$,
       suppliers: suppliers$,
-      types: types$,
     })
       .pipe(
         finalize(() => {
@@ -206,7 +196,6 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       .subscribe((results) => {
         this.components = results.components;
         this.availableSuppliers = results.suppliers;
-        this.availableComponentTypes = results.types;
 
         console.log(`Loaded ${this.components.length} components`);
         console.log(`Loaded ${this.availableSuppliers.length} suppliers`);
@@ -271,20 +260,23 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   }
 
   loadComponentTypes() {
-    this.componentTypeService.getComponentTypes().subscribe(
-      (types: ComponentType[]) => {
-        this.availableComponentTypes = types;
-        this.cd.detectChanges();
-      },
-      (error: any) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: 'Errore caricamento tipi di componente',
-        });
-        console.error('Error loading component types:', error);
-      }
-    );
+    // Create array of enum options with labels
+    this.availableComponentTypes = [
+      { value: ComponentType.FUSTO, label: 'Fusto' },
+      { value: ComponentType.GOMMA, label: 'Gomma' },
+      { value: ComponentType.RETE, label: 'Rete' },
+      { value: ComponentType.MATERASSO, label: 'Materasso' },
+      { value: ComponentType.TAPPEZZERIA, label: 'Tappezzeria' },
+      { value: ComponentType.PIEDINI, label: 'Piedini' },
+      { value: ComponentType.FERRAMENTA, label: 'Ferramenta' },
+      { value: ComponentType.VARIE, label: 'Varie' },
+      { value: ComponentType.IMBALLO_PLASTICA, label: 'Imballo Plastica' },
+      { value: ComponentType.SCATOLA, label: 'Scatola' },
+      { value: ComponentType.TELA_MARCHIATA, label: 'Tela Marchiata' },
+      { value: ComponentType.TRASPORTO, label: 'Trasporto' }
+    ];
+    this.cd.detectChanges();
+    return this.availableComponentTypes; // Return the loaded types
   }
 
   addComponent() {
@@ -296,26 +288,19 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.formValid = true;
     this.saving = true;
 
-    // Creare un array di fornitori dal singolo fornitore selezionato (se presente)
+    // Create suppliers array from selected supplier
     const suppliers = this.selectedSupplier ? [this.selectedSupplier] : [];
-
-    // Find the actual component type object that matches the selected ID
-    const selectedTypeObj = this.selectedComponentType
-      ? this.availableComponentTypes.find(
-          (type) => type.id === this.selectedComponentType
-        )
-      : null;
 
     const component = new ComponentModel(
       this.isEditing ? this.components[this.editingIndex].id : '',
       this.newComponent.name.trim(),
       this.newComponent.price || 0,
       suppliers,
-      selectedTypeObj ? selectedTypeObj.name : undefined,
+      this.selectedComponentType || undefined,
       this.newComponent.measure
     );
 
-    console.log('Saving component with measure:', component.measure, 'Type:', typeof component.measure); // Debug log
+    console.log('Saving component with type:', component.type, 'Selected type:', this.selectedComponentType);
 
     const operation = this.isEditing
       ? this.componentService.updateComponent(component.id, component)
@@ -359,27 +344,23 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       component.price,
       JSON.parse(JSON.stringify(component.suppliers || [])),
       component.type,
-      component.measure // Include the measure/dimension field
+      component.measure
     );
 
     // Find matching supplier in availableSuppliers
     if (component.suppliers?.length > 0) {
       const supplierId = component.suppliers[0].id;
-      console.log('Looking for supplier with ID:', supplierId);
-
       const matchingSupplier = this.availableSuppliers.find(
         (s) => s.id === supplierId
       );
       this.selectedSupplier = matchingSupplier || null;
-
-      console.log('Selected supplier:', this.selectedSupplier);
     } else {
       this.selectedSupplier = null;
     }
 
-    // Set component type
+    // Set component type (enum value)
     this.selectedComponentType = component.type || null;
-    console.log('Selected component type:', this.selectedComponentType);
+    console.log('Selected component type for editing:', this.selectedComponentType);
 
     this.editingIndex = index;
 
@@ -614,95 +595,17 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.currentFilterValue = event.filter;
   }
 
-  createNewComponentType(event: Event) {
-    event.stopPropagation();
-
-    // Use the tracked filter value instead of trying to get it from the DOM
-    const filterValue = this.currentFilterValue;
-
-    if (!filterValue || !filterValue.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore',
-        detail: 'Inserisci un nome per il tipo di componente',
-      });
-      return;
-    }
-
-    // Create a new component type with the search value
-    const newType = new ComponentType('', filterValue.trim());
-
-    this.componentTypeService.addComponentType(newType).subscribe(
-      () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Successo',
-          detail: 'Tipo di componente creato con successo',
-        });
-
-        // Reload the component types list
-        this.loadComponentTypes();
-
-        // Reset the filter value
-        this.currentFilterValue = '';
-      },
-      (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: 'Errore durante la creazione del tipo di componente',
-        });
-        console.error('Error creating component type:', error);
-      }
-    );
+  // Add method to get ComponentType display name
+  getComponentTypeDisplayName(type: ComponentType | null | undefined): string {
+    if (type === null || type === undefined) return 'Non specificato';
+    
+    const typeOption = this.availableComponentTypes.find(option => option.value === type);
+    return typeOption ? typeOption.label : 'Sconosciuto';
   }
 
-  // Add missing methods for dialog
-  cancelAddComponentType() {
-    this.showComponentTypeDialog = false;
-  }
-
-  saveComponentType() {
-    if (!this.newComponentType.name?.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore di Validazione',
-        detail: 'Il nome del tipo di componente è obbligatorio',
-      });
-      return;
-    }
-
-    this.componentTypeService.addComponentType(this.newComponentType).subscribe(
-      () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Successo',
-          detail: 'Tipo di componente creato con successo',
-        });
-        this.loadComponentTypes();
-        this.showComponentTypeDialog = false;
-      },
-      (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: 'Errore durante la creazione del tipo di componente',
-        });
-        console.error('Error saving component type:', error);
-      }
-    );
-  }
-
-  // Method to open the dialog
-  openComponentTypeDialog() {
-    this.newComponentType = new ComponentType('', '');
-    this.showComponentTypeDialog = true;
-  }
-
-  // Add this method to track component type changes
+  // Update method to work with enum
   onComponentTypeChange(event: any) {
     console.log('Selected component type:', event.value);
-    console.log('Full component type object:', 
-      this.availableComponentTypes.find(type => type.id === event.value));
+    console.log('Component type display name:', this.getComponentTypeDisplayName(event.value));
   }
-}
+} 

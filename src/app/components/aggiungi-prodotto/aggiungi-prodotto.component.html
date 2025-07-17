@@ -419,19 +419,6 @@
                 </div>
               </div>
 
-              <!-- Rivestimenti (obbligatorio) -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Rivestimenti <span class="required-field">*</span></label>
-                <div class="p-col-12 p-md-6">
-                  <p-multiSelect [options]="rivestimentiList" [(ngModel)]="selectedRivestimenti"
-                    optionLabel="name" placeholder="Seleziona i rivestimenti" 
-                    [disabled]="rivestimentiList.length === 0" name="selectedRivestimenti"></p-multiSelect>
-                  <small *ngIf="rivestimentiList.length === 0" class="p-error">
-                    Nessun rivestimento disponibile
-                  </small>
-                </div>
-              </div>
-
               <!-- Pulsante di conferma -->
               <div class="p-field p-col-12">
                 <div class="p-grid">
@@ -468,7 +455,7 @@
                   <ng-template pTemplate="body" let-component>
                     <tr>
                       <td>{{ formatComponentName(component) }}</td>
-                      <td>{{ component.type || 'N/A' }}</td>
+                      <td>{{ getComponentTypeDisplayName(component.type) || 'N/A' }}</td>
                       <td>{{ component.price | currency:'EUR' }}</td>
                       <td>{{ getComponentQuantity(component) }}</td>
                     </tr>

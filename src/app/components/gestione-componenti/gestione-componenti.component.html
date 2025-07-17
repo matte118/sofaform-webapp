@@ -14,9 +14,9 @@
       <!-- Prima riga: nome e prezzo -->
       <div class="form-row">
         <div class="form-group">
-          <label for="componentName"
-            >Nome <span class="required-field">*</span></label
-          >
+          <label for="componentName">
+            Nome Componente <span class="required-field">*</span>
+          </label>
           <input
             pInputText
             id="componentName"
@@ -26,18 +26,15 @@
             placeholder="Nome del componente"
             [class.ng-invalid]="shouldShowFieldError(newComponent.name)"
           />
-          <small
-            *ngIf="shouldShowFieldError(newComponent.name)"
-            class="p-error"
-          >
+          <small *ngIf="shouldShowFieldError(newComponent.name)" class="p-error">
             Il nome del componente è obbligatorio
           </small>
         </div>
 
         <div class="form-group">
-          <label for="componentPrice"
-            >Prezzo <span class="required-field">*</span></label
-          >
+          <label for="componentPrice">
+            Prezzo <span class="required-field">*</span> (€)
+          </label>
           <p-inputNumber
             id="componentPrice"
             [(ngModel)]="newComponent.price"
@@ -58,59 +55,37 @@
       <!-- Seconda riga: fornitore e tipo -->
       <div class="form-row">
         <div class="form-group">
-          <label for="componentSuppliers"
-            >Fornitore <span class="required-field">*</span></label
-          >
+          <label for="componentSuppliers">Fornitore</label>
           <p-dropdown
             id="componentSuppliers"
             [options]="availableSuppliers"
             [(ngModel)]="selectedSupplier"
             name="supplier"
             optionLabel="name"
-            placeholder="Seleziona fornitore"
+            placeholder="Seleziona fornitore (opzionale)"
             [showClear]="true"
-            styleClass="w-100"
+            class="w-100"
           ></p-dropdown>
         </div>
 
         <div class="form-group">
-          <label for="componentType"
-            >Tipo di Componente <span class="required-field">*</span></label
-          >
+          <label for="componentType">Tipo di Componente</label>
           <p-dropdown
             id="componentType"
             [options]="availableComponentTypes"
             [(ngModel)]="selectedComponentType"
-            optionLabel="name"
-            optionValue="id"
             name="componentType"
+            optionLabel="label"
+            optionValue="value"
             placeholder="Seleziona tipo (opzionale)"
             [showClear]="true"
-            [filter]="true"
-            filterBy="name"
-            [emptyFilterMessage]="'Nessun tipo trovato'"
-            styleClass="w-100"
-            (onFilter)="onComponentTypeFilter($event)"
+            class="w-100"
             (onChange)="onComponentTypeChange($event)"
-          >
-            <ng-template pTemplate="emptyfilter">
-              <div class="p-dropdown-empty-message p-py-2 p-px-3">
-                <div>Nessun tipo trovato</div>
-                <button
-                  pButton
-                  type="button"
-                  label="Crea nuovo tipo"
-                  icon="pi pi-plus"
-                  class="p-button-sm p-mt-2"
-                  (click)="createNewComponentType($event)"
-                ></button>
-              </div>
-            </ng-template>
-          </p-dropdown>
+          ></p-dropdown>
         </div>
       </div>
 
-      <!-- Nuova riga: dimensioni -->
+      <!-- Terza riga: dimensioni -->
       <div class="form-row">
         <div class="form-group">
           <label for="componentMeasure">Dimensioni</label>
@@ -146,24 +121,22 @@
   <div class="component-table-section">
     <h3>Lista Componenti</h3>
 
-    <!-- Aggiungi messaggio di caricamento -->
     <div *ngIf="loading" class="loading-message">
       <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
       <p>Caricamento componenti...</p>
     </div>
 
     <p-table
-      #dt
       *ngIf="dataLoaded && !loading"
       #componentTable
       [value]="components"
       styleClass="p-datatable-sm components-table"
       [paginator]="true"
       [rows]="10"
-      [globalFilterFields]="['name', 'price']"
+      [globalFilterFields]="['name','price']"
       [rowHover]="true"
+      #dt
     >
-      <!-- Caption con ricerca -->
       <ng-template pTemplate="caption">
         <div class="table-header">
           <h4>Componenti ({{ components.length }})</h4>
@@ -172,63 +145,49 @@
               pInputText
               type="text"
               placeholder="Cerca componente..."
-              (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+              (input)="onGlobalFilter($event, dt)"
             />
           </div>
         </div>
       </ng-template>
 
-      <!-- Intestazione colonne -->
       <ng-template pTemplate="header">
         <tr>
           <th>Nome</th>
           <th>Prezzo</th>
-          <th>Fornitori</th>
+          <th>Tipo</th>
           <th>Dimensioni</th>
           <th>Azioni</th>
         </tr>
       </ng-template>
 
-      <!-- Righe dati -->
       <ng-template pTemplate="body" let-component let-i="rowIndex">
         <tr>
           <td>{{ component.name }}</td>
-          <td>{{ component.price | currency : "EUR" }}</td>
-          <td>
-            <span *ngFor="let supplier of component.suppliers; let last = last">
-              {{ supplier.name ? supplier.name : "ND"
-              }}<span *ngIf="!last">, </span>
-            </span>
-            <span *ngIf="!component.suppliers?.length" class="no-suppliers">
-              Nessun fornitore
-            </span>
-          </td>
-          <td>{{ component.measure !== undefined && component.measure !== null && component.measure !== '' ? component.measure : 'Non specificato' }}</td>
+          <td>{{ component.price | currency:'EUR' }}</td>
+          <td>{{ getComponentTypeDisplayName(component.type) }}</td>
+          <td>{{ component.measure || 'Non specificato' }}</td>
           <td class="actions-cell">
-            <!-- Wrapper per i pulsanti che garantisce la corretta visualizzazione -->
-            <div class="action-buttons">
-              <button
-                pButton
-                type="button"
-                icon="pi pi-pencil"
-                class="p-button-rounded p-button-text p-button-sm action-edit"
-                (click)="editComponent(component, i)"
-                pTooltip="Modifica"
-              ></button>
-              <button
-                pButton
-                type="button"
-                icon="pi pi-trash"
-                class="p-button-rounded p-button-danger p-button-text p-button-sm action-delete"
-                (click)="deleteComponent(component)"
-                pTooltip="Elimina"
-              ></button>
-            </div>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-text p-button-sm action-edit"
+              (click)="editComponent(component, i)"
+              pTooltip="Modifica"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              class="p-button-rounded p-button-danger p-button-text p-button-sm action-delete"
+              (click)="deleteComponent(component)"
+              pTooltip="Elimina"
+            ></button>
           </td>
         </tr>
       </ng-template>
 
-      <!-- Messaggio vuoto -->
       <ng-template pTemplate="emptymessage">
         <tr>
           <td colspan="5" class="empty-message">Nessun componente trovato</td>
@@ -238,54 +197,5 @@
   </div>
 
   <!-- Dialog per conferma eliminazione -->
-  <p-confirmDialog
-    header="Conferma"
-    [style]="{ width: '450px' }"
-    (modal)="(true)"
-    [closable]="false"
-    [draggable]="false"
-    (resizable)="(false)"
-  >
-  </p-confirmDialog>
-
-  <!-- Dialog per creazione nuovo tipo componente -->
-  <p-dialog
-    header="Nuovo Tipo Componente"
-    [(visible)]="showComponentTypeDialog"
-    [modal]="true"
-    [style]="{ width: '450px' }"
-    [closable]="true"
-  >
-    <div class="p-fluid">
-      <div class="p-field">
-        <label for="componentTypeName">
-          Nome Tipo Componente <span class="required-field">*</span>
-        </label>
-        <input
-          id="componentTypeName"
-          type="text"
-          pInputText
-          [(ngModel)]="newComponentType.name"
-          required
-        />
-        <small *ngIf="!newComponentType.name?.trim()" class="p-error">
-          Campo obbligatorio
-        </small>
-      </div>
-    </div>
-    <ng-template pTemplate="footer">
-      <p-button
-        icon="pi pi-times"
-        label="Annulla"
-        (onClick)="cancelAddComponentType()"
-        styleClass="p-button-text"
-      ></p-button>
-      <p-button
-        icon="pi pi-check"
-        label="Salva"
-        (onClick)="saveComponentType()"
-        [disabled]="!newComponentType.name.trim()"
-      ></p-button>
-    </ng-template>
-  </p-dialog>
+  <p-confirmDialog header="Conferma" [closable]="false"></p-confirmDialog>
 </div>

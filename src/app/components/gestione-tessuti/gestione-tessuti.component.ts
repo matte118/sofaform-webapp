@@ -22,7 +22,6 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Rivestimento } from '../../../models/rivestimento.model';
 import { RivestimentoService } from '../../../services/rivestimento.service';
-import { RivestimentoType } from '../../../models/rivestimento-type.model';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
 import { finalize, catchError } from 'rxjs/operators';
 
@@ -51,7 +50,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   @ViewChild('tessutoTable') tessutoTable?: ElementRef;
 
   tessuti: Rivestimento[] = [];
-  newTessuto: Rivestimento = new Rivestimento('', null as any, 0, '');
+  newTessuto: Rivestimento = new Rivestimento('', "",  0);
   editingIndex: number = -1;
   loading: boolean = true; // Start with loading true
   dataLoaded: boolean = false; // Track when data is loaded
@@ -183,9 +182,8 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
     this.saving = true;
     const tessuto = new Rivestimento(
       this.isEditing ? this.tessuti[this.editingIndex].id : '',
-      this.newTessuto.type,
+      this.isEditing ? this.tessuti[this.editingIndex].name : this.newTessuto.name,
       this.newTessuto.mtPrice,
-      this.newTessuto.code?.trim() ?? ''
     );
 
     const operation = this.isEditing
@@ -227,9 +225,8 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
     // Deep copy to avoid reference issues
     this.newTessuto = new Rivestimento(
       tessuto.id,
-      tessuto.type,
+      tessuto.name,
       tessuto.mtPrice,
-      tessuto.code
     );
 
     this.editingIndex = index;
@@ -252,7 +249,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
 
   deleteTessuto(tessuto: Rivestimento) {
     this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il tessuto "${tessuto.type}" (${tessuto.code})?`,
+      message: `Sei sicuro di voler eliminare il tessuto?`,
       header: 'Conferma Eliminazione',
       acceptButtonStyleClass: 'p-button-primary',
       rejectButtonStyleClass: 'p-button-danger',
@@ -292,7 +289,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   }
 
   resetForm() {
-    this.newTessuto = new Rivestimento('', null as any, 0, '');
+    this.newTessuto = new Rivestimento('', '', 0);
     this.editingIndex = -1;
     // Reset form state
     this.formSubmitted = false;
@@ -322,24 +319,6 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   }
 
   private validateForm(): boolean {
-    if (!this.newTessuto.type) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore di Validazione',
-        detail: 'Il tipo di tessuto è obbligatorio',
-      });
-      return false;
-    }
-
-    if (!this.newTessuto.code?.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore di Validazione',
-        detail: 'Il codice del tessuto è obbligatorio',
-      });
-      return false;
-    }
-
     if (this.newTessuto.mtPrice <= 0) {
       this.messageService.add({
         severity: 'error',
@@ -351,8 +330,8 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
 
     const duplicate = this.tessuti.find(
       (tessuto, idx) =>
-        tessuto.code?.toLowerCase() ===
-          this.newTessuto.code?.trim().toLowerCase() &&
+        tessuto.name.toLowerCase() ===
+          this.newTessuto.name.trim().toLowerCase() &&
         idx !== this.editingIndex
     );
 

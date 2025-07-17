@@ -270,7 +270,7 @@ export class RealtimeDbService {
     return remove(ref(this.db, `rivestimenti/${id}`));
   }
   // Component methods
-  addComponent(component: Component): Promise<void> {
+  addComponent(component: any): Promise<void> {
     const refPath = ref(this.db, 'components');
     const newRef = push(refPath);
     const sanitizedComponent = this.sanitizeData(component);
@@ -282,7 +282,7 @@ export class RealtimeDbService {
   }
 
   getComponents(
-    callback: (components: { id: string; data: Component }[]) => void
+    callback: (components: { id: string; data: any }[]) => void
   ) {
     const refPath = ref(this.db, 'components');
     onValue(refPath, (snapshot) => {
@@ -290,14 +290,14 @@ export class RealtimeDbService {
       const parsed = raw
         ? Object.entries(raw).map(([id, val]) => ({
             id,
-            data: val as Component,
+            data: val as any,
           }))
         : [];
       callback(parsed);
     });
   }
 
-  updateComponent(id: string, component: Component): Promise<void> {
+  updateComponent(id: string, component: any): Promise<void> {
     const sanitizedComponent = this.sanitizeData(component);
     return set(ref(this.db, `components/${id}`), sanitizedComponent);
   }
@@ -382,43 +382,6 @@ export class RealtimeDbService {
     variantIds: string[]
   ): Promise<void> {
     return set(ref(this.db, `products/${productId}/variants`), variantIds);
-  }
-
-  // ComponentType methods
-  addComponentType(componentType: ComponentType): Promise<void> {
-    const refPath = ref(this.db, 'component-types');
-    const newRef = push(refPath);
-    const sanitizedComponentType = this.sanitizeData(componentType);
-
-    // Assign the generated ID to the component type before saving it
-    sanitizedComponentType.id = newRef.key;
-
-    return set(newRef, sanitizedComponentType);
-  }
-
-  getComponentTypes(
-    callback: (componentTypes: { id: string; data: ComponentType }[]) => void
-  ) {
-    const refPath = ref(this.db, 'component-types');
-    onValue(refPath, (snapshot) => {
-      const raw = snapshot.val();
-      const parsed = raw
-        ? Object.entries(raw).map(([id, val]) => ({
-            id,
-            data: val as ComponentType,
-          }))
-        : [];
-      callback(parsed);
-    });
-  }
-
-  updateComponentType(id: string, componentType: ComponentType): Promise<void> {
-    const sanitizedComponentType = this.sanitizeData(componentType);
-    return set(ref(this.db, `component-types/${id}`), sanitizedComponentType);
-  }
-
-  deleteComponentType(id: string): Promise<void> {
-    return remove(ref(this.db, `component-types/${id}`));
   }
 
   // Method to delete all components that have a specific supplier

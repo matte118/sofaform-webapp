@@ -10,7 +10,6 @@ export class Variant {
     public components: Component[] = [],
     public seatsCount?: number,
     public mattressWidth?: number,
-    public rivestimenti: Rivestimento[] = []
   ) {}
 
   // Calculate price from components

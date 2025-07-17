@@ -33,7 +33,7 @@ export class RivestimentoService {
       this.dbService.getRivestimenti((rivestimenti) => {
         const mappedRivestimenti = rivestimenti.map(
           (r) =>
-            new Rivestimento(r.id, r.data.type, r.data.mtPrice, r.data.code)
+            new Rivestimento(r.id, r.data.name, r.data.mtPrice)
         );
         observer.next(mappedRivestimenti);
       });
@@ -46,7 +46,7 @@ export class RivestimentoService {
         (rivestimenti: { id: string; data: any }[]) => {
           const mappedRivestimenti = rivestimenti.map(
             (r) =>
-              new Rivestimento(r.id, r.data.type, r.data.mtPrice, r.data.code)
+              new Rivestimento(r.id, r.data.name, r.data.mtPrice)
           );
           observer.next(mappedRivestimenti);
           observer.complete();

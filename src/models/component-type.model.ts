@@ -1,6 +1,14 @@
-export class ComponentType {
-  constructor(
-    public id: string,
-    public name: string,
-  ) {}
+export enum ComponentType {
+  FUSTO,
+  GOMMA,
+  RETE,
+  MATERASSO,
+  TAPPEZZERIA,
+  PIEDINI,
+  FERRAMENTA,
+  VARIE,
+  IMBALLO_PLASTICA,
+  SCATOLA,
+  TELA_MARCHIATA,
+  TRASPORTO,
 }
