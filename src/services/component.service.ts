@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable, from } from 'rxjs';
+import { Observable, from, forkJoin } from 'rxjs';
 import { RealtimeDbService } from './realtime-db.service';
 import { Component } from '../models/component.model';
 import { ComponentType } from '../models/component-type.model';
+import { BulkComponentCreation } from '../models/bulk-component.model';
 
 @Injectable({
   providedIn: 'root',
@@ -154,5 +155,42 @@ export class ComponentService {
 
   deleteComponentsBySupplier(supplierId: string): Observable<void> {
     return from(this.dbService.deleteComponentsBySupplier(supplierId));
+  }
+
+  addBulkComponents(bulkData: BulkComponentCreation): Observable<void[]> {
+    console.log('ComponentService: Adding bulk components', bulkData);
+
+    const componentPromises = bulkData.variableData.map(variableData => {
+      // Generate unique ID for each component
+      const componentId = this.generateComponentId();
+      
+      // Combine fixed data with variable data
+      const component = new Component(
+        componentId,
+        bulkData.fixedData.name,
+        variableData.price,
+        [variableData.supplier],
+        bulkData.fixedData.type,
+        variableData.measure
+      );
+
+      // Create plain object for database storage
+      const componentData = {
+        id: component.id,
+        name: component.name,
+        price: component.price,
+        suppliers: component.suppliers || [],
+        type: component.type !== undefined ? ComponentType[component.type] : undefined,
+        measure: component.measure
+      };
+
+      return this.dbService.addComponent(componentData);
+    });
+
+    return forkJoin(componentPromises);
+  }
+
+  private generateComponentId(): string {
+    return 'comp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
 }

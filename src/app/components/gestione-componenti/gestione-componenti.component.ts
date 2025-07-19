@@ -5,10 +5,11 @@ import {
   NgZone,
   ViewChild,
   ElementRef,
-  AfterViewInit,
+  AfterViewInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -21,7 +22,11 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { DialogModule } from 'primeng/dialog';
+import { TabViewModule } from 'primeng/tabview';
+
 import { MessageService, ConfirmationService } from 'primeng/api';
+
 import { Component as ComponentModel } from '../../../models/component.model';
 import { Supplier } from '../../../models/supplier.model';
 import { ComponentType } from '../../../models/component-type.model';
@@ -29,9 +34,14 @@ import { ComponentService } from '../../../services/component.service';
 import { SupplierService } from '../../../services/supplier.service';
 import { VariantService } from '../../../services/variant.service';
 import { SofaProductService } from '../../../services/sofa-product.service';
-import { DialogModule } from 'primeng/dialog';
-import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { finalize, take, tap, catchError } from 'rxjs/operators';
+
+import { forkJoin, of, Subject } from 'rxjs';
+import { finalize, tap, catchError } from 'rxjs/operators';
+import {
+  BulkComponentCreation,
+  BulkComponentFixedData,
+  BulkComponentVariableData
+} from '../../../models/bulk-component.model';
 
 @Component({
   selector: 'app-gestione-componenti',
@@ -52,49 +62,53 @@ import { finalize, take, tap, catchError } from 'rxjs/operators';
     TooltipModule,
     MultiSelectModule,
     DialogModule,
+    TabViewModule
   ],
   providers: [
     MessageService,
     ConfirmationService,
-    SupplierService,
-    // Remove ComponentTypeService since it's not needed anymore
+    SupplierService
   ],
   templateUrl: './gestione-componenti.component.html',
-  styleUrls: ['./gestione-componenti.component.scss'],
+  styleUrls: ['./gestione-componenti.component.scss']
 })
 export class GestioneComponentiComponent implements OnInit, AfterViewInit {
-  @ViewChild('componentTable') componentTable?: ElementRef; // Make it optional with ?
+  @ViewChild('componentTable') componentTable?: ElementRef;
+  @ViewChild('variantEntriesContainer') variantEntriesContainer?: ElementRef<HTMLDivElement>;
 
   components: ComponentModel[] = [];
   newComponent: ComponentModel = new ComponentModel('', '', 0, []);
   availableSuppliers: Supplier[] = [];
   selectedSupplier: Supplier | null = null;
-  
-  // Change to work with enum values and display names
+
   availableComponentTypes: { value: ComponentType; label: string }[] = [];
   selectedComponentType: ComponentType | null = null;
 
   editingIndex: number = -1;
-  loading: boolean = true; // Start with loading true
-  dataLoaded: boolean = false; // Track when data is loaded
-  saving: boolean = false;
 
-  // Tracking refresh
-  refreshNeeded: boolean = false;
+  loading = true;
+  dataLoaded = false;
+  saving = false;
+
   private refresh$ = new Subject<void>();
+  refreshNeeded = false;
 
-  // Add form state tracking
-  formSubmitted: boolean = false;
-  formValid: boolean = true;
+  formSubmitted = false;
+  formValid = true;
 
-  // Add missing property for dialog visibility
   showComponentTypeDialog = false;
-
-  // Add a property to store the current filter value
   currentFilterValue: string = '';
 
-  // Add missing property for new component type
-  newComponentType: ComponentType = ComponentType.FUSTO;
+  bulkFixedData: BulkComponentFixedData = {
+    name: '',
+    type: ComponentType.FUSTO
+  };
+  bulkVariableData: BulkComponentVariableData[] = [
+    { supplier: null, measure: '', price: 0 }
+  ];
+  bulkFormSubmitted = false;
+
+  activeTabIndex = 0;
 
   constructor(
     private componentService: ComponentService,
@@ -103,7 +117,6 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     private cd: ChangeDetectorRef,
     private zone: NgZone,
     private supplierService: SupplierService,
-    // Remove componentTypeService since we're loading types directly
     private variantService: VariantService,
     private sofaProductService: SofaProductService
   ) {}
@@ -113,14 +126,12 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.dataLoaded = false;
     this.loadAllData();
 
-    // Setup refresh listener
     this.refresh$.subscribe(() => {
       this.loadAllData();
     });
   }
 
   ngAfterViewInit() {
-    // If we have components but they're not displaying correctly, force a refresh
     setTimeout(() => {
       if (this.components.length > 0 && this.refreshNeeded) {
         this.refreshTable();
@@ -128,64 +139,47 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     }, 500);
   }
 
-  // New method to load all data at once with proper error handling
-  loadAllData() {
+  onTabChange(index: number) {
+    this.activeTabIndex = index;
+    if (index === 0) {
+      this.resetForm();
+    } else if (index === 1) {
+      this.resetBulkForm();
+    }
+  }
+
+  private loadAllData() {
     this.loading = true;
 
-    // Create observables for each data type
     const components$ = this.componentService.getComponentsAsObservable().pipe(
-      catchError((error) => {
+      catchError(error => {
         console.error('Error loading components:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: 'Errore caricamento componenti',
-        });
+        this.addError('Errore caricamento componenti');
         return of([]);
       }),
-      tap(components => {
-        // Add logging to check the measure values
-        console.log('Components with measures:', components.map(c => ({
-          name: c.name,
-          measure: c.measure,
-          measureType: typeof c.measure,
-          isEmpty: c.measure === '',
-          isNull: c.measure === null,
-          isUndefined: c.measure === undefined
-        })));
-      })
+      tap(() => {})
     );
 
     const suppliers$ = this.supplierService.getSuppliersAsObservable().pipe(
-      catchError((error) => {
+      catchError(error => {
         console.error('Error loading suppliers:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: 'Errore caricamento fornitori',
-        });
+        this.addError('Errore caricamento fornitori');
         return of([]);
       })
     );
 
-    // Load component types directly instead of using service
     this.loadComponentTypes();
 
-    // Use forkJoin to load all data simultaneously
     forkJoin({
       components: components$,
-      suppliers: suppliers$,
+      suppliers: suppliers$
     })
       .pipe(
         finalize(() => {
           this.loading = false;
           this.dataLoaded = true;
-
-          // Force detection in the Angular zone
           this.zone.run(() => {
             this.cd.detectChanges();
-
-            // Schedule another change detection after a small delay to ensure icons are rendered
             setTimeout(() => {
               this.cd.detectChanges();
               this.refreshNeeded = false;
@@ -193,74 +187,14 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
           });
         })
       )
-      .subscribe((results) => {
+      .subscribe(results => {
         this.components = results.components;
         this.availableSuppliers = results.suppliers;
-
-        console.log(`Loaded ${this.components.length} components`);
-        console.log(`Loaded ${this.availableSuppliers.length} suppliers`);
-        console.log(
-          `Loaded ${this.availableComponentTypes.length} component types`
-        );
-
         this.refreshNeeded = true;
       });
   }
 
-  // Utility method to force table refresh
-  refreshTable() {
-    if (this.componentTable) {
-      const tableElement = this.componentTable.nativeElement;
-      if (tableElement) {
-        // Toggle a class to force repaint
-        tableElement.classList.add('refreshing');
-        setTimeout(() => {
-          tableElement.classList.remove('refreshing');
-          this.cd.detectChanges();
-        }, 50);
-      }
-    }
-  }
-
-  loadComponents() {
-    this.componentService.getComponents().subscribe(
-      (comps) => {
-        this.components = comps;
-        // Forza Angular a rilevare le modifiche subito dopo l'evento onValue
-        this.cd.detectChanges();
-        this.loading = false;
-      },
-      (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: 'Errore caricamento componenti',
-        });
-        console.error('Error loading components:', error);
-        this.loading = false;
-      }
-    );
-  }
-
-  loadSuppliers() {
-    this.supplierService.getSuppliers().subscribe(
-      (suppliers: Supplier[]) => {
-        this.availableSuppliers = suppliers;
-        this.cd.detectChanges();
-      },
-      (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: 'Errore caricamento fornitori',
-        });
-        console.error('Error loading suppliers:', error);
-      }
-    );
-  }
-
-  loadComponentTypes() {
-    // Create array of enum options with labels
+  private loadComponentTypes() {
     this.availableComponentTypes = [
       { value: ComponentType.FUSTO, label: 'Fusto' },
       { value: ComponentType.GOMMA, label: 'Gomma' },
@@ -276,7 +210,19 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       { value: ComponentType.TRASPORTO, label: 'Trasporto' }
     ];
     this.cd.detectChanges();
-    return this.availableComponentTypes; // Return the loaded types
+  }
+
+  private refreshTable() {
+    if (this.componentTable) {
+      const el = this.componentTable.nativeElement;
+      if (el) {
+        el.classList.add('refreshing');
+        setTimeout(() => {
+          el.classList.remove('refreshing');
+          this.cd.detectChanges();
+        }, 50);
+      }
+    }
   }
 
   addComponent() {
@@ -288,7 +234,6 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.formValid = true;
     this.saving = true;
 
-    // Create suppliers array from selected supplier
     const suppliers = this.selectedSupplier ? [this.selectedSupplier] : [];
 
     const component = new ComponentModel(
@@ -300,34 +245,27 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       this.newComponent.measure
     );
 
-    console.log('Saving component with type:', component.type, 'Selected type:', this.selectedComponentType);
-
-    const operation = this.isEditing
+    const op$ = this.isEditing
       ? this.componentService.updateComponent(component.id, component)
       : this.componentService.addComponent(component);
-    operation.subscribe(
-      () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Successo',
-          detail: this.isEditing
-            ? 'Componente aggiornato con successo'
-            : 'Componente creato con successo',
-        });
 
-        // Use our refresh subject instead of direct calls
+    op$.subscribe(
+      () => {
+        this.addSuccess(
+          this.isEditing
+            ? 'Componente aggiornato con successo'
+            : 'Componente creato con successo'
+        );
         this.refresh$.next();
         this.resetForm();
         this.saving = false;
       },
-      (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: this.isEditing
+      error => {
+        this.addError(
+          this.isEditing
             ? "Errore durante l'aggiornamento del componente"
-            : 'Errore durante la creazione del componente',
-        });
+            : 'Errore durante la creazione del componente'
+        );
         console.error('Error saving component:', error);
         this.saving = false;
       }
@@ -335,9 +273,6 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   }
 
   editComponent(component: ComponentModel, index: number) {
-    console.log('Editing component:', component);
-
-    // Deep copy to avoid reference issues
     this.newComponent = new ComponentModel(
       component.id,
       component.name,
@@ -347,119 +282,43 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       component.measure
     );
 
-    // Find matching supplier in availableSuppliers
     if (component.suppliers?.length > 0) {
       const supplierId = component.suppliers[0].id;
-      const matchingSupplier = this.availableSuppliers.find(
-        (s) => s.id === supplierId
-      );
-      this.selectedSupplier = matchingSupplier || null;
+      this.selectedSupplier =
+        this.availableSuppliers.find(s => s.id === supplierId) || null;
     } else {
       this.selectedSupplier = null;
     }
 
-    // Set component type (enum value)
     this.selectedComponentType = component.type || null;
-    console.log('Selected component type for editing:', this.selectedComponentType);
-
     this.editingIndex = index;
 
-    // Scroll to the top of the form
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
+    if (this.activeTabIndex !== 0) {
+      this.activeTabIndex = 0;
+    }
 
-    // Focus the first input field after scrolling
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => {
       const nameInput = document.getElementById('componentName');
-      if (nameInput) {
-        nameInput.focus();
-      }
+      nameInput?.focus();
       this.cd.detectChanges();
-    }, 500);
-  }
-
-  private getProductsUsingComponent(componentId: string): Promise<string[]> {
-    return new Promise((resolve) => {
-      // Get all variants
-      this.variantService.getVariants().subscribe((variants) => {
-        // Find variants that use this component
-        const variantsUsingComponent = variants.filter((variant) =>
-          variant.components.some((comp) => comp.id === componentId)
-        );
-
-        if (variantsUsingComponent.length === 0) {
-          resolve([]);
-          return;
-        }
-
-        // Get all products
-        this.sofaProductService.getSofaProducts().subscribe((products) => {
-          const productNames: string[] = [];
-
-          variantsUsingComponent.forEach((variant) => {
-            const product = products.find((p) => p.id === variant.sofaId);
-            if (product && !productNames.includes(product.name)) {
-              productNames.push(product.name);
-            }
-          });
-
-          resolve(productNames);
-        });
-      });
-    });
+    }, 400);
   }
 
   deleteComponent(component: ComponentModel) {
-    // First check which products use this component
-    this.getProductsUsingComponent(component.id).then((productNames) => {
+    this.getProductsUsingComponent(component.id).then(productNames => {
       if (productNames.length === 0) {
-        // Component is not used in any products, proceed directly with deletion
-        this.saving = true;
-        this.componentService.deleteComponent(component.id).subscribe(
-          () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Successo',
-              detail: 'Componente eliminato con successo',
-            });
-            this.loadComponents();
-            if (
-              this.editingIndex >= 0 &&
-              this.components[this.editingIndex]?.id === component.id
-            ) {
-              this.resetForm();
-            }
-            this.saving = false;
-          },
-          (error) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Errore',
-              detail: "Errore durante l'eliminazione del componente",
-            });
-            console.error('Error deleting component:', error);
-            this.saving = false;
-          }
-        );
+        this.performDelete(component);
         return;
       }
 
-      // Component is used in products, show confirmation dialog
       const message = `
         <div class="component-usage-warning">
           <div class="warning-content">
-            <div class="warning-text">
-              Questo componente è utilizzato nei seguenti prodotti:
-            </div>
-            
+            <div class="warning-text">Questo componente è utilizzato nei seguenti prodotti:</div>
             <ul class="product-list">
-              ${productNames
-                .map((name) => `<li class="product-item">${name}</li>`)
-                .join('')}
+              ${productNames.map(n => `<li class="product-item">${n}</li>`).join('')}
             </ul>
-            
             <div class="removal-warning">
               <i class="pi pi-info-circle info-icon"></i>
               <span>
@@ -471,47 +330,119 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       `;
 
       this.confirmationService.confirm({
-        message: message,
+        message,
         header: 'Conferma Eliminazione',
         icon: 'pi pi-exclamation-triangle',
         acceptLabel: 'Sì',
         rejectLabel: 'No',
         acceptButtonStyleClass: 'p-button-primary',
         rejectButtonStyleClass: 'p-button-danger',
-        accept: () => {
-          this.saving = true;
-          this.componentService.deleteComponent(component.id).subscribe(
-            () => {
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Successo',
-                detail: `Componente eliminato con successo e rimosso da ${
-                  productNames.length
-                } prodotto${productNames.length > 1 ? 'i' : ''}`,
-              });
-              this.loadComponents();
-              if (
-                this.editingIndex >= 0 &&
-                this.components[this.editingIndex]?.id === component.id
-              ) {
-                this.resetForm();
-              }
-              this.saving = false;
-            },
-            (error) => {
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Errore',
-                detail: "Errore durante l'eliminazione del componente",
-              });
-              console.error('Error deleting component:', error);
-              this.saving = false;
+        accept: () => this.performDelete(component),
+        reject: () => {}
+      });
+    });
+  }
+
+  private performDelete(component: ComponentModel) {
+    this.saving = true;
+    this.componentService.deleteComponent(component.id).subscribe(
+      () => {
+        this.addSuccess('Componente eliminato con successo');
+        this.loadAllData();
+        if (
+          this.editingIndex >= 0 &&
+          this.components[this.editingIndex]?.id === component.id
+        ) {
+          this.resetForm();
+        }
+        this.saving = false;
+      },
+      error => {
+        this.addError("Errore durante l'eliminazione del componente");
+        console.error('Error deleting component:', error);
+        this.saving = false;
+      }
+    );
+  }
+
+  saveBulkComponents() {
+    this.bulkFormSubmitted = true;
+    if (!this.validateBulkForm()) {
+      return;
+    }
+
+    this.saving = true;
+
+    const bulkCreation: BulkComponentCreation = {
+      fixedData: { ...this.bulkFixedData },
+      variableData: this.bulkVariableData.map(vd => ({
+        supplier: vd.supplier,
+        measure: vd.measure || '',
+        price: vd.price || 0
+      }))
+    };
+
+    this.componentService.addBulkComponents(bulkCreation).subscribe(
+      () => {
+        this.addSuccess(
+          `${this.bulkVariableData.length} componenti creati con successo`
+        );
+        this.refresh$.next();
+        this.resetBulkForm();
+        this.activeTabIndex = 0;
+        this.saving = false;
+      },
+      error => {
+        this.addError('Errore durante la creazione dei componenti');
+        console.error('Error saving bulk components:', error);
+        this.saving = false;
+      }
+    );
+  }
+
+  addVariableDataEntry() {
+    this.bulkVariableData.push({
+      supplier: null,
+      measure: '',
+      price: 0
+    });
+    // Scroll automatico alla nuova variante (opzionale)
+    setTimeout(() => {
+      if (this.variantEntriesContainer?.nativeElement) {
+        const el = this.variantEntriesContainer.nativeElement;
+        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+      }
+    });
+  }
+
+  removeVariableDataEntry(index: number) {
+    if (this.bulkVariableData.length > 1) {
+      this.bulkVariableData.splice(index, 1);
+    }
+  }
+
+  private getProductsUsingComponent(componentId: string): Promise<string[]> {
+    return new Promise(resolve => {
+      this.variantService.getVariants().subscribe(variants => {
+        const variantsUsing = variants.filter(v =>
+          v.components.some(c => c.id === componentId)
+        );
+
+        if (variantsUsing.length === 0) {
+          resolve([]);
+          return;
+        }
+
+        this.sofaProductService.getSofaProducts().subscribe(products => {
+          const productNames: string[] = [];
+          variantsUsing.forEach(variant => {
+            const p = products.find(prod => prod.id === variant.sofaId);
+            if (p && !productNames.includes(p.name)) {
+              productNames.push(p.name);
             }
-          );
-        },
-        reject: () => {
-          console.log('Eliminazione annullata');
-        },
+          });
+          resolve(productNames);
+        });
       });
     });
   }
@@ -521,18 +452,35 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.selectedSupplier = null;
     this.selectedComponentType = null;
     this.editingIndex = -1;
-    // Reset form state
     this.formSubmitted = false;
     this.formValid = true;
   }
 
-  // Add method to check if field should show error
+  resetBulkForm() {
+    this.bulkFixedData = {
+      name: '',
+      type: ComponentType.FUSTO
+    };
+    this.bulkVariableData = [
+      { supplier: null, measure: '', price: 0 }
+    ];
+    this.bulkFormSubmitted = false;
+  }
+
   shouldShowFieldError(fieldValue: any): boolean {
     return this.formSubmitted && !this.formValid && !fieldValue?.trim();
   }
 
   shouldShowPriceError(): boolean {
     return this.formSubmitted && !this.formValid && this.newComponent.price < 0;
+  }
+
+  shouldShowBulkFixedFieldError(fieldValue: any): boolean {
+    return this.bulkFormSubmitted && !fieldValue?.trim();
+  }
+
+  shouldShowBulkVariablePriceError(price: number): boolean {
+    return this.bulkFormSubmitted && price < 0;
   }
 
   get isEditing(): boolean {
@@ -552,60 +500,65 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     dt.filterGlobal(target.value, 'contains');
   }
 
+  onComponentTypeChange(event: any) {}
+
+  onComponentTypeFilter(event: any) {
+    this.currentFilterValue = event.filter;
+  }
+
+  getComponentTypeDisplayName(type: ComponentType | null | undefined): string {
+    if (type === null || type === undefined) return 'Non specificato';
+    const found = this.availableComponentTypes.find(o => o.value === type);
+    return found ? found.label : 'Sconosciuto';
+  }
+
   private validateForm(): boolean {
     if (!this.newComponent.name?.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore di Validazione',
-        detail: 'Il nome del componente è obbligatorio',
-      });
+      this.addError('Il nome del componente è obbligatorio', 'Errore di Validazione');
       return false;
     }
 
     if (this.newComponent.price < 0) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore di Validazione',
-        detail: 'Il prezzo non può essere negativo',
-      });
+      this.addError('Il prezzo non può essere negativo', 'Errore di Validazione');
       return false;
     }
 
     const duplicate = this.components.find(
       (comp, idx) =>
-        comp.name.toLowerCase() ===
-          this.newComponent.name.trim().toLowerCase() &&
+        comp.name.toLowerCase() === this.newComponent.name.trim().toLowerCase() &&
         idx !== this.editingIndex
     );
 
     if (duplicate) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore di Validazione',
-        detail: 'Esiste già un componente con questo nome',
-      });
+      this.addError('Esiste già un componente con questo nome', 'Errore di Validazione');
       return false;
     }
 
     return true;
   }
 
-  // Add a method to track the filter value
-  onComponentTypeFilter(event: any) {
-    this.currentFilterValue = event.filter;
+  private validateBulkForm(): boolean {
+    if (!this.bulkFixedData.name?.trim()) {
+      this.addError('Il nome del componente è obbligatorio', 'Errore di Validazione');
+      return false;
+    }
+
+    for (let i = 0; i < this.bulkVariableData.length; i++) {
+      const vd = this.bulkVariableData[i];
+      if (vd.price < 0) {
+        this.addError(`Il prezzo della variante ${i + 1} non può essere negativo`, 'Errore di Validazione');
+        return false;
+      }
+    }
+
+    return true;
   }
 
-  // Add method to get ComponentType display name
-  getComponentTypeDisplayName(type: ComponentType | null | undefined): string {
-    if (type === null || type === undefined) return 'Non specificato';
-    
-    const typeOption = this.availableComponentTypes.find(option => option.value === type);
-    return typeOption ? typeOption.label : 'Sconosciuto';
+  private addError(detail: string, summary: string = 'Errore') {
+    this.messageService.add({ severity: 'error', summary, detail });
   }
 
-  // Update method to work with enum
-  onComponentTypeChange(event: any) {
-    console.log('Selected component type:', event.value);
-    console.log('Component type display name:', this.getComponentTypeDisplayName(event.value));
+  private addSuccess(detail: string, summary: string = 'Successo') {
+    this.messageService.add({ severity: 'success', summary, detail });
   }
-} 
+}
