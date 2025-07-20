@@ -52,6 +52,12 @@ interface GroupedComponent {
   totalPrice: number;
 }
 
+interface EditGroupedComponent {
+  component: ComponentModel;
+  quantity: number;
+  indices: number[];
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -153,6 +159,9 @@ export class HomeComponent implements OnInit {
   // Add cache for component types
   private componentsByTypeCache = new Map<string, ComponentModel[]>();
 
+  private componentNameMeasureCount = new Map<string, number>();
+  private duplicateNameMeasureKeys = new Set<string>();
+
   constructor(
     private router: Router,
     private sofaProductService: SofaProductService,
@@ -191,6 +200,7 @@ export class HomeComponent implements OnInit {
   loadAvailableComponents(): void {
     this.componentService.getComponents().subscribe((components) => {
       this.availableComponents = components;
+      this.rebuildDuplicateIndex();
       this.componentsByTypeCache.clear(); // Clear cache when components change
       console.log('Loaded components:', components.map(c => ({ name: c.name, type: c.type })));
       this.cdr.detectChanges();
@@ -230,6 +240,7 @@ export class HomeComponent implements OnInit {
           .getVariantsBySofaId(product.id)
           .subscribe((variants) => {
             this.productVariants.set(product.id, variants);
+            this.rebuildDuplicateIndex();
             this.cdr.detectChanges();
           });
       });
@@ -683,7 +694,6 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // Add missing property and methods for edit dialog
   get editProductDialogTitle(): string {
     return this.editingProduct ? `Modifica Prodotto: ${this.editingProduct.name}` : 'Modifica Prodotto';
   }
@@ -701,7 +711,6 @@ export class HomeComponent implements OnInit {
     this.newVariant = new Variant('', '', '', 0);
   }
 
-  // Add missing properties and methods for image handling
   get currentImageToShow(): string | undefined {
     if (this.tempImageUrl) {
       return this.tempImageUrl;
@@ -746,7 +755,6 @@ export class HomeComponent implements OnInit {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       this.messageService.add({
         severity: 'error',
@@ -756,7 +764,6 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
       this.messageService.add({
         severity: 'error',
@@ -769,7 +776,6 @@ export class HomeComponent implements OnInit {
     this.tempImageFile = file;
     this.imageRemoved = false;
 
-    // Create preview URL
     const reader = new FileReader();
     reader.onload = (e: any) => {
       this.tempImageUrl = e.target.result;
@@ -791,7 +797,6 @@ export class HomeComponent implements OnInit {
     this.onEditDialogHide();
   }
 
-  // Add the missing method that was referenced but not implemented
   editVariantInProduct(index: number): void {
     const variant = this.editingVariants[index];
     this.newVariant = new Variant(
@@ -818,7 +823,6 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // Component management for variants
   openAddComponentToVariant(variant: Variant): void {
     this.currentEditingVariant = variant;
     this.selectedComponentForVariant = undefined;
@@ -829,7 +833,6 @@ export class HomeComponent implements OnInit {
   addComponentToVariant(): void {
     if (!this.selectedComponentForVariant || !this.currentEditingVariant) return;
 
-    // Add the component the specified number of times
     for (let i = 0; i < this.componentQuantityForVariant; i++) {
       this.currentEditingVariant.components.push({ ...this.selectedComponentForVariant });
     }
@@ -845,19 +848,6 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  removeComponentFromVariant(variant: Variant, componentIndex: number): void {
-    this.confirmationService.confirm({
-      message: 'Sei sicuro di voler rimuovere questo componente?',
-      header: 'Conferma rimozione',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        variant.components.splice(componentIndex, 1);
-        variant.updatePrice();
-        this.cdr.detectChanges();
-      },
-    });
-  }
-
   cancelAddComponent(): void {
     this.showAddComponentDialog = false;
     this.currentEditingVariant = undefined;
@@ -865,34 +855,28 @@ export class HomeComponent implements OnInit {
     this.componentQuantityForVariant = 1;
   }
 
-  // Enhanced save method
   saveProductChanges() {
     if (!this.editingProduct) return;
 
     this.saving = true;
 
-    // Function to save variants after product is saved
     const saveVariants = () => {
       if (this.editingVariants.length === 0) {
         this.completeSave();
         return;
       }
 
-      // Save all variants
       const variantSavePromises = this.editingVariants.map((variant) => {
         variant.sofaId = this.editingProduct!.id;
         if (variant.id) {
-          // Update existing variant
           return this.variantService.updateVariant(variant.id, variant).toPromise();
         } else {
-          // Create new variant
           return this.variantService.createVariant(variant).toPromise();
         }
       });
 
       Promise.all(variantSavePromises)
         .then((variantIds) => {
-          // Update product with variant IDs
           const newVariantIds = variantIds.filter((id) => id).map((id) => id as string);
           const existingVariantIds = this.editingVariants.filter((v) => v.id).map((v) => v.id);
           this.editingProduct!.variants = [...existingVariantIds, ...newVariantIds];
@@ -911,7 +895,6 @@ export class HomeComponent implements OnInit {
         });
     };
 
-    // Function to complete the save process
     const completeProductSave = () => {
       this.sofaProductService
         .updateSofaProduct(this.editingProduct!.id, this.editingProduct!)
@@ -932,7 +915,6 @@ export class HomeComponent implements OnInit {
         );
     };
 
-    // Handle image changes first, then save product
     if (this.imageRemoved) {
       if (this.editingProduct.photoUrl) {
         this.editingProduct.photoUrl = undefined;
@@ -970,13 +952,11 @@ export class HomeComponent implements OnInit {
   }
 
   private completeSave(): void {
-    // Update the product in the local list
     const index = this.products.findIndex((p) => p.id === this.editingProduct!.id);
     if (index !== -1) {
       this.products[index] = { ...this.editingProduct! };
     }
 
-    // Update the variants in the local cache
     this.productVariants.set(this.editingProduct!.id, [...this.editingVariants]);
 
     this.messageService.add({
@@ -990,23 +970,33 @@ export class HomeComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Component selection handler
   onVariantComponentSelected(type: string, component: any): void {
     console.log(`Componente ${type} selezionato per variante:`, component);
   }
 
-  /**
-   * Format component name with measure if available
-   * @param component The component to format
-   * @returns Formatted name with measure
-   */
   formatComponentName(component: ComponentModel): string {
-    if (!component) return '';
-    if (!component.measure) return component.name;
-    return `${component.name} (${component.measure})`;
+  if (!component) return '';
+
+  const hasMeasure = !!component.measure?.trim();
+  const key = this.buildNameMeasureKey(component);
+
+  let base = component.name;
+  if (hasMeasure) base += ` (${component.measure})`;
+
+  if (!this.duplicateNameMeasureKeys.has(key)) {
+    return base;
   }
 
-  // Add missing methods for variant expansion
+  const supplier = this.getSupplierName(component);
+  if (supplier) {
+    return hasMeasure
+      ? `${component.name} (${component.measure}) (${supplier})`
+      : `${component.name} (${supplier})`;
+  }
+  return base;
+}
+
+
   isVariantExpanded(variantId: string): boolean {
     return this.expandedVariants.has(variantId);
   }
@@ -1040,5 +1030,104 @@ export class HomeComponent implements OnInit {
     });
 
     return Array.from(componentMap.values());
+  }
+
+  private areComponentsEqual(a: ComponentModel, b: ComponentModel): boolean {
+    if (a === b) return true;
+    return (
+      a.id === b.id &&
+      a.name === b.name &&
+      a.price === b.price &&
+      a.measure === b.measure &&
+      a.type === b.type &&
+      this.sameSuppliers(a, b)
+    );
+  }
+
+  private sameSuppliers(a: ComponentModel, b: ComponentModel): boolean {
+    const supA = a.suppliers || [];
+    const supB = b.suppliers || [];
+    if (supA.length !== supB.length) return false;
+    const norm = (s: any) => `${s.id || ''}::${s.name || ''}`;
+    const setA = supA.map(norm).sort().join('|');
+    const setB = supB.map(norm).sort().join('|');
+    return setA === setB;
+  }
+
+  getEditGroupedComponents(variant: Variant): EditGroupedComponent[] {
+    const groups: EditGroupedComponent[] = [];
+
+    variant.components.forEach((comp, idx) => {
+      const found = groups.find(g => this.areComponentsEqual(g.component, comp));
+      if (found) {
+        found.quantity++;
+        found.indices.push(idx);
+      } else {
+        groups.push({
+          component: comp,
+          quantity: 1,
+          indices: [idx]
+        });
+      }
+    });
+
+    return groups;
+  }
+
+  removeOneFromGroup(variant: Variant, group: EditGroupedComponent): void {
+    const removeIndex = group.indices[group.indices.length - 1];
+    variant.components.splice(removeIndex, 1);
+    variant.updatePrice();
+    this.cdr.detectChanges();
+  }
+  removeAllFromGroup(variant: Variant, group: EditGroupedComponent): void {
+    variant.components = variant.components.filter((_, i) => !group.indices.includes(i));
+    variant.updatePrice();
+    this.cdr.detectChanges();
+  }
+
+  removeGroupedComponent(variant: Variant, group: EditGroupedComponent): void {
+    this.confirmationService.confirm({
+      message: group.quantity > 1
+        ? `Rimuovere tutte le ${group.quantity} occorrenze di "${group.component.name}"?`
+        : `Rimuovere il componente "${group.component.name}"?`,
+      header: 'Conferma rimozione',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        variant.components = variant.components.filter((_, i) => !group.indices.includes(i));
+        variant.updatePrice();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private buildNameMeasureKey(c: ComponentModel): string {
+    const name = (c.name || '').trim().toLowerCase();
+    const measure = (c.measure || '').trim().toLowerCase();
+    return `${name}|${measure}`;
+  }
+
+  private rebuildDuplicateIndex(): void {
+    this.componentNameMeasureCount.clear();
+    this.duplicateNameMeasureKeys.clear();
+
+    const all: ComponentModel[] = [
+      ...this.availableComponents,
+      ...Array.from(this.productVariants.values()).flatMap(vs => vs.flatMap(v => v.components || [])),
+    ];
+
+    for (const c of all) {
+      if (!c) continue;
+      const key = this.buildNameMeasureKey(c);
+      this.componentNameMeasureCount.set(key, (this.componentNameMeasureCount.get(key) || 0) + 1);
+    }
+    for (const [key, count] of this.componentNameMeasureCount.entries()) {
+      if (count > 1) this.duplicateNameMeasureKeys.add(key);
+    }
+  }
+
+  private getSupplierName(c: ComponentModel): string | undefined {
+    if (!c?.suppliers || c.suppliers.length === 0) return undefined;
+    return c.suppliers[0].name;
   }
 }

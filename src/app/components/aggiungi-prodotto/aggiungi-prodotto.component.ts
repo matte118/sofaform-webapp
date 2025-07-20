@@ -162,6 +162,9 @@ export class AggiungiProdottoComponent implements OnInit {
   // Add a cache for component types
   private componentsByTypeCache = new Map<string, ComponentModel[]>();
 
+  private componentNameMeasureCount = new Map<string, number>();
+  private duplicateNameMeasureKeys = new Set<string>();
+
   constructor(
     private sofaProductService: SofaProductService,
     private variantService: VariantService,
@@ -186,11 +189,41 @@ export class AggiungiProdottoComponent implements OnInit {
   private loadInitialData() {
     this.componentService.getComponents().subscribe(components => {
       this.availableComponents = components;
-      this.componentsByTypeCache.clear(); // Clear cache when components change
+      this.componentsByTypeCache.clear();
+      this.rebuildDuplicateNameMeasureIndex(); // NEW
     });
+
     this.supplierService.getSuppliers().subscribe(suppliers => {
       this.availableSuppliers = suppliers;
     });
+  }
+
+  private rebuildDuplicateNameMeasureIndex(): void {
+    this.componentNameMeasureCount.clear();
+    this.duplicateNameMeasureKeys.clear();
+
+    for (const c of this.availableComponents) {
+      const key = this.buildNameMeasureKey(c);
+      this.componentNameMeasureCount.set(
+        key,
+        (this.componentNameMeasureCount.get(key) || 0) + 1
+      );
+    }
+
+    for (const [key, count] of this.componentNameMeasureCount.entries()) {
+      if (count > 1) this.duplicateNameMeasureKeys.add(key);
+    }
+  }
+
+  private buildNameMeasureKey(c: ComponentModel): string {
+    const name = (c.name || '').trim().toLowerCase();
+    const measure = (c.measure || '').trim().toLowerCase();
+    return `${name}|${measure}`;
+  }
+
+  private getSupplierNameForComponent(c: ComponentModel): string | undefined {
+    if (!c?.suppliers || c.suppliers.length === 0) return undefined;
+    return c.suppliers[0].name;
   }
 
   prevStep(): void {
@@ -328,7 +361,7 @@ export class AggiungiProdottoComponent implements OnInit {
     const compsByType = new Map<string, ComponentModel[]>();
     components.forEach(comp => {
       if (comp.type === undefined || comp.type === null) return;
-      
+
       // Convert ComponentType enum to string for mapping
       let typeString = '';
       switch (comp.type) {
@@ -368,7 +401,7 @@ export class AggiungiProdottoComponent implements OnInit {
         default:
           return; // Skip unknown types
       }
-      
+
       if (!compsByType.has(typeString)) compsByType.set(typeString, []);
       compsByType.get(typeString)?.push(comp);
     });
@@ -409,14 +442,14 @@ export class AggiungiProdottoComponent implements OnInit {
    */
   hasSelectedComponents(): boolean {
     // Verifica che tutti i componenti obbligatori siano selezionati
-    return !!(this.selectedFusto && 
-              this.selectedGomma && 
-              this.selectedPiedini && 
-              this.selectedMeccanismo && 
-              this.selectedMaterasso && 
-              this.selectedImballo && 
-              this.selectedScatola);
-    
+    return !!(this.selectedFusto &&
+      this.selectedGomma &&
+      this.selectedPiedini &&
+      this.selectedMeccanismo &&
+      this.selectedMaterasso &&
+      this.selectedImballo &&
+      this.selectedScatola);
+
     // I campi opzionali (ferramentaList e varieList) non influiscono sulla validazione
   }
 
@@ -470,9 +503,9 @@ export class AggiungiProdottoComponent implements OnInit {
     // Remove rivestimenti logic
 
     this.selectedVariant.components = comps;
-    
+
     // Remove rivestimenti assignment
-    
+
     this.selectedVariant.updatePrice();
 
     if (!silent) {
@@ -695,7 +728,7 @@ export class AggiungiProdottoComponent implements OnInit {
     if (!this.componentsByTypeCache.has(lowerType)) {
       // Convert string to ComponentType enum for filtering
       const componentType = this.getComponentTypeFromString(type);
-      
+
       // Cache miss - filter the components and store in cache
       const filtered = this.availableComponents.filter(c =>
         c.type === componentType
@@ -735,9 +768,37 @@ export class AggiungiProdottoComponent implements OnInit {
    */
   formatComponentName(component: ComponentModel): string {
     if (!component) return '';
-    if (!component.measure) return component.name;
-    return `${component.name} (${component.measure})`;
+
+    const hasMeasure = !!component.measure?.trim();
+    const key = this.buildNameMeasureKey(component);
+
+    // Base (senza fornitore)
+    let base = component.name;
+    if (hasMeasure) {
+      base += ` (${component.measure})`;
+    }
+
+    // Se non è un duplicato (stesso nome+misura), ritorna base
+    if (!this.duplicateNameMeasureKeys.has(key)) {
+      return base;
+    }
+
+    // È duplicato: aggiungi il fornitore
+    const supplierName = this.getSupplierNameForComponent(component);
+    if (supplierName) {
+      if (hasMeasure) {
+        // Formato richiesto: Nome (Misura) (Fornitore)
+        return `${component.name} (${component.measure}) (${supplierName})`;
+      } else {
+        // Nessuna misura -> Nome (Fornitore)
+        return `${component.name} (${supplierName})`;
+      }
+    }
+
+    // Duplicato ma non abbiamo il fornitore: lasciamo base (oppure aggiungi placeholder se vuoi)
+    return base;
   }
+
 
   // Add method to get ComponentType display name for table
   getComponentTypeDisplayName(type: ComponentType): string {
