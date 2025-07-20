@@ -56,11 +56,9 @@
                   <small *ngIf="variant.seatsCount" class="variant-seats">
                     {{ variant.seatsCount }} posti
                   </small>
-                  <button pButton type="button" class="p-button-text p-button-sm variant-toggle" [icon]="
-                      isVariantExpanded(variant.id)
-                        ? 'pi pi-chevron-up'
-                        : 'pi pi-chevron-down'
-                    " (click)="toggleVariantExpansion(variant.id)"></button>
+                  <button pButton type="button" class="p-button-text p-button-sm variant-toggle"
+                    [icon]="isVariantExpanded(variant.id) ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                    (click)="toggleVariantExpansion(variant.id)"></button>
                 </div>
               </div>
 
@@ -78,9 +76,7 @@
                 <div class="components-section" *ngIf="variant.components?.length">
                   <h5 class="components-title">Componenti:</h5>
                   <div class="components-list">
-                    <div class="component-item" *ngFor="
-                        let groupedComponent of getGroupedComponents(variant)
-                      ">
+                    <div class="component-item" *ngFor="let groupedComponent of getGroupedComponents(variant)">
                       <div class="component-header">
                         <span class="component-name">
                           {{ formatComponentName(groupedComponent.component) }}
@@ -95,11 +91,7 @@
                       <div class="component-details">
                         <div class="component-detail" *ngIf="groupedComponent.component.suppliers?.length">
                           <strong>Fornitori:</strong>
-                          <span *ngFor="
-                              let supplier of groupedComponent.component
-                                .suppliers;
-                              let last = last
-                            ">
+                          <span *ngFor="let supplier of groupedComponent.component.suppliers; let last = last">
                             {{ supplier.name }}<span *ngIf="!last">, </span>
                           </span>
                         </div>
@@ -129,56 +121,68 @@
     </div>
   </div>
 
-  <!-- Dialog Selezione Rivestimento -->
-  <p-dialog appendTo="body" [(visible)]="showRivestimentoDialog" header="Seleziona Rivestimento" [modal]="true"
+  <p-dialog appendTo="body" [(visible)]="showRivestimentoDialog" header="Seleziona Rivestimenti" [modal]="true"
     [closable]="false" [baseZIndex]="10000" [style]="{ width: '800px', maxHeight: '90vh' }" [draggable]="false"
     [resizable]="false" (onHide)="cancelRivestimento()">
+
     <div class="p-fluid">
-      <div class="field">
-        <label for="rivestimento">Rivestimento:</label>
-        <p-dropdown id="rivestimento" [options]="availableRivestimenti" [(ngModel)]="selectedRivestimento"
-          optionLabel="code" placeholder="Seleziona un rivestimento" [showClear]="true" scrollHeight="300px"
-          [filter]="true" filterBy="code" [autoZIndex]="true" [baseZIndex]="10000" appendTo="body">
-          <ng-template pTemplate="selectedItem">
-            <div *ngIf="selectedRivestimento" class="selected-rivestimento">
-              <span class="rivestimento-name">{{
-                selectedRivestimento.name
-                }}</span>
-              <span class="rivestimento-price">
-                €{{ selectedRivestimento.mtPrice }}/mt
+      <div class="rivestimento-selection-section">
+        <div class="field">
+          <label for="rivestimenti">Seleziona i rivestimenti desiderati:</label>
+          <p-multiSelect id="rivestimenti" [options]="availableRivestimenti" optionLabel="name"
+            [(ngModel)]="tempRivestimentiSelection" display="chip" [filter]="true" filterBy="name,code" appendTo="body"
+            [showClear]="true" placeholder="Scegli uno o più rivestimenti..." [showToggleAll]="false"
+            (onChange)="onRivestimentiChange()">
+
+            <ng-template let-r pTemplate="item">
+              <div class="rivestimento-item">
+                <span class="rivestimento-name">{{ r.name }}</span>
+                <span class="rivestimento-price">€{{ r.mtPrice | number:'1.2-2' }}/mt</span>
+              </div>
+            </ng-template>
+
+            <ng-template let-r pTemplate="selectedItem">
+              <span class="rivestimento-chip-token">
+                {{ r.name }}
               </span>
-            </div>
-          </ng-template>
-          <ng-template let-rivestimento pTemplate="item">
-            <div class="rivestimento-item">
-              <span class="rivestimento-name">{{ rivestimento.name }}</span>
-              <span class="rivestimento-price">
-                €{{ rivestimento.mtPrice }}/mt
-              </span>
-            </div>
-          </ng-template>
-        </p-dropdown>
+            </ng-template>
+          </p-multiSelect>
+          <small class="p-text-secondary">
+            <i class="pi pi-info-circle"></i>
+            Puoi selezionare più rivestimenti. I prezzi sono per metro.
+          </small>
+        </div>
       </div>
 
-      <div class="field" *ngIf="selectedRivestimento">
-        <label for="meters">Metri di rivestimento:</label>
-        <p-inputNumber id="meters" [(ngModel)]="metersOfRivestimento" [min]="0.1" [step]="0.1" suffix=" mt"
-          placeholder="Inserisci i metri"></p-inputNumber>
-      </div>
-
-      <div class="field" *ngIf="selectedRivestimento && metersOfRivestimento > 0">
-        <strong>
-          Costo totale rivestimento: €{{
-          calculateRivestimentoCost().toFixed(2)
-          }}
-        </strong>
+      <div class="field rivestimento-meters-group"
+        *ngIf="tempRivestimentiSelection && tempRivestimentiSelection.length">
+        <h5>Specifica i metri per ciascun rivestimento</h5>
+        <div class="rivestimento-meters-row" *ngFor="let r of tempRivestimentiSelection">
+          <div class="meters-label">
+            <span class="rivestimento-name">{{ r.name }}</span>
+            <span class="rivestimento-unit-price">{{ r.mtPrice | number:'1.2-2' }} €/mt</span>
+          </div>
+          <p-inputNumber [(ngModel)]="metersPerRivestimento[r.id]" [min]="0.1" [step]="0.1" mode="decimal"
+            [minFractionDigits]="1" [maxFractionDigits]="2" suffix=" mt" placeholder="0.0" (onInput)="validateMeters(r)"
+            [style]="{ width: '140px' }">
+          </p-inputNumber>
+          <div class="subtotal" *ngIf="metersPerRivestimento[r.id] > 0; else noSubtotal">
+            € {{ (r.mtPrice * metersPerRivestimento[r.id]) | number:'1.2-2' }}
+          </div>
+          <ng-template #noSubtotal>
+            <div class="subtotal" style="background: #f1f5f9; color: #718096;">
+              € 0.00
+            </div>
+          </ng-template>
+        </div>
       </div>
     </div>
 
     <ng-template pTemplate="footer">
-      <button pButton type="button" label="Annulla" class="p-button-danger" (click)="cancelRivestimento()"></button>
-      <button pButton type="button" label="Continua" (click)="selectRivestimento()"
-        [disabled]="!selectedRivestimento || metersOfRivestimento <= 0"></button>
+      <button pButton type="button" label="Annulla" icon="pi pi-times" class="p-button-outlined p-button-secondary"
+        (click)="cancelRivestimento()"></button>
+      <button pButton type="button" label="Continua" icon="pi pi-check" class="p-button-primary"
+        (click)="confirmRivestimentiSelection()" [disabled]="!canProceedRivestimenti()"></button>
     </ng-template>
   </p-dialog>
 
@@ -196,23 +200,27 @@
       <div class="field" *ngIf="selectedProduct">
         <h4>Anteprima prezzi ({{ selectedProduct.name }}):</h4>
 
+        <div *ngIf="selectedRivestimentiForListino?.length" class="rivestimenti-preview mb-2">
+          <div *ngFor="let r of selectedRivestimentiForListino">
+            Rivestimento {{ r.rivestimento.name }} ({{ r.metri }} mt):
+            € {{ (r.rivestimento.mtPrice * r.metri).toFixed(2) }}
+          </div>
+          <div><strong>Totale rivestimenti: € {{ overallRivestimentiCost().toFixed(2) }}</strong></div>
+        </div>
+
         <div *ngFor="let variant of getProductVariants(selectedProduct.id)" class="variant-preview">
           <div class="variant-preview-header">
             <strong>{{ variant.longName }}</strong>
           </div>
           <div class="price-breakdown">
             <div>Prezzo base: €{{ variant.price.toFixed(2) }}</div>
-            <div>
-              Rivestimento: €{{ calculateRivestimentoCost().toFixed(2) }}
+            <div *ngIf="!selectedRivestimentiForListino?.length">
+              Rivestimenti: €0.00
             </div>
             <div class="total-price">
               <strong>
-                Totale con ricarico ({{ markupPercentage }}%): €{{
-                (
-                (variant.price + calculateRivestimentoCost()) /
-                ((100 - markupPercentage) / 100)
-                ).toFixed(2)
-                }}
+                Totale con ricarico ({{ markupPercentage }}%):
+                € {{ getVariantFinalPrice(variant).toFixed(2) }}
               </strong>
             </div>
           </div>
@@ -238,7 +246,6 @@
           <div class="image-section">
             <h3 class="section-title">Immagine Prodotto</h3>
             <div class="image-upload-section">
-              <!-- Container immagine corrente con nuovi pulsanti -->
               <div class="current-image-container" *ngIf="currentImageToShow && !uploadingNewImage">
                 <img [src]="currentImageToShow" alt="Immagine prodotto" class="current-image" />
                 <div class="image-actions">
@@ -247,42 +254,23 @@
                     pTooltip="Rimuovi immagine"></button>
                 </div>
               </div>
-
-              <!-- Container placeholder e upload -->
-              <div class="upload-container" [ngClass]="{ 'upload-mode': isUploadMode }" *ngIf="
-                  shouldShowImagePlaceholder ||
-                  uploadingNewImage ||
-                  isUploadMode
-                ">
-                <!-- Placeholder migliorato con pulsante upload evidente -->
+              <div class="upload-container" [ngClass]="{ 'upload-mode': isUploadMode }"
+                *ngIf="shouldShowImagePlaceholder || uploadingNewImage || isUploadMode">
                 <div class="image-placeholder" *ngIf="!uploadingNewImage">
                   <i class="pi pi-images"></i>
-                  <span>
-                    {{
-                    shouldShowImagePlaceholder
-                    ? "Nessuna immagine"
-                    : "Cambia immagine"
-                    }}
-                  </span>
-
-                  <!-- Pulsante di caricamento più visibile -->
+                  <span>{{ shouldShowImagePlaceholder ? 'Nessuna immagine' : 'Cambia immagine' }}</span>
                   <button pButton type="button" label="Carica" icon="pi pi-upload"
                     class="p-button-primary upload-image-btn" (click)="triggerFileInput()"></button>
-
-                  <!-- Input file nascosto con riferimento -->
                   <input #hiddenFileInput type="file" style="display: none" accept="image/*"
                     (change)="onFileSelected($event)" />
-
                   <button *ngIf="isUploadMode && !shouldShowImagePlaceholder" pButton type="button" label="Annulla"
                     icon="pi pi-times" class="p-button-outlined p-button-secondary cancel-upload-btn"
                     (click)="cancelImageUpload()"></button>
                 </div>
-
                 <div class="upload-hint" *ngIf="!uploadingNewImage">
                   <i class="pi pi-info-circle"></i>
                   <span>Formati supportati: JPG, PNG. Max 5MB</span>
                 </div>
-
                 <div class="upload-progress" *ngIf="uploadProgress > 0 && uploadProgress < 100">
                   <p-progressBar [value]="uploadProgress"></p-progressBar>
                   <small>Caricamento in corso... {{ uploadProgress }}%</small>
@@ -407,7 +395,7 @@
                               <span *ngFor="let group of getEditGroupedComponents(variant)" class="component-chip">
                                 {{ formatComponentName(group.component) }}
                                 <span *ngIf="group.quantity > 1" class="component-quantity">
-                                    × {{ group.quantity }}
+                                  × {{ group.quantity }}
                                 </span>
                                 <button type="button" class="remove-component"
                                   (click)="removeGroupedComponent(variant, group)"
@@ -477,8 +465,7 @@
     [resizable]="false" styleClass="variant-components-dialog">
     <div class="variant-components-container">
       <div class="p-fluid">
-
-        <!-- Fusto (obbligatorio) -->
+        <!-- Fusto -->
         <div class="p-field p-grid">
           <label class="p-col-12 p-md-3">Fusto <span class="required-field">*</span></label>
           <div class="p-col-12 p-md-9">
@@ -498,7 +485,7 @@
           </div>
         </div>
 
-        <!-- Gomma (obbligatorio) -->
+        <!-- Gomma -->
         <div class="p-field p-grid">
           <label class="p-col-12 p-md-3">Gomma <span class="required-field">*</span></label>
           <div class="p-col-12 p-md-9">
@@ -518,7 +505,7 @@
           </div>
         </div>
 
-        <!-- Piedini + Quantità (obbligatorio) -->
+        <!-- Piedini -->
         <div class="p-field p-grid">
           <label class="p-col-12 p-md-3">Piedini <span class="required-field">*</span></label>
           <div class="p-col-12 p-md-6">
@@ -544,7 +531,7 @@
           </div>
         </div>
 
-        <!-- Meccanismo (obbligatorio) -->
+        <!-- Meccanismo -->
         <div class="p-field p-grid">
           <label class="p-col-12 p-md-3">Meccanismo <span class="required-field">*</span></label>
           <div class="p-col-12 p-md-9">
@@ -565,7 +552,7 @@
           </div>
         </div>
 
-        <!-- Materasso (obbligatorio) -->
+        <!-- Materasso -->
         <div class="p-field p-grid">
           <label class="p-col-12 p-md-3">Materasso <span class="required-field">*</span></label>
           <div class="p-col-12 p-md-9">
@@ -586,7 +573,7 @@
           </div>
         </div>
 
-        <!-- Ferramenta (obbligatorio) -->
+        <!-- Ferramenta -->
         <div class="p-field p-grid">
           <label class="p-col-12 p-md-3">Ferramenta <span class="required-field">*</span></label>
           <div class="p-col-12 p-md-9">
@@ -603,7 +590,7 @@
           </div>
         </div>
 
-        <!-- Imballo (obbligatorio) -->
+        <!-- Imballo -->
         <div class="p-field p-grid">
           <label class="p-col-12 p-md-3">Imballo <span class="required-field">*</span></label>
           <div class="p-col-12 p-md-9">
@@ -645,7 +632,7 @@
           </div>
         </div>
 
-        <!-- Varie (opzionale) -->
+        <!-- Varie -->
         <div class="p-field p-grid">
           <label class="p-col-12 p-md-3">Varie</label>
           <div class="p-col-12 p-md-9">
@@ -662,7 +649,7 @@
           </div>
         </div>
 
-        <!-- Rivestimenti (obbligatorio) -->
+        <!-- Rivestimenti per nuova variante -->
         <div class="p-field p-grid">
           <label class="p-col-12 p-md-3">Rivestimenti <span class="required-field">*</span></label>
           <div class="p-col-12 p-md-9">
