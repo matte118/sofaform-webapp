@@ -250,7 +250,7 @@
 
         <div class="bulk-form-actions">
           <p-button
-            label="Salva Tutti i Componenti"
+            label="Salva Componenti"
             icon="pi pi-save"
             (onClick)="saveBulkComponents()"
             styleClass="primary-button"
@@ -262,13 +262,6 @@
             icon="pi pi-refresh"
             (onClick)="resetBulkForm()"
             styleClass="secondary-button"
-            [disabled]="saving"
-          ></p-button>
-          <p-button
-            label="Annulla"
-            icon="pi pi-times"
-            (onClick)="activeTabIndex = 0"
-            styleClass="cancel-button"
             [disabled]="saving"
           ></p-button>
         </div>

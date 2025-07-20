@@ -50,7 +50,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   @ViewChild('tessutoTable') tessutoTable?: ElementRef;
 
   tessuti: Rivestimento[] = [];
-  newTessuto: Rivestimento = new Rivestimento('', "",  0);
+  newTessuto: Rivestimento = new Rivestimento('', "", 0);
   editingIndex: number = -1;
   loading: boolean = true; // Start with loading true
   dataLoaded: boolean = false; // Track when data is loaded
@@ -70,7 +70,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
     private confirmationService: ConfirmationService,
     private cd: ChangeDetectorRef,
     private zone: NgZone
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loading = true;
@@ -182,9 +182,10 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
     this.saving = true;
     const tessuto = new Rivestimento(
       this.isEditing ? this.tessuti[this.editingIndex].id : '',
-      this.isEditing ? this.tessuti[this.editingIndex].name : this.newTessuto.name,
-      this.newTessuto.mtPrice,
+      this.newTessuto.name.trim(),
+      this.newTessuto.mtPrice
     );
+    console.log('Payload update:', tessuto);
 
     const operation = this.isEditing
       ? this.rivestimentoService.updateRivestimento(tessuto.id, tessuto)
@@ -331,7 +332,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
     const duplicate = this.tessuti.find(
       (tessuto, idx) =>
         tessuto.name.toLowerCase() ===
-          this.newTessuto.name.trim().toLowerCase() &&
+        this.newTessuto.name.trim().toLowerCase() &&
         idx !== this.editingIndex
     );
 

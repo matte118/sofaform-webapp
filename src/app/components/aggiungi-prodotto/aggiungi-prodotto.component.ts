@@ -344,9 +344,6 @@ export class AggiungiProdottoComponent implements OnInit {
         case ComponentType.MATERASSO:
           typeString = 'materasso';
           break;
-        case ComponentType.TAPPEZZERIA:
-          typeString = 'tappezzeria';
-          break;
         case ComponentType.PIEDINI:
           typeString = 'piedini';
           break;
@@ -356,7 +353,7 @@ export class AggiungiProdottoComponent implements OnInit {
         case ComponentType.VARIE:
           typeString = 'varie';
           break;
-        case ComponentType.IMBALLO_PLASTICA:
+        case ComponentType.IMBALLO:
           typeString = 'imballo';
           break;
         case ComponentType.SCATOLA:
@@ -717,11 +714,10 @@ export class AggiungiProdottoComponent implements OnInit {
       'gomma': ComponentType.GOMMA,
       'rete': ComponentType.RETE,
       'materasso': ComponentType.MATERASSO,
-      'tappezzeria': ComponentType.TAPPEZZERIA,
       'piedini': ComponentType.PIEDINI,
       'ferramenta': ComponentType.FERRAMENTA,
       'varie': ComponentType.VARIE,
-      'imballo': ComponentType.IMBALLO_PLASTICA,
+      'imballo': ComponentType.IMBALLO,
       'scatola': ComponentType.SCATOLA,
       'meccanismo': ComponentType.RETE, // Map meccanismo to RETE for now
     };
@@ -750,11 +746,10 @@ export class AggiungiProdottoComponent implements OnInit {
       [ComponentType.GOMMA]: 'Gomma',
       [ComponentType.RETE]: 'Rete',
       [ComponentType.MATERASSO]: 'Materasso',
-      [ComponentType.TAPPEZZERIA]: 'Tappezzeria',
       [ComponentType.PIEDINI]: 'Piedini',
       [ComponentType.FERRAMENTA]: 'Ferramenta',
       [ComponentType.VARIE]: 'Varie',
-      [ComponentType.IMBALLO_PLASTICA]: 'Imballo Plastica',
+      [ComponentType.IMBALLO]: 'Imballo',
       [ComponentType.SCATOLA]: 'Scatola',
       [ComponentType.TELA_MARCHIATA]: 'Tela Marchiata',
       [ComponentType.TRASPORTO]: 'Trasporto'

@@ -328,13 +328,13 @@
       border-radius: 8px;
 
       &.fixed-data-section {
-        background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
-        border: 1px solid #c3e6c3;
+        background: #f8f9fa;
+        border: 1px solid #dde1e4;
       }
 
       &.variable-data-section {
-        background: linear-gradient(135deg, #fff3cd 0%, #fef9e7 100%);
-        border: 1px solid #ffeaa7;
+        background: #f8f9fa;
+        border: 1px solid #dde1e4;
       }
 
       h3 {
@@ -903,6 +903,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-start; // ora niente pulsante a destra
+
     h3 {
       margin: 0;
       font-size: 1.2rem;
@@ -938,9 +939,3 @@
   }
 }
 
-/* Opzionale: versione sticky per il pulsante
-.variant-actions-bottom {
-  position: sticky;
-  bottom: 0;
-  background: linear-gradient(to top, #fff 70%, rgba(255,255,255,0));
-} */

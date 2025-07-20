@@ -204,11 +204,10 @@ export class HomeComponent implements OnInit {
     this.componentTypeMap.set(ComponentType.GOMMA, 'Gomma');
     this.componentTypeMap.set(ComponentType.RETE, 'Rete');
     this.componentTypeMap.set(ComponentType.MATERASSO, 'Materasso');
-    this.componentTypeMap.set(ComponentType.TAPPEZZERIA, 'Tappezzeria');
     this.componentTypeMap.set(ComponentType.PIEDINI, 'Piedini');
     this.componentTypeMap.set(ComponentType.FERRAMENTA, 'Ferramenta');
     this.componentTypeMap.set(ComponentType.VARIE, 'Varie');
-    this.componentTypeMap.set(ComponentType.IMBALLO_PLASTICA, 'Imballo Plastica');
+    this.componentTypeMap.set(ComponentType.IMBALLO, 'Imballo');
     this.componentTypeMap.set(ComponentType.SCATOLA, 'Scatola');
     this.componentTypeMap.set(ComponentType.TELA_MARCHIATA, 'Tela Marchiata');
     this.componentTypeMap.set(ComponentType.TRASPORTO, 'Trasporto');
@@ -616,7 +615,7 @@ export class HomeComponent implements OnInit {
         return c.type === componentType;
       });
       this.componentsByTypeCache.set(typeKey, filtered);
-      
+
       // Debug logging to help troubleshoot
       console.log(`Filtering components for type '${type}':`, {
         totalComponents: this.availableComponents.length,
@@ -636,11 +635,10 @@ export class HomeComponent implements OnInit {
       'gomma': ComponentType.GOMMA,
       'rete': ComponentType.RETE,
       'materasso': ComponentType.MATERASSO,
-      'tappezzeria': ComponentType.TAPPEZZERIA,
       'piedini': ComponentType.PIEDINI,
       'ferramenta': ComponentType.FERRAMENTA,
       'varie': ComponentType.VARIE,
-      'imballo': ComponentType.IMBALLO_PLASTICA,
+      'imballo': ComponentType.IMBALLO,
       'scatola': ComponentType.SCATOLA,
       'meccanismo': ComponentType.RETE, // Map meccanismo to RETE for now
     };
@@ -712,7 +710,7 @@ export class HomeComponent implements OnInit {
   }
 
   get shouldShowImagePlaceholder(): boolean {
-    return !this.editingProduct?.photoUrl && !this.tempImageUrl && !this.imageRemoved;
+    return !this.tempImageUrl && !this.editingProduct?.photoUrl;
   }
 
   showImageUpload(): void {
@@ -729,6 +727,9 @@ export class HomeComponent implements OnInit {
         this.imageRemoved = true;
         this.tempImageFile = undefined;
         this.tempImageUrl = undefined;
+        if (this.editingProduct) {
+          this.editingProduct.photoUrl = undefined;
+        }
         this.isUploadMode = false;
         this.cdr.detectChanges();
       },

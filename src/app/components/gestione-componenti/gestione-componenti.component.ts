@@ -119,7 +119,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     private supplierService: SupplierService,
     private variantService: VariantService,
     private sofaProductService: SofaProductService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loading = true;
@@ -157,7 +157,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         this.addError('Errore caricamento componenti');
         return of([]);
       }),
-      tap(() => {})
+      tap(() => { })
     );
 
     const suppliers$ = this.supplierService.getSuppliersAsObservable().pipe(
@@ -200,11 +200,10 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       { value: ComponentType.GOMMA, label: 'Gomma' },
       { value: ComponentType.RETE, label: 'Rete' },
       { value: ComponentType.MATERASSO, label: 'Materasso' },
-      { value: ComponentType.TAPPEZZERIA, label: 'Tappezzeria' },
       { value: ComponentType.PIEDINI, label: 'Piedini' },
       { value: ComponentType.FERRAMENTA, label: 'Ferramenta' },
       { value: ComponentType.VARIE, label: 'Varie' },
-      { value: ComponentType.IMBALLO_PLASTICA, label: 'Imballo Plastica' },
+      { value: ComponentType.IMBALLO, label: 'Imballo' },
       { value: ComponentType.SCATOLA, label: 'Scatola' },
       { value: ComponentType.TELA_MARCHIATA, label: 'Tela Marchiata' },
       { value: ComponentType.TRASPORTO, label: 'Trasporto' }
@@ -239,9 +238,9 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     const component = new ComponentModel(
       this.isEditing ? this.components[this.editingIndex].id : '',
       this.newComponent.name.trim(),
-      this.newComponent.price || 0,
+      this.newComponent.price ?? 0,
       suppliers,
-      this.selectedComponentType || undefined,
+      this.selectedComponentType !== null ? this.selectedComponentType : undefined,
       this.newComponent.measure
     );
 
@@ -338,7 +337,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         acceptButtonStyleClass: 'p-button-primary',
         rejectButtonStyleClass: 'p-button-danger',
         accept: () => this.performDelete(component),
-        reject: () => {}
+        reject: () => { }
       });
     });
   }
@@ -500,7 +499,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     dt.filterGlobal(target.value, 'contains');
   }
 
-  onComponentTypeChange(event: any) {}
+  onComponentTypeChange(event: any) { }
 
   onComponentTypeFilter(event: any) {
     this.currentFilterValue = event.filter;
