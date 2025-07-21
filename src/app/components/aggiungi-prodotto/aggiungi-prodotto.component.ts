@@ -111,8 +111,7 @@ export class AggiungiProdottoComponent implements OnInit {
   // Components management
   availableComponents: ComponentModel[] = [];
   selectedComponent?: ComponentModel;
-  newComponent = new ComponentModel('', '', 0, [], undefined);
-  editingComponentIndex = -1;
+  newComponent = new ComponentModel('', '', 0, undefined, undefined); // Changed from empty array to undefined for single supplier
 
   // Suppliers
   availableSuppliers: Supplier[] = [];
@@ -732,17 +731,6 @@ export class AggiungiProdottoComponent implements OnInit {
     console.log(`Componente ${type} selezionato:`, component);
   }
 
-  /**
-   * Format component name with measure if available
-   * @param component The component to format
-   * @returns Formatted name with measure
-   */
-  formatComponentName(component: ComponentModel): string {
-    if (!component) return '';
-    if (!component.measure) return component.name;
-    return `${component.name} (${component.measure})`;
-  }
-
   // Add method to get ComponentType display name for table
   getComponentTypeDisplayName(type: ComponentType): string {
     const typeNames: { [key in ComponentType]: string } = {
@@ -762,8 +750,13 @@ export class AggiungiProdottoComponent implements OnInit {
     return typeNames[type] || 'Sconosciuto';
   }
 
-  // Add this method to modify how components are displayed in dropdowns
-  customComponentTemplate(component: ComponentModel): string {
-    return this.formatComponentName(component);
+  /**
+   * Format component name
+   * @param component The component to format
+   * @returns Component name
+   */
+  formatComponentName(component: ComponentModel): string {
+    if (!component) return '';
+    return component.name;
   }
 }

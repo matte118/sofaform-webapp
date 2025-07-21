@@ -6,8 +6,7 @@ export class Component {
     public id: string,
     public name: string,
     public price: number,
-    public suppliers: Supplier[] = [],
+    public supplier?: Supplier,
     public type?: ComponentType,
-    public measure?: string,
   ) {}
 }

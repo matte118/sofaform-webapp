@@ -136,19 +136,12 @@
                       <div class="component-details">
                         <div
                           class="component-detail"
-                          *ngIf="groupedComponent.component.suppliers?.length"
+                          *ngIf="groupedComponent.component.supplier"
                         >
-                          <strong>Fornitori:</strong>
-                          <span
-                            *ngFor="
-                              let supplier of groupedComponent.component
-                                .suppliers;
-                              let last = last
-                            "
-                          >
-                            {{ supplier.name }}<span *ngIf="!last">, </span>
-                          </span>
+                          <strong>Fornitore:</strong>
+                          {{ groupedComponent.component.supplier.name }}
                         </div>
+
                         <div
                           class="component-detail"
                           *ngIf="groupedComponent.component.type !== undefined && groupedComponent.component.type !== null"

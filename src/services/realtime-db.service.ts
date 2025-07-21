@@ -30,7 +30,11 @@ export class RealtimeDbService {
     if (typeof obj === 'object') {
       const sanitized: any = {};
       for (const [key, value] of Object.entries(obj)) {
-        if (value !== undefined) {
+        // Special handling for the 'type' field to ensure it's always preserved
+        if (key === 'type') {
+          sanitized[key] = value; // Always keep the type field, even if null
+          console.log(`RealtimeDbService: Preserving type field:`, key, value);
+        } else if (value !== undefined) {
           sanitized[key] = this.sanitizeData(value);
         }
       }
@@ -278,6 +282,9 @@ export class RealtimeDbService {
     // Assegna l'ID generato al componente prima di salvarlo
     sanitizedComponent.id = newRef.key;
 
+    console.log('RealtimeDbService: Adding component to DB:', sanitizedComponent);
+    console.log('RealtimeDbService: Component type field:', sanitizedComponent.type);
+    
     return set(newRef, sanitizedComponent);
   }
 
@@ -287,18 +294,28 @@ export class RealtimeDbService {
     const refPath = ref(this.db, 'components');
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
+      console.log('RealtimeDbService: Raw data from DB:', raw);
+      
       const parsed = raw
-        ? Object.entries(raw).map(([id, val]) => ({
-            id,
-            data: val as any,
-          }))
+        ? Object.entries(raw).map(([id, val]) => {
+            console.log('RealtimeDbService: Processing component:', id, val);
+            return {
+              id,
+              data: val as any,
+            };
+          })
         : [];
+      
+      console.log('RealtimeDbService: Parsed components:', parsed);
       callback(parsed);
     });
   }
 
   updateComponent(id: string, component: any): Promise<void> {
     const sanitizedComponent = this.sanitizeData(component);
+    console.log('RealtimeDbService: Updating component in DB:', sanitizedComponent);
+    console.log('RealtimeDbService: Component type field for update:', sanitizedComponent.type);
+    
     return set(ref(this.db, `components/${id}`), sanitizedComponent);
   }
 
@@ -389,13 +406,8 @@ export class RealtimeDbService {
     return new Promise((resolve, reject) => {
       this.getComponents((components) => {
         const componentsToDelete = components.filter((c) => {
-          // Check if suppliers exists and is an array
-          if (!c.data.suppliers || !Array.isArray(c.data.suppliers)) {
-            return false;
-          }
-          return c.data.suppliers.some(
-            (supplier: any) => supplier.id === supplierId
-          );
+          // Changed to check single supplier instead of suppliers array
+          return c.data.supplier && c.data.supplier.id === supplierId;
         });
 
         if (componentsToDelete.length === 0) {

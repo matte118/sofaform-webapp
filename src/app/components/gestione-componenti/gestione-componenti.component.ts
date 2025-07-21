@@ -66,10 +66,10 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   @ViewChild('componentTable') componentTable?: ElementRef; // Make it optional with ?
 
   components: ComponentModel[] = [];
-  newComponent: ComponentModel = new ComponentModel('', '', 0, []);
+  newComponent: ComponentModel = new ComponentModel('', '', 0); // Removed empty array parameter
   availableSuppliers: Supplier[] = [];
   selectedSupplier: Supplier | null = null;
-  
+
   // Change to work with enum values and display names
   availableComponentTypes: { value: ComponentType; label: string }[] = [];
   selectedComponentType: ComponentType | null = null;
@@ -144,14 +144,10 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         return of([]);
       }),
       tap(components => {
-        // Add logging to check the measure values
-        console.log('Components with measures:', components.map(c => ({
+        // Remove logging about measure values since Component model doesn't have measure
+        console.log('Components loaded:', components.map(c => ({
           name: c.name,
-          measure: c.measure,
-          measureType: typeof c.measure,
-          isEmpty: c.measure === '',
-          isNull: c.measure === null,
-          isUndefined: c.measure === undefined
+          type: c.type
         })));
       })
     );
@@ -288,19 +284,19 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.formValid = true;
     this.saving = true;
 
-    // Create suppliers array from selected supplier
-    const suppliers = this.selectedSupplier ? [this.selectedSupplier] : [];
-
+    // Use the selected supplier directly instead of creating an array
     const component = new ComponentModel(
       this.isEditing ? this.components[this.editingIndex].id : '',
       this.newComponent.name.trim(),
       this.newComponent.price || 0,
-      suppliers,
-      this.selectedComponentType || undefined,
-      this.newComponent.measure
+      this.selectedSupplier || undefined, // Changed from suppliers array to single supplier
+      this.selectedComponentType !== null && this.selectedComponentType !== undefined ? this.selectedComponentType : undefined
     );
 
-    console.log('Saving component with type:', component.type, 'Selected type:', this.selectedComponentType);
+    // Add explicit logging before saving
+    console.log('GestioneComponenti: Final component object:', component);
+    console.log('GestioneComponenti: Component type value:', component.type);
+    console.log('GestioneComponenti: Component type typeof:', typeof component.type);
 
     const operation = this.isEditing
       ? this.componentService.updateComponent(component.id, component)
@@ -336,33 +332,33 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   editComponent(component: ComponentModel, index: number) {
     console.log('Editing component:', component);
+    console.log('Component type before editing:', component.type);
 
     // Deep copy to avoid reference issues
     this.newComponent = new ComponentModel(
       component.id,
       component.name,
       component.price,
-      JSON.parse(JSON.stringify(component.suppliers || [])),
-      component.type,
-      component.measure
+      component.supplier ? JSON.parse(JSON.stringify(component.supplier)) : undefined,
+      component.type
     );
 
-    // Find matching supplier in availableSuppliers
-    if (component.suppliers?.length > 0) {
-      const supplierId = component.suppliers[0].id;
-      const matchingSupplier = this.availableSuppliers.find(
-        (s) => s.id === supplierId
-      );
-      this.selectedSupplier = matchingSupplier || null;
-    } else {
-      this.selectedSupplier = null;
-    }
+    // Set the selected supplier directly instead of finding in array
+    this.selectedSupplier = component.supplier || null;
 
-    // Set component type (enum value)
-    this.selectedComponentType = component.type || null;
+    // Set component type (enum value) - this should populate the dropdown
+    this.selectedComponentType = component.type !== undefined && component.type !== null ? component.type : null;
     console.log('Selected component type for editing:', this.selectedComponentType);
+    console.log('Available component types:', this.availableComponentTypes);
+
+    // Find the matching option to verify it exists
+    const matchingTypeOption = this.availableComponentTypes.find(option => option.value === this.selectedComponentType);
+    console.log('Matching type option found:', matchingTypeOption);
 
     this.editingIndex = index;
+
+    // Don't auto-update name when editing - preserve the existing name
+    // this.updateComponentName();
 
     // Scroll to the top of the form
     window.scrollTo({
@@ -370,7 +366,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       behavior: 'smooth',
     });
 
-    // Focus the first input field after scrolling
+    // Focus the first input field after scrolling and trigger change detection
     setTimeout(() => {
       const nameInput = document.getElementById('componentName');
       if (nameInput) {
@@ -517,13 +513,15 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   }
 
   resetForm() {
-    this.newComponent = new ComponentModel('', '', 0, []);
+    this.newComponent = new ComponentModel('', '', 0); // Removed empty array parameter
     this.selectedSupplier = null;
     this.selectedComponentType = null;
     this.editingIndex = -1;
     // Reset form state
     this.formSubmitted = false;
     this.formValid = true;
+    
+    console.log('Form reset - selectedComponentType:', this.selectedComponentType);
   }
 
   // Add method to check if field should show error
@@ -535,29 +533,37 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     return this.formSubmitted && !this.formValid && this.newComponent.price < 0;
   }
 
-  get isEditing(): boolean {
-    return this.editingIndex >= 0;
+  // Add method to check if component type should show error
+  shouldShowComponentTypeError(): boolean {
+    return this.formSubmitted && !this.formValid && (this.selectedComponentType === null || this.selectedComponentType === undefined);
   }
 
-  get formTitle(): string {
-    return this.isEditing ? 'Modifica Componente' : 'Aggiungi Nuovo Componente';
-  }
-
-  get submitButtonLabel(): string {
-    return this.isEditing ? 'Aggiorna' : 'Aggiungi';
-  }
-
-  onGlobalFilter(event: Event, dt: any) {
-    const target = event.target as HTMLInputElement;
-    dt.filterGlobal(target.value, 'contains');
-  }
-
+  // Add method to validate that type and supplier are selected
   private validateForm(): boolean {
     if (!this.newComponent.name?.trim()) {
       this.messageService.add({
         severity: 'error',
         summary: 'Errore di Validazione',
         detail: 'Il nome del componente è obbligatorio',
+      });
+      return false;
+    }
+
+    // Rimuovi la validazione del fornitore - non è più obbligatorio
+    // if (!this.selectedSupplier) {
+    //   this.messageService.add({
+    //     severity: 'error',
+    //     summary: 'Errore di Validazione',
+    //     detail: 'Il fornitore è obbligatorio',
+    //   });
+    //   return false;
+    // }
+
+    if (this.selectedComponentType === null || this.selectedComponentType === undefined) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore di Validazione',
+        detail: 'Il tipo di componente è obbligatorio',
       });
       return false;
     }
@@ -590,7 +596,53 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     return true;
   }
 
-  // Add a method to track the filter value
+  // Rimuovi il metodo shouldShowSupplierError poiché non è più necessario
+  // shouldShowSupplierError(): boolean {
+  //   return this.formSubmitted && !this.formValid && !this.selectedSupplier;
+  // }
+
+  get isEditing(): boolean {
+    return this.editingIndex >= 0;
+  }
+
+  get formTitle(): string {
+    return this.isEditing ? 'Modifica Componente' : 'Aggiungi Nuovo Componente';
+  }
+
+  get submitButtonLabel(): string {
+    return this.isEditing ? 'Aggiorna' : 'Aggiungi';
+  }
+
+  onGlobalFilter(event: Event, dt: any) {
+    const target = event.target as HTMLInputElement;
+    dt.filterGlobal(target.value, 'contains');
+  }
+
+  // Add method to automatically generate component name
+  private updateComponentName(): void {
+    // Only auto-generate if not editing an existing component
+    if (this.isEditing) {
+      return;
+    }
+
+    if (this.selectedComponentType !== null && this.selectedSupplier) {
+      const typeName = this.getComponentTypeDisplayName(this.selectedComponentType);
+      const supplierName = this.selectedSupplier.name;
+      this.newComponent.name = `${typeName} ${supplierName}`;
+    } else if (this.selectedComponentType !== null) {
+      // If only type is selected, just use the type name
+      const typeName = this.getComponentTypeDisplayName(this.selectedComponentType);
+      this.newComponent.name = typeName;
+    } else if (this.selectedSupplier) {
+      // If only supplier is selected, just use the supplier name
+      this.newComponent.name = this.selectedSupplier.name;
+    } else {
+      // Clear the name if neither type nor supplier is selected
+      this.newComponent.name = '';
+    }
+  }
+
+  // Add method to track the filter value
   onComponentTypeFilter(event: any) {
     this.currentFilterValue = event.filter;
   }
@@ -603,9 +655,34 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     return typeOption ? typeOption.label : 'Sconosciuto';
   }
 
+  // Add method to handle supplier change
+  onSupplierChange(event: any) {
+    console.log('onSupplierChange called with:', event);
+    console.log('Event value:', event.value);
+    console.log('Selected supplier before change:', this.selectedSupplier);
+    
+    // Make sure we're setting the correct supplier
+    this.selectedSupplier = event.value;
+    
+    console.log('Selected supplier after change:', this.selectedSupplier);
+    
+    // Update component name when supplier changes
+    this.updateComponentName();
+  }
+
   // Update method to work with enum
   onComponentTypeChange(event: any) {
-    console.log('Selected component type:', event.value);
-    console.log('Component type display name:', this.getComponentTypeDisplayName(event.value));
+    console.log('onComponentTypeChange called with:', event);
+    console.log('Event value:', event.value);
+    console.log('Selected component type before change:', this.selectedComponentType);
+    
+    // Make sure we're setting the correct enum value
+    this.selectedComponentType = event.value;
+    
+    console.log('Selected component type after change:', this.selectedComponentType);
+    console.log('Component type display name:', this.getComponentTypeDisplayName(this.selectedComponentType));
+    
+    // Update component name when type changes
+    this.updateComponentName();
   }
-} 
+}

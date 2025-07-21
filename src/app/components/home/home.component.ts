@@ -567,7 +567,7 @@ export class HomeComponent implements OnInit {
         r.id,
         `Rivestimento ${r.mtPrice}${r.id ? ` (${r.id})` : ''}`,
         r.mtPrice,
-        [],
+        undefined // Changed from empty array to undefined for single supplier
       ));
     });
 
@@ -1001,8 +1001,8 @@ export class HomeComponent implements OnInit {
    */
   formatComponentName(component: ComponentModel): string {
     if (!component) return '';
-    if (!component.measure) return component.name;
-    return `${component.name} (${component.measure})`;
+    // Since Component model doesn't have measure, just return the name
+    return component.name;
   }
 
   // Add missing methods for variant expansion
