@@ -8,5 +8,6 @@ export class Component {
     public price: number,
     public supplier?: Supplier,
     public type?: ComponentType,
+    public measure?: string,
   ) {}
 }

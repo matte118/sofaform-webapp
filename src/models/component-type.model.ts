@@ -7,7 +7,7 @@ export enum ComponentType {
   PIEDINI,
   FERRAMENTA,
   VARIE,
-  IMBALLO_PLASTICA,
+  IMBALLO,
   SCATOLA,
   TELA_MARCHIATA,
   TRASPORTO,

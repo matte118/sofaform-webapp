@@ -24,14 +24,11 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { FileUploadModule } from 'primeng/fileupload';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { TableModule } from 'primeng/table'; // Add Table module
+import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { TooltipModule } from 'primeng/tooltip';
-import { MultiSelectModule } from 'primeng/multiselect'; // Add this import
-
-// Add these imports for Firebase Storage types
-import { UploadTask, UploadTaskSnapshot } from '@angular/fire/storage';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 import { SofaProduct } from '../../../models/sofa-product.model';
 import { SofaProductService } from '../../../services/sofa-product.service';
@@ -45,11 +42,16 @@ import { PhotoUploadService } from '../../../services/upload.service';
 import { Component as ComponentModel } from '../../../models/component.model';
 import { ComponentService } from '../../../services/component.service';
 
-// Interfaccia per i componenti raggruppati
 interface GroupedComponent {
   component: ComponentModel;
   quantity: number;
   totalPrice: number;
+}
+
+interface EditGroupedComponent {
+  component: ComponentModel;
+  quantity: number;
+  indices: number[];
 }
 
 @Component({
@@ -71,7 +73,7 @@ interface GroupedComponent {
     InputTextModule,
     InputTextareaModule,
     TooltipModule,
-    MultiSelectModule, // Add this to imports
+    MultiSelectModule,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -80,62 +82,58 @@ interface GroupedComponent {
 })
 export class HomeComponent implements OnInit {
   @ViewChild('productForm') productForm?: NgForm;
+  @ViewChild('fileUpload') fileUpload?: any;
+  @ViewChild('hiddenFileInput') hiddenFileInput?: ElementRef;
 
   products: SofaProduct[] = [];
   productVariants: Map<string, Variant[]> = new Map();
   componentTypeMap = new Map<ComponentType, string>();
-  showMarkupDialog = false;
-  selectedProduct?: SofaProduct;
-  markupPercentage = 30;
-  isBrowser: boolean;
-
-  // Rivestimento properties
-  availableRivestimenti: Rivestimento[] = [];
-  selectedRivestimento?: Rivestimento;
-  metersOfRivestimento: number = 1;
-  showRivestimentoDialog = false;
-
-  // Variant expansion
   expandedVariants: Set<string> = new Set();
-
-  // Image properties
   productImages: Map<string, string> = new Map();
   imageLoadErrors: Set<string> = new Set();
 
-  // Aggiungi queste proprietà
-  showEditProductDialog: boolean = false;
-  editingProduct?: SofaProduct;
-  uploadingNewImage: boolean = false;
-  uploadProgress: number = 0;
-  saving: boolean = false;
+  // Dialog states
+  showMarkupDialog = false;
+  showRivestimentoDialog = false;
+  showEditProductDialog = false;
+  showAddComponentDialog = false;
+  showVariantComponentsDialog = false;
 
-  // Aggiungi queste nuove proprietà per la gestione locale delle immagini
+  // Selected data
+  selectedProduct?: SofaProduct;
+  markupPercentage = 30;
+
+  // Rivestimenti management
+  availableRivestimenti: Rivestimento[] = [];
+  tempRivestimentiSelection: Rivestimento[] = [];
+  metersPerRivestimento: { [rivestimentoId: string]: number } = {};
+  selectedRivestimentiForListino: { rivestimento: Rivestimento; metri: number }[] = [];
+  selectedRivestimentiForVariant: Rivestimento[] = [];
+  rivestimentiList: Rivestimento[] = [];
+
+  // Product editing
+  editingProduct?: SofaProduct;
+  editingVariants: Variant[] = [];
+  editingVariantIndex = -1;
+  newVariant: Variant = new Variant('', '', '', 0);
+  
+  // Image handling
   tempImageFile?: File;
   tempImageUrl?: string;
-  imageRemoved: boolean = false;
+  imageRemoved = false;
+  isUploadMode = false;
+  uploadingNewImage = false;
+  uploadProgress = 0;
+  saving = false;
 
-  // Aggiungi questa proprietà per gestire la modalità di caricamento
-  isUploadMode: boolean = false;
-
-  @ViewChild('fileUpload') fileUpload?: any;
-  @ViewChild('hiddenFileInput') hiddenFileInput?: ElementRef;
-
-  // Add new properties for variant editing
-  editingVariantIndex: number = -1;
-  newVariant: Variant = new Variant('', '', '', 0);
+  // Component management
   availableComponents: ComponentModel[] = [];
   selectedComponentForVariant?: ComponentModel;
-  componentQuantityForVariant: number = 1;
-
-  // Add properties for component management in edit mode
-  showAddComponentDialog: boolean = false;
+  componentQuantityForVariant = 1;
   currentEditingVariant?: Variant;
+  variantComponentsDialogTitle = '';
 
-  // Add properties for component selection dialog
-  showVariantComponentsDialog: boolean = false;
-  variantComponentsDialogTitle: string = '';
-
-  // Component selections for new variant (same as aggiungi-prodotto)
+  // Component selections for variant
   selectedFusto?: ComponentModel;
   selectedGomma?: ComponentModel;
   selectedMeccanismo?: ComponentModel;
@@ -147,11 +145,13 @@ export class HomeComponent implements OnInit {
   piediniQuantityOptions: number[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16];
   ferramentaList: ComponentModel[] = [];
   varieList: ComponentModel[] = [];
-  selectedRivestimentiForVariant: Rivestimento[] = [];
-  rivestimentiList: Rivestimento[] = [];
 
-  // Add cache for component types
+  // Caching
   private componentsByTypeCache = new Map<string, ComponentModel[]>();
+  private componentNameMeasureCount = new Map<string, number>();
+  private duplicateNameMeasureKeys = new Set<string>();
+
+  isBrowser: boolean;
 
   constructor(
     private router: Router,
@@ -175,164 +175,185 @@ export class HomeComponent implements OnInit {
       this.loadRivestimenti();
       this.loadComponentTypes();
       this.loadAvailableComponents();
-      this.loadRivestimentiList(); // Add this
+      this.loadRivestimentiList();
     }
   }
 
-  // Add method to load rivestimenti
+  // === Data Loading ===
+  loadProducts(): void {
+    this.sofaProductService.getSofaProducts().subscribe(products => {
+      this.products = products;
+      products.forEach(product => {
+        this.variantService.getVariantsBySofaId(product.id).subscribe(variants => {
+          this.productVariants.set(product.id, variants);
+          this.rebuildDuplicateIndex();
+          this.cdr.detectChanges();
+        });
+      });
+      this.cdr.detectChanges();
+    });
+  }
+
+  loadRivestimenti(): void {
+    this.rivestimentoService.getRivestimenti().subscribe(r => {
+      this.availableRivestimenti = r;
+      this.cdr.detectChanges();
+    });
+  }
+
   loadRivestimentiList(): void {
-    this.rivestimentoService.getRivestimenti().subscribe((rivestimenti) => {
-      this.rivestimentiList = rivestimenti;
+    this.rivestimentoService.getRivestimenti().subscribe(r => {
+      this.rivestimentiList = r;
       this.cdr.detectChanges();
     });
   }
 
-  // Add method to load available components
-  loadAvailableComponents(): void {
-    this.componentService.getComponents().subscribe((components) => {
-      this.availableComponents = components;
-      this.componentsByTypeCache.clear(); // Clear cache when components change
-      console.log('Loaded components:', components.map(c => ({ name: c.name, type: c.type })));
-      this.cdr.detectChanges();
-    });
-  }
-
-  // Update method to work with ComponentType enum
   loadComponentTypes(): void {
-    // Initialize the map with ComponentType enum values and their display names
     this.componentTypeMap.set(ComponentType.FUSTO, 'Fusto');
     this.componentTypeMap.set(ComponentType.GOMMA, 'Gomma');
     this.componentTypeMap.set(ComponentType.RETE, 'Rete');
     this.componentTypeMap.set(ComponentType.MATERASSO, 'Materasso');
-    this.componentTypeMap.set(ComponentType.TAPPEZZERIA, 'Tappezzeria');
     this.componentTypeMap.set(ComponentType.PIEDINI, 'Piedini');
     this.componentTypeMap.set(ComponentType.FERRAMENTA, 'Ferramenta');
     this.componentTypeMap.set(ComponentType.VARIE, 'Varie');
-    this.componentTypeMap.set(ComponentType.IMBALLO_PLASTICA, 'Imballo Plastica');
+    this.componentTypeMap.set(ComponentType.IMBALLO, 'Imballo');
     this.componentTypeMap.set(ComponentType.SCATOLA, 'Scatola');
     this.componentTypeMap.set(ComponentType.TELA_MARCHIATA, 'Tela Marchiata');
     this.componentTypeMap.set(ComponentType.TRASPORTO, 'Trasporto');
     this.cdr.detectChanges();
   }
 
-  loadRivestimenti(): void {
-    this.rivestimentoService.getRivestimenti().subscribe((r) => {
-      this.availableRivestimenti = r;
+  loadAvailableComponents(): void {
+    this.componentService.getComponents().subscribe(components => {
+      this.availableComponents = components;
+      this.rebuildDuplicateIndex();
+      this.componentsByTypeCache.clear();
       this.cdr.detectChanges();
     });
   }
 
-  loadProducts(): void {
-    this.sofaProductService.getSofaProducts().subscribe((products) => {
-      this.products = products;
-      // Load variants
-      products.forEach((product) => {
-        this.variantService
-          .getVariantsBySofaId(product.id)
-          .subscribe((variants) => {
-            this.productVariants.set(product.id, variants);
-            this.cdr.detectChanges();
-          });
-      });
-      this.cdr.detectChanges();
-    });
+  // === Utility Methods ===
+  trackById(_: number, item: SofaProduct) { 
+    return item.id; 
   }
 
-  trackById(_: number, item: SofaProduct) {
-    return item.id;
+  getProductVariants(productId: string): Variant[] { 
+    return this.productVariants.get(productId) || []; 
   }
 
-  getProductVariants(productId: string): Variant[] {
-    return this.productVariants.get(productId) || [];
+  getProductImageUrl(productId: string): string | null { 
+    return this.products.find(p => p.id === productId)?.photoUrl || null; 
   }
 
-  getTotalPrice(productId: string): number {
-    const variants = this.getProductVariants(productId);
-    if (!variants.length) return 0;
-    return variants.reduce((sum, v) => sum + v.price, 0);
+  hasProductImage(productId: string): boolean { 
+    return !!this.getProductImageUrl(productId) && !this.imageLoadErrors.has(productId); 
   }
 
-  getProductImageUrl(productId: string): string | null {
-    const product = this.products.find((p) => p.id === productId);
-    return product?.photoUrl || null;
+  onImageError(productId: string): void { 
+    this.imageLoadErrors.add(productId); 
+    this.cdr.detectChanges(); 
   }
 
-  hasProductImage(productId: string): boolean {
-    const url = this.getProductImageUrl(productId);
-    const has = !!url && !this.imageLoadErrors.has(productId);
-    console.log(`Product ${productId} has image:`, has);
-    return has;
+  getDefaultImage(): string { 
+    return 'assets/images/no-image-placeholder.png'; 
   }
 
-  onImageError(productId: string): void {
-    this.imageLoadErrors.add(productId);
+  // === Rivestimenti Management ===
+  generaListino(product: SofaProduct) {
+    this.selectedProduct = product;
+    this.tempRivestimentiSelection = [];
+    this.metersPerRivestimento = {};
+    this.selectedRivestimentiForListino = [];
+    this.showRivestimentoDialog = true;
     this.cdr.detectChanges();
   }
 
-  getDefaultImage(): string {
-    return 'assets/images/no-image-placeholder.png';
+  onRivestimentiChange(): void {
+    const selectedIds = new Set(this.tempRivestimentiSelection.map(r => r.id));
+    Object.keys(this.metersPerRivestimento).forEach(id => { 
+      if (!selectedIds.has(id)) delete this.metersPerRivestimento[id]; 
+    });
+    
+    this.tempRivestimentiSelection.forEach(r => {
+      if (!this.metersPerRivestimento[r.id]) {
+        this.metersPerRivestimento[r.id] = 0.1;
+      }
+    });
+    
+    this.cdr.detectChanges();
   }
 
-  generaListino(product: SofaProduct) {
-    this.selectedProduct = product;
-    this.showRivestimentoDialog = true;
-    this.cdr.detectChanges(); // Force change detection
+  validateMeters(r: Rivestimento) {
+    const v = this.metersPerRivestimento[r.id];
+    if (v !== undefined && v <= 0) {
+      this.metersPerRivestimento[r.id] = 0.1;
+    }
+    this.cdr.detectChanges();
   }
 
-  selectRivestimento() {
-    if (!this.selectedRivestimento) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore',
-        detail: 'Seleziona un rivestimento',
+  canProceedRivestimenti(): boolean {
+    return this.tempRivestimentiSelection.some(r => (this.metersPerRivestimento[r.id] || 0) > 0);
+  }
+
+  overallRivestimentiCost(): number {
+    if (this.showRivestimentoDialog) {
+      return this.tempRivestimentiSelection.reduce((sum, r) => {
+        const m = this.metersPerRivestimento[r.id] || 0;
+        return sum + (m > 0 ? r.mtPrice * m : 0);
+      }, 0);
+    }
+    return this.selectedRivestimentiForListino.reduce((sum, r) => sum + r.rivestimento.mtPrice * r.metri, 0);
+  }
+
+  confirmRivestimentiSelection(): void {
+    this.selectedRivestimentiForListino = this.tempRivestimentiSelection
+      .filter(r => (this.metersPerRivestimento[r.id] || 0) > 0)
+      .map(r => ({ rivestimento: r, metri: this.metersPerRivestimento[r.id] }));
+
+    if (!this.selectedRivestimentiForListino.length) {
+      this.messageService.add({ 
+        severity: 'error', 
+        summary: 'Errore', 
+        detail: 'Specifica i metri per almeno un rivestimento' 
       });
       return;
     }
-    if (this.metersOfRivestimento <= 0) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore',
-        detail: 'Inserisci la quantità di metri di rivestimento',
-      });
-      return;
-    }
+
     this.showRivestimentoDialog = false;
     this.showMarkupDialog = true;
-    this.cdr.detectChanges(); // Force change detection
+    this.cdr.detectChanges();
   }
 
+  cancelRivestimento() {
+    this.showRivestimentoDialog = false;
+    this.tempRivestimentiSelection = [];
+    this.metersPerRivestimento = {};
+    this.selectedRivestimentiForListino = [];
+    this.cdr.detectChanges();
+  }
+
+  // === Markup and PDF Generation ===
   generateWithMarkup() {
     if (this.selectedProduct) {
       const variants = this.getProductVariants(this.selectedProduct.id);
       this.exportPdf(this.selectedProduct, variants, this.markupPercentage);
     }
     this.showMarkupDialog = false;
-    this.cdr.detectChanges(); // Force change detection
+    this.cdr.detectChanges();
   }
 
-  cancelRivestimento() {
-    this.showRivestimentoDialog = false;
-    this.selectedRivestimento = undefined;
-    this.metersOfRivestimento = 1;
-    this.cdr.detectChanges(); // Force change detection
+  cancelMarkup() { 
+    this.showMarkupDialog = false; 
+    this.cdr.detectChanges(); 
   }
 
-  cancelMarkup() {
-    this.showMarkupDialog = false;
-    this.cdr.detectChanges(); // Force change detection
+  getVariantFinalPrice(variant: Variant): number {
+    const markupFactor = (100 - this.markupPercentage) / 100;
+    const base = variant.price + this.overallRivestimentiCost();
+    return markupFactor > 0 ? base / markupFactor : base;
   }
 
-  calculateRivestimentoCost(): number {
-    return this.selectedRivestimento
-      ? this.selectedRivestimento.mtPrice * this.metersOfRivestimento
-      : 0;
-  }
-
-  private exportPdf(
-    product: SofaProduct,
-    variants: Variant[],
-    markupPerc: number
-  ) {
+  private exportPdf(product: SofaProduct, variants: Variant[], markupPerc: number) {
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     doc.setFontSize(18);
     doc.text(`Listino: ${product.name}`, 40, 20);
@@ -340,57 +361,45 @@ export class HomeComponent implements OnInit {
     let y = 40;
     doc.setFontSize(12);
 
-    // Aggiungi i nuovi campi se presenti
-    if (product.seduta) {
-      doc.text(`Seduta: ${product.seduta}`, 40, y);
-      y += 16;
-    }
-    if (product.schienale) {
-      doc.text(`Schienale: ${product.schienale}`, 40, y);
-      y += 16;
-    }
-    if (product.meccanica) {
-      doc.text(`Meccanica: ${product.meccanica}`, 40, y);
-      y += 16;
-    }
-    if (product.materasso) {
-      doc.text(`Materasso: ${product.materasso}`, 40, y);
-      y += 16;
-    }
+    if (product.seduta) { doc.text(`Seduta: ${product.seduta}`, 40, y); y += 16; }
+    if (product.schienale) { doc.text(`Schienale: ${product.schienale}`, 40, y); y += 16; }
+    if (product.meccanica) { doc.text(`Meccanica: ${product.meccanica}`, 40, y); y += 16; }
+    if (product.materasso) { doc.text(`Materasso: ${product.materasso}`, 40, y); y += 16; }
 
     doc.setFontSize(14);
 
-    const rivestimentoCost = this.calculateRivestimentoCost();
-
     const rows: string[][] = [];
-    variants.forEach((variant) => {
+
+    variants.forEach(variant => {
       rows.push([`Variante: ${variant.longName}`, '', '', '']);
-      variant.components.forEach((component) => {
+
+      variant.components.forEach(component => {
         rows.push([
           component.name,
           '1',
           component.price.toFixed(2),
-          component.price.toFixed(2),
+          component.price.toFixed(2)
         ]);
       });
-      if (this.selectedRivestimento) {
-        rows.push([
-          `Rivestimento: ${this.selectedRivestimento.name || 'N/A'}`,
-          `${this.metersOfRivestimento} mt`,
-          this.selectedRivestimento.mtPrice.toFixed(2),
-          rivestimentoCost.toFixed(2),
-        ]);
+
+      let rivestimentiTotale = 0;
+      if (this.selectedRivestimentiForListino.length) {
+        this.selectedRivestimentiForListino.forEach(rSel => {
+          const sub = rSel.rivestimento.mtPrice * rSel.metri;
+          rivestimentiTotale += sub;
+          rows.push([
+            `Rivestimento: ${rSel.rivestimento.name}`,
+            `${rSel.metri} mt`,
+            rSel.rivestimento.mtPrice.toFixed(2),
+            sub.toFixed(2)
+          ]);
+        });
       }
-      const baseTotal = variant.price + rivestimentoCost;
+
+      const baseTotal = variant.price + rivestimentiTotale;
       const markupFactor = (100 - markupPerc) / 100;
-      const finalTotal =
-        markupFactor > 0 ? baseTotal / markupFactor : baseTotal;
-      rows.push([
-        'Totale variante (con ricarico)',
-        '',
-        '',
-        finalTotal.toFixed(2),
-      ]);
+      const finalTotal = markupFactor > 0 ? baseTotal / markupFactor : baseTotal;
+      rows.push(['Totale variante (con ricarico)', '', '', finalTotal.toFixed(2)]);
       rows.push(['', '', '', '']);
     });
 
@@ -405,19 +414,14 @@ export class HomeComponent implements OnInit {
     doc.save(`Listino_${product.name.replace(/\s+/g, '_')}.pdf`);
   }
 
-  // Modifica il metodo esistente per aprire il dialogo invece di navigare
-  editProduct(product: SofaProduct) {
-    // Non naviga più, apre il dialogo
-    this.openEditDialog(product);
+  // === Product Editing ===
+  editProduct(product: SofaProduct) { 
+    this.openEditDialog(product); 
   }
 
-  // Enhanced openEditDialog method
   openEditDialog(product: SofaProduct, event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
+    if (event) event.stopPropagation();
 
-    // Crea una copia profonda del prodotto per non modificare quello originale
     this.editingProduct = new SofaProduct(
       product.id,
       product.name,
@@ -430,44 +434,159 @@ export class HomeComponent implements OnInit {
       product.materasso
     );
 
-    // Load variants for this product
-    this.variantService.getVariantsBySofaId(product.id).subscribe((variants) => {
-      this.editingProduct!.variants = variants.map((v) => v.id);
-      // Store variants separately for editing
+    this.variantService.getVariantsBySofaId(product.id).subscribe(variants => {
+      this.editingProduct!.variants = variants.map(v => v.id);
       this.editingVariants = [...variants];
       this.cdr.detectChanges();
     });
 
-    // Reset image editing variables
+    this.resetEditDialog();
+    this.showEditProductDialog = true;
+    this.cdr.detectChanges();
+  }
+
+  private resetEditDialog(): void {
     this.tempImageFile = undefined;
     this.tempImageUrl = undefined;
     this.imageRemoved = false;
     this.uploadingNewImage = false;
     this.uploadProgress = 0;
-
-    // Reset variant editing
     this.editingVariantIndex = -1;
     this.newVariant = new Variant('', '', '', 0);
-
-    this.showEditProductDialog = true;
-    this.cdr.detectChanges();
   }
 
-  // Add property to store variants being edited
-  editingVariants: Variant[] = [];
+  deleteProduct(event: Event, product: SofaProduct): void {
+    event.stopPropagation();
+    this.confirmationService.confirm({
+      message: `Sei sicuro di voler eliminare il prodotto "${product.name}"?`,
+      header: 'Conferma eliminazione',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.sofaProductService.deleteSofaProduct(product.id).subscribe({
+          next: () => {
+            this.products = this.products.filter(p => p.id !== product.id);
+            this.productVariants.delete(product.id);
+            this.messageService.add({ 
+              severity: 'success', 
+              summary: 'Prodotto eliminato', 
+              detail: `Il prodotto "${product.name}" è stato eliminato` 
+            });
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Error deleting product:', err);
+            this.messageService.add({ 
+              severity: 'error', 
+              summary: 'Errore', 
+              detail: 'Errore durante l\'eliminazione del prodotto' 
+            });
+          }
+        });
+      }
+    });
+  }
 
-  // Variant management methods
-  addVariantToProduct(): void {
-    if (!this.newVariant.longName.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore',
-        detail: 'Il nome della variante è obbligatorio',
+  get editProductDialogTitle(): string { 
+    return this.editingProduct ? `Modifica Prodotto: ${this.editingProduct.name}` : 'Modifica Prodotto'; 
+  }
+
+  onEditDialogHide(): void {
+    this.editingProduct = undefined;
+    this.editingVariants = [];
+    this.resetEditDialog();
+    this.isUploadMode = false;
+  }
+
+  // === Image Management ===
+  get currentImageToShow(): string | undefined { 
+    return this.tempImageUrl || this.editingProduct?.photoUrl; 
+  }
+
+  get shouldShowImagePlaceholder(): boolean { 
+    return !this.tempImageUrl && !this.editingProduct?.photoUrl; 
+  }
+
+  showImageUpload(): void { 
+    this.isUploadMode = true; 
+    this.cdr.detectChanges(); 
+  }
+
+  removeProductImage(): void {
+    this.confirmationService.confirm({
+      message: 'Sei sicuro di voler rimuovere l\'immagine del prodotto?',
+      header: 'Conferma rimozione',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.imageRemoved = true;
+        this.tempImageFile = undefined;
+        this.tempImageUrl = undefined;
+        if (this.editingProduct) this.editingProduct.photoUrl = undefined;
+        this.isUploadMode = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  triggerFileInput(): void { 
+    this.hiddenFileInput?.nativeElement.click(); 
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.messageService.add({ 
+        severity: 'error', 
+        summary: 'Errore', 
+        detail: 'Seleziona un file immagine valido' 
       });
       return;
     }
 
-    // If we're editing, update the existing variant
+    if (file.size > 5 * 1024 * 1024) {
+      this.messageService.add({ 
+        severity: 'error', 
+        summary: 'Errore', 
+        detail: 'L\'immagine deve essere inferiore a 5MB' 
+      });
+      return;
+    }
+
+    this.tempImageFile = file;
+    this.imageRemoved = false;
+    const reader = new FileReader();
+    reader.onload = (e: any) => { 
+      this.tempImageUrl = e.target.result; 
+      this.isUploadMode = false; 
+      this.cdr.detectChanges(); 
+    };
+    reader.readAsDataURL(file);
+  }
+
+  cancelImageUpload(): void {
+    this.isUploadMode = false;
+    this.tempImageFile = undefined;
+    this.tempImageUrl = undefined;
+    this.cdr.detectChanges();
+  }
+
+  cancelEditProduct(): void {
+    this.showEditProductDialog = false;
+    this.onEditDialogHide();
+  }
+
+  // === Variant Management ===
+  addVariantToProduct(): void {
+    if (!this.newVariant.longName.trim()) {
+      this.messageService.add({ 
+        severity: 'error', 
+        summary: 'Errore', 
+        detail: 'Il nome della variante è obbligatorio' 
+      });
+      return;
+    }
+
     if (this.editingVariantIndex >= 0) {
       const variant = new Variant(
         this.editingVariants[this.editingVariantIndex].id,
@@ -485,13 +604,11 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    // For new variants, open component selection dialog
     this.variantComponentsDialogTitle = `Configura componenti per "${this.newVariant.longName}"`;
     this.resetVariantComponentSelections();
     this.showVariantComponentsDialog = true;
   }
 
-  // Reset component selections for variant
   resetVariantComponentSelections(): void {
     this.selectedFusto = undefined;
     this.selectedGomma = undefined;
@@ -506,291 +623,85 @@ export class HomeComponent implements OnInit {
     this.selectedRivestimentiForVariant = [];
   }
 
-  // Cancel variant components dialog
   cancelVariantComponentsDialog(): void {
     this.showVariantComponentsDialog = false;
     this.resetVariantComponentSelections();
   }
 
-  // Validate required components for variant
   validateVariantComponents(): string[] {
-    const missingComponents = [];
-    if (!this.selectedFusto) missingComponents.push('Fusto');
-    if (!this.selectedGomma) missingComponents.push('Gomma');
-    if (!this.selectedPiedini) missingComponents.push('Piedini');
-    if (!this.selectedMeccanismo) missingComponents.push('Meccanismo');
-    if (!this.selectedMaterasso) missingComponents.push('Materasso');
-    if (!this.ferramentaList || this.ferramentaList.length === 0) missingComponents.push('Ferramenta');
-    if (!this.selectedImballo) missingComponents.push('Imballo');
-    if (!this.selectedRivestimentiForVariant || this.selectedRivestimentiForVariant.length === 0) {
-      missingComponents.push('Rivestimenti');
-    }
-    return missingComponents;
+    const missing: string[] = [];
+    if (!this.selectedFusto) missing.push('Fusto');
+    if (!this.selectedGomma) missing.push('Gomma');
+    if (!this.selectedPiedini) missing.push('Piedini');
+    if (!this.selectedMeccanismo) missing.push('Meccanismo');
+    if (!this.selectedMaterasso) missing.push('Materasso');
+    if (!this.ferramentaList.length) missing.push('Ferramenta');
+    if (!this.selectedImballo) missing.push('Imballo');
+    if (!this.selectedRivestimentiForVariant.length) missing.push('Rivestimenti');
+    return missing;
   }
 
-  // Apply components to new variant and add it
   applyComponentsToNewVariant(): void {
-    const missingComponents = this.validateVariantComponents();
-
-    if (missingComponents.length > 0) {
+    const missing = this.validateVariantComponents();
+    if (missing.length) {
       this.messageService.add({
         severity: 'error',
         summary: 'Componenti mancanti',
-        detail: `È necessario selezionare: ${missingComponents.join(', ')}`,
+        detail: `È necessario selezionare: ${missing.join(', ')}`,
         life: 5000
       });
       return;
     }
 
-    // Create components array
     const components: ComponentModel[] = [];
-
-    // Add single components
-    [this.selectedFusto, this.selectedGomma, this.selectedMeccanismo,
-    this.selectedMaterasso, this.selectedImballo, this.selectedScatola]
+    [this.selectedFusto, this.selectedGomma, this.selectedMeccanismo, 
+     this.selectedMaterasso, this.selectedImballo, this.selectedScatola]
       .forEach(c => c && components.push(c));
 
-    // Add piedini with quantity
     if (this.selectedPiedini) {
       for (let i = 0; i < Math.max(2, this.piediniQty); i++) {
         components.push(this.selectedPiedini);
       }
     }
 
-    // Add multi-select components
     this.ferramentaList.forEach(c => components.push(c));
     this.varieList.forEach(c => components.push(c));
 
-    // Add rivestimenti as components
     this.selectedRivestimentiForVariant.forEach(r => {
       components.push(new ComponentModel(
         r.id,
         `Rivestimento ${r.mtPrice}${r.id ? ` (${r.id})` : ''}`,
         r.mtPrice,
-        undefined // Changed from empty array to undefined for single supplier
+        undefined,
+        undefined,
+        undefined
       ));
     });
 
-    // Create the new variant with components
     const variant = new Variant(
       '',
       this.editingProduct!.id,
       this.newVariant.longName,
-      0, // Price will be calculated
+      0,
       components,
       this.newVariant.seatsCount,
       this.newVariant.mattressWidth
     );
 
-    // Calculate price
     variant.updatePrice();
-
-    // Add to variants list
     this.editingVariants.push(variant);
-
-    // Reset form
     this.newVariant = new Variant('', '', '', 0);
     this.showVariantComponentsDialog = false;
     this.resetVariantComponentSelections();
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Variante aggiunta',
-      detail: `Variante "${variant.longName}" aggiunta con successo`
+    this.messageService.add({ 
+      severity: 'success', 
+      summary: 'Variante aggiunta', 
+      detail: `Variante "${variant.longName}" aggiunta con successo` 
     });
-
     this.cdr.detectChanges();
   }
 
-  // Update method to work with ComponentType enum
-  public getComponentsByType(type: string): ComponentModel[] {
-    // Convert string to ComponentType enum
-    const componentType = this.getComponentTypeFromString(type);
-    if (componentType === undefined) return [];
-
-    const typeKey = type.toLowerCase();
-
-    if (!this.componentsByTypeCache.has(typeKey)) {
-      // Cache miss - filter the components and store in cache
-      const filtered = this.availableComponents.filter(c => {
-        return c.type === componentType;
-      });
-      this.componentsByTypeCache.set(typeKey, filtered);
-      
-      // Debug logging to help troubleshoot
-      console.log(`Filtering components for type '${type}':`, {
-        totalComponents: this.availableComponents.length,
-        filteredComponents: filtered.length,
-        componentType: componentType,
-        filtered: filtered.map(c => ({ name: c.name, type: c.type }))
-      });
-    }
-
-    return this.componentsByTypeCache.get(typeKey) || [];
-  }
-
-  // Helper method to convert string to ComponentType enum
-  private getComponentTypeFromString(type: string): ComponentType | undefined {
-    const typeMap: { [key: string]: ComponentType } = {
-      'fusto': ComponentType.FUSTO,
-      'gomma': ComponentType.GOMMA,
-      'rete': ComponentType.RETE,
-      'materasso': ComponentType.MATERASSO,
-      'tappezzeria': ComponentType.TAPPEZZERIA,
-      'piedini': ComponentType.PIEDINI,
-      'ferramenta': ComponentType.FERRAMENTA,
-      'varie': ComponentType.VARIE,
-      'imballo': ComponentType.IMBALLO_PLASTICA,
-      'scatola': ComponentType.SCATOLA,
-      'meccanismo': ComponentType.RETE, // Map meccanismo to RETE for now
-    };
-    return typeMap[type.toLowerCase()];
-  }
-
-  // Update method to work with ComponentType enum
-  getComponentTypeName(type: ComponentType): string {
-    return this.componentTypeMap.get(type) || 'Tipo sconosciuto';
-  }
-
-  // Add missing method for delete product
-  deleteProduct(event: Event, product: SofaProduct): void {
-    event.stopPropagation();
-
-    this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il prodotto "${product.name}"?`,
-      header: 'Conferma eliminazione',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.sofaProductService.deleteSofaProduct(product.id).subscribe({
-          next: () => {
-            this.products = this.products.filter((p) => p.id !== product.id);
-            this.productVariants.delete(product.id);
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Prodotto eliminato',
-              detail: `Il prodotto "${product.name}" è stato eliminato con successo`,
-            });
-            this.cdr.detectChanges();
-          },
-          error: (error) => {
-            console.error('Error deleting product:', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Errore',
-              detail: 'Errore durante l\'eliminazione del prodotto',
-            });
-          },
-        });
-      },
-    });
-  }
-
-  // Add missing property and methods for edit dialog
-  get editProductDialogTitle(): string {
-    return this.editingProduct ? `Modifica Prodotto: ${this.editingProduct.name}` : 'Modifica Prodotto';
-  }
-
-  onEditDialogHide(): void {
-    this.editingProduct = undefined;
-    this.editingVariants = [];
-    this.tempImageFile = undefined;
-    this.tempImageUrl = undefined;
-    this.imageRemoved = false;
-    this.uploadingNewImage = false;
-    this.uploadProgress = 0;
-    this.isUploadMode = false;
-    this.editingVariantIndex = -1;
-    this.newVariant = new Variant('', '', '', 0);
-  }
-
-  // Add missing properties and methods for image handling
-  get currentImageToShow(): string | undefined {
-    if (this.tempImageUrl) {
-      return this.tempImageUrl;
-    }
-    return this.editingProduct?.photoUrl;
-  }
-
-  get shouldShowImagePlaceholder(): boolean {
-    return !this.editingProduct?.photoUrl && !this.tempImageUrl && !this.imageRemoved;
-  }
-
-  showImageUpload(): void {
-    this.isUploadMode = true;
-    this.cdr.detectChanges();
-  }
-
-  removeProductImage(): void {
-    this.confirmationService.confirm({
-      message: 'Sei sicuro di voler rimuovere l\'immagine del prodotto?',
-      header: 'Conferma rimozione',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.imageRemoved = true;
-        this.tempImageFile = undefined;
-        this.tempImageUrl = undefined;
-        this.isUploadMode = false;
-        this.cdr.detectChanges();
-      },
-    });
-  }
-
-  triggerFileInput(): void {
-    if (this.hiddenFileInput) {
-      this.hiddenFileInput.nativeElement.click();
-    }
-  }
-
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore',
-        detail: 'Seleziona un file immagine valido',
-      });
-      return;
-    }
-
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore',
-        detail: 'L\'immagine deve essere inferiore a 5MB',
-      });
-      return;
-    }
-
-    this.tempImageFile = file;
-    this.imageRemoved = false;
-
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.tempImageUrl = e.target.result;
-      this.isUploadMode = false;
-      this.cdr.detectChanges();
-    };
-    reader.readAsDataURL(file);
-  }
-
-  cancelImageUpload(): void {
-    this.isUploadMode = false;
-    this.tempImageFile = undefined;
-    this.tempImageUrl = undefined;
-    this.cdr.detectChanges();
-  }
-
-  cancelEditProduct(): void {
-    this.showEditProductDialog = false;
-    this.onEditDialogHide();
-  }
-
-  // Add the missing method that was referenced but not implemented
   editVariantInProduct(index: number): void {
     const variant = this.editingVariants[index];
     this.newVariant = new Variant(
@@ -810,14 +721,46 @@ export class HomeComponent implements OnInit {
       message: 'Sei sicuro di voler eliminare questa variante?',
       header: 'Conferma eliminazione',
       icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.editingVariants.splice(index, 1);
-        this.cdr.detectChanges();
-      },
+      accept: () => { 
+        this.editingVariants.splice(index, 1); 
+        this.cdr.detectChanges(); 
+      }
     });
   }
 
-  // Component management for variants
+  // === Component Management ===
+  getComponentsByType(type: string): ComponentModel[] {
+    const componentType = this.getComponentTypeFromString(type);
+    if (componentType === undefined) return [];
+    
+    const key = type.toLowerCase();
+    if (!this.componentsByTypeCache.has(key)) {
+      const filtered = this.availableComponents.filter(c => c.type === componentType);
+      this.componentsByTypeCache.set(key, filtered);
+    }
+    return this.componentsByTypeCache.get(key) || [];
+  }
+
+  private getComponentTypeFromString(type: string): ComponentType | undefined {
+    const map: { [k: string]: ComponentType } = {
+      'fusto': ComponentType.FUSTO,
+      'gomma': ComponentType.GOMMA,
+      'rete': ComponentType.RETE,
+      'materasso': ComponentType.MATERASSO,
+      'piedini': ComponentType.PIEDINI,
+      'ferramenta': ComponentType.FERRAMENTA,
+      'varie': ComponentType.VARIE,
+      'imballo': ComponentType.IMBALLO,
+      'scatola': ComponentType.SCATOLA,
+      'meccanismo': ComponentType.RETE,
+    };
+    return map[type.toLowerCase()];
+  }
+
+  getComponentTypeName(type: ComponentType): string { 
+    return this.componentTypeMap.get(type) || 'Tipo sconosciuto'; 
+  }
+
   openAddComponentToVariant(variant: Variant): void {
     this.currentEditingVariant = variant;
     this.selectedComponentForVariant = undefined;
@@ -827,33 +770,17 @@ export class HomeComponent implements OnInit {
 
   addComponentToVariant(): void {
     if (!this.selectedComponentForVariant || !this.currentEditingVariant) return;
-
-    // Add the component the specified number of times
+    
     for (let i = 0; i < this.componentQuantityForVariant; i++) {
       this.currentEditingVariant.components.push({ ...this.selectedComponentForVariant });
     }
-
     this.currentEditingVariant.updatePrice();
     this.showAddComponentDialog = false;
     this.cdr.detectChanges();
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Componente aggiunto',
-      detail: `${this.selectedComponentForVariant.name} aggiunto alla variante`,
-    });
-  }
-
-  removeComponentFromVariant(variant: Variant, componentIndex: number): void {
-    this.confirmationService.confirm({
-      message: 'Sei sicuro di voler rimuovere questo componente?',
-      header: 'Conferma rimozione',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        variant.components.splice(componentIndex, 1);
-        variant.updatePrice();
-        this.cdr.detectChanges();
-      },
+    this.messageService.add({ 
+      severity: 'success', 
+      summary: 'Componente aggiunto', 
+      detail: `${this.selectedComponentForVariant.name} aggiunto alla variante` 
     });
   }
 
@@ -864,66 +791,53 @@ export class HomeComponent implements OnInit {
     this.componentQuantityForVariant = 1;
   }
 
-  // Enhanced save method
+  // === Save Operations ===
   saveProductChanges() {
     if (!this.editingProduct) return;
-
     this.saving = true;
 
-    // Function to save variants after product is saved
     const saveVariants = () => {
-      if (this.editingVariants.length === 0) {
-        this.completeSave();
-        return;
+      if (!this.editingVariants.length) { 
+        this.completeSave(); 
+        return; 
       }
-
-      // Save all variants
-      const variantSavePromises = this.editingVariants.map((variant) => {
+      
+      const promises = this.editingVariants.map(variant => {
         variant.sofaId = this.editingProduct!.id;
-        if (variant.id) {
-          // Update existing variant
-          return this.variantService.updateVariant(variant.id, variant).toPromise();
-        } else {
-          // Create new variant
-          return this.variantService.createVariant(variant).toPromise();
-        }
+        return variant.id
+          ? this.variantService.updateVariant(variant.id, variant).toPromise()
+          : this.variantService.createVariant(variant).toPromise();
       });
-
-      Promise.all(variantSavePromises)
-        .then((variantIds) => {
-          // Update product with variant IDs
-          const newVariantIds = variantIds.filter((id) => id).map((id) => id as string);
-          const existingVariantIds = this.editingVariants.filter((v) => v.id).map((v) => v.id);
-          this.editingProduct!.variants = [...existingVariantIds, ...newVariantIds];
-
+      
+      Promise.all(promises)
+        .then(ids => {
+          const newIds = ids.filter(id => id).map(id => id as string);
+          const existingIds = this.editingVariants.filter(v => v.id).map(v => v.id);
+          this.editingProduct!.variants = [...existingIds, ...newIds];
           this.completeSave();
         })
-        .catch((error) => {
-          console.error('Error saving variants:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: 'Errore durante il salvataggio delle varianti',
+        .catch(err => {
+          console.error('Error saving variants:', err);
+          this.messageService.add({ 
+            severity: 'error', 
+            summary: 'Errore', 
+            detail: 'Errore durante il salvataggio delle varianti' 
           });
           this.saving = false;
           this.cdr.detectChanges();
         });
     };
 
-    // Function to complete the save process
     const completeProductSave = () => {
-      this.sofaProductService
-        .updateSofaProduct(this.editingProduct!.id, this.editingProduct!)
+      this.sofaProductService.updateSofaProduct(this.editingProduct!.id, this.editingProduct!)
         .subscribe(
-          () => {
-            saveVariants();
-          },
+          () => saveVariants(),
           (error) => {
             console.error('Errore durante il salvataggio:', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Errore',
-              detail: 'Si è verificato un errore durante il salvataggio delle modifiche',
+            this.messageService.add({ 
+              severity: 'error', 
+              summary: 'Errore', 
+              detail: 'Errore durante il salvataggio delle modifiche' 
             });
             this.saving = false;
             this.cdr.detectChanges();
@@ -931,37 +845,29 @@ export class HomeComponent implements OnInit {
         );
     };
 
-    // Handle image changes first, then save product
     if (this.imageRemoved) {
-      if (this.editingProduct.photoUrl) {
-        this.editingProduct.photoUrl = undefined;
-      }
+      if (this.editingProduct.photoUrl) this.editingProduct.photoUrl = undefined;
       completeProductSave();
     } else if (this.tempImageFile) {
-      const uploadTask = this.uploadService.uploadProductImage(
-        this.tempImageFile,
-        this.editingProduct.id
-      );
-
+      const uploadTask = this.uploadService.uploadProductImage(this.tempImageFile, this.editingProduct.id);
       uploadTask.subscribe({
-        next: (progress) => {
+        next: progress => {
           this.uploadProgress = Math.round(progress.progress || 0);
-
           if (progress.downloadURL && progress.progress >= 100) {
             this.editingProduct!.photoUrl = progress.downloadURL;
             completeProductSave();
           }
         },
-        error: (error) => {
-          console.error('Errore upload:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: "Impossibile caricare l'immagine",
+        error: err => {
+          console.error('Errore upload:', err);
+          this.messageService.add({ 
+            severity: 'error', 
+            summary: 'Errore', 
+            detail: 'Impossibile caricare l\'immagine' 
           });
           this.saving = false;
           this.cdr.detectChanges();
-        },
+        }
       });
     } else {
       completeProductSave();
@@ -969,75 +875,133 @@ export class HomeComponent implements OnInit {
   }
 
   private completeSave(): void {
-    // Update the product in the local list
-    const index = this.products.findIndex((p) => p.id === this.editingProduct!.id);
-    if (index !== -1) {
-      this.products[index] = { ...this.editingProduct! };
-    }
-
-    // Update the variants in the local cache
+    const idx = this.products.findIndex(p => p.id === this.editingProduct!.id);
+    if (idx !== -1) this.products[idx] = { ...this.editingProduct! };
     this.productVariants.set(this.editingProduct!.id, [...this.editingVariants]);
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Prodotto Aggiornato',
-      detail: 'Modifiche salvate con successo',
+    this.messageService.add({ 
+      severity: 'success', 
+      summary: 'Prodotto Aggiornato', 
+      detail: 'Modifiche salvate con successo' 
     });
-
     this.showEditProductDialog = false;
     this.saving = false;
     this.cdr.detectChanges();
   }
 
-  // Component selection handler
-  onVariantComponentSelected(type: string, component: any): void {
-    console.log(`Componente ${type} selezionato per variante:`, component);
-  }
+  // === Display Utilities ===
+  onVariantComponentSelected(type: string, component: any): void {}
 
-  /**
-   * Format component name with measure if available
-   * @param component The component to format
-   * @returns Formatted name with measure
-   */
   formatComponentName(component: ComponentModel): string {
     if (!component) return '';
-    // Since Component model doesn't have measure, just return the name
-    return component.name;
-  }
-
-  // Add missing methods for variant expansion
-  isVariantExpanded(variantId: string): boolean {
-    return this.expandedVariants.has(variantId);
-  }
-
-  toggleVariantExpansion(variantId: string): void {
-    if (this.expandedVariants.has(variantId)) {
-      this.expandedVariants.delete(variantId);
-    } else {
-      this.expandedVariants.add(variantId);
+    const hasMeasure = !!component.measure?.trim();
+    const key = this.buildNameMeasureKey(component);
+    let base = component.name;
+    if (hasMeasure) base += ` (${component.measure})`;
+    if (!this.duplicateNameMeasureKeys.has(key)) return base;
+    const supplier = this.getSupplierName(component);
+    if (supplier) {
+      return hasMeasure ? `${component.name} (${component.measure}) (${supplier})` : `${component.name} (${supplier})`;
     }
-    this.cdr.detectChanges();
+    return base;
   }
 
-  // Add missing method for grouping components
-  getGroupedComponents(variant: Variant): GroupedComponent[] {
-    const componentMap = new Map<string, GroupedComponent>();
+  isVariantExpanded(variantId: string): boolean { 
+    return this.expandedVariants.has(variantId); 
+  }
 
-    variant.components.forEach((component) => {
-      const key = `${component.id}-${component.name}`;
-      if (componentMap.has(key)) {
-        const existing = componentMap.get(key)!;
-        existing.quantity++;
-        existing.totalPrice += component.price;
+  toggleVariantExpansion(variantId: string): void { 
+    this.expandedVariants.has(variantId) 
+      ? this.expandedVariants.delete(variantId) 
+      : this.expandedVariants.add(variantId); 
+    this.cdr.detectChanges(); 
+  }
+
+  getGroupedComponents(variant: Variant): GroupedComponent[] {
+    const map = new Map<string, GroupedComponent>();
+    variant.components.forEach(c => {
+      const key = `${c.id}-${c.name}`;
+      if (map.has(key)) {
+        const existing = map.get(key)!; 
+        existing.quantity++; 
+        existing.totalPrice += c.price;
       } else {
-        componentMap.set(key, {
-          component: component,
-          quantity: 1,
-          totalPrice: component.price,
-        });
+        map.set(key, { component: c, quantity: 1, totalPrice: c.price });
       }
     });
+    return Array.from(map.values());
+  }
 
-    return Array.from(componentMap.values());
+  getEditGroupedComponents(variant: Variant): EditGroupedComponent[] {
+    const groups: EditGroupedComponent[] = [];
+    variant.components.forEach((comp, idx) => {
+      const found = groups.find(g => this.areComponentsEqual(g.component, comp));
+      if (found) { 
+        found.quantity++; 
+        found.indices.push(idx); 
+      } else { 
+        groups.push({ component: comp, quantity: 1, indices: [idx] }); 
+      }
+    });
+    return groups;
+  }
+
+  removeGroupedComponent(variant: Variant, group: EditGroupedComponent): void {
+    this.confirmationService.confirm({
+      message: group.quantity > 1 
+        ? `Rimuovere tutte le ${group.quantity} occorrenze di "${group.component.name}"?` 
+        : `Rimuovere il componente "${group.component.name}"?`,
+      header: 'Conferma rimozione',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        variant.components = variant.components.filter((_, i) => !group.indices.includes(i));
+        variant.updatePrice();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // === Private Utilities ===
+  private areComponentsEqual(a: ComponentModel, b: ComponentModel): boolean {
+    if (a === b) return true;
+    return a.id === b.id && a.name === b.name && a.price === b.price && 
+           a.measure === b.measure && a.type === b.type && this.sameSupplier(a, b);
+  }
+
+  private sameSupplier(a: ComponentModel, b: ComponentModel): boolean {
+    const supA = a.supplier;
+    const supB = b.supplier;
+    
+    if (!supA && !supB) return true;
+    if (!supA || !supB) return false;
+    
+    return supA.id === supB.id && supA.name === supB.name;
+  }
+
+  private buildNameMeasureKey(c: ComponentModel): string {
+    const name = (c.name || '').trim().toLowerCase();
+    const measure = (c.measure || '').trim().toLowerCase();
+    return `${name}|${measure}`;
+  }
+
+  private rebuildDuplicateIndex(): void {
+    this.componentNameMeasureCount.clear();
+    this.duplicateNameMeasureKeys.clear();
+    const all: ComponentModel[] = [
+      ...this.availableComponents,
+      ...Array.from(this.productVariants.values()).flatMap(vs => vs.flatMap(v => v.components || [])),
+    ];
+    for (const c of all) {
+      if (!c) continue;
+      const key = this.buildNameMeasureKey(c);
+      this.componentNameMeasureCount.set(key, (this.componentNameMeasureCount.get(key) || 0) + 1);
+    }
+    for (const [key, count] of this.componentNameMeasureCount.entries()) {
+      if (count > 1) this.duplicateNameMeasureKeys.add(key);
+    }
+  }
+
+  private getSupplierName(c: ComponentModel): string | undefined {
+    if (!c?.supplier) return undefined;
+    return c.supplier.name;
   }
 }

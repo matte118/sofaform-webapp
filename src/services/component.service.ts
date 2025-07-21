@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable, from } from 'rxjs';
+import { Observable, from, forkJoin } from 'rxjs';
 import { RealtimeDbService } from './realtime-db.service';
 import { Component } from '../models/component.model';
 import { ComponentType } from '../models/component-type.model';
+import { BulkComponentCreation } from '../models/bulk-component.model';
 
 @Injectable({
   providedIn: 'root',
@@ -184,5 +185,70 @@ export class ComponentService {
 
   deleteComponentsBySupplier(supplierId: string): Observable<void> {
     return from(this.dbService.deleteComponentsBySupplier(supplierId));
+  }
+
+  addBulkComponents(bulkData: BulkComponentCreation): Observable<void[]> {
+    console.log('ComponentService: Adding bulk components', bulkData);
+
+    const componentPromises = bulkData.variableData.map(variableData => {
+      // Generate unique ID for each component
+      const componentId = this.generateComponentId();
+      
+      // Generate component name: Type + Supplier + Measure
+      const typeName = this.getComponentTypeDisplayName(bulkData.fixedData.type);
+      const supplierName = bulkData.fixedData.supplier?.name || '';
+      const measure = variableData.measure?.trim() || '';
+      
+      const componentName = [typeName, supplierName, measure]
+        .filter(part => part)
+        .join(' ');
+      
+      // Create component with generated name - fix supplier null handling
+      const component = new Component(
+        componentId,
+        componentName,
+        variableData.price,
+        bulkData.fixedData.supplier || undefined, // Convert null to undefined
+        bulkData.fixedData.type,
+        variableData.measure
+      );
+
+      // Create plain object for database storage
+      const componentData = {
+        id: component.id,
+        name: component.name,
+        price: component.price,
+        supplier: component.supplier || undefined,
+        type: component.type !== undefined ? ComponentType[component.type] : undefined,
+        measure: component.measure
+      };
+
+      return this.dbService.addComponent(componentData);
+    });
+
+    return forkJoin(componentPromises);
+  }
+
+  private getComponentTypeDisplayName(type: ComponentType): string {
+    const typeNames: { [key in ComponentType]: string } = {
+      [ComponentType.FUSTO]: 'Fusto',
+      [ComponentType.GOMMA]: 'Gomma',
+      [ComponentType.RETE]: 'Rete',
+      [ComponentType.MATERASSO]: 'Materasso',
+      [ComponentType.TAPPEZZERIA]: 'Tappezzeria',
+      [ComponentType.PIEDINI]: 'Piedini',
+      [ComponentType.FERRAMENTA]: 'Ferramenta',
+      [ComponentType.VARIE]: 'Varie',
+      [ComponentType.IMBALLO]: 'Imballo',
+      [ComponentType.SCATOLA]: 'Scatola',
+      [ComponentType.TELA_MARCHIATA]: 'Tela Marchiata',
+      [ComponentType.TRASPORTO]: 'Trasporto'
+    };
+    
+    return typeNames[type] || 'Sconosciuto';
+  }
+
+  private generateComponentId(): string {
+    return 'comp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
 }
