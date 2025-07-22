@@ -16,35 +16,17 @@
           <div class="form-row">
             <div class="form-group">
               <label for="componentSuppliers">Fornitore</label>
-              <p-dropdown
-                id="componentSuppliers"
-                [options]="availableSuppliers"
-                [(ngModel)]="selectedSupplier"
-                name="supplier"
-                optionLabel="name"
-                placeholder="Seleziona fornitore (opzionale)"
-                [showClear]="true"
-                class="w-100"
-                (onChange)="onSupplierChange($event)"
-              ></p-dropdown>
+              <p-dropdown id="componentSuppliers" [options]="availableSuppliers" [(ngModel)]="selectedSupplier"
+                name="supplier" optionLabel="name" placeholder="Seleziona fornitore (opzionale)" [showClear]="true"
+                class="w-100" (onChange)="onSupplierChange($event)"></p-dropdown>
             </div>
 
             <div class="form-group">
               <label for="componentType">Tipo Componente <span class="required-field">*</span></label>
-              <p-dropdown
-                id="componentType"
-                [options]="availableComponentTypes"
-                [(ngModel)]="selectedComponentType"
-                name="componentType"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Seleziona tipo"
-                [showClear]="true"
-                class="w-100"
-                (onChange)="onComponentTypeChange($event)"
-                [ngModelOptions]="{standalone: true}"
-                [class.ng-invalid]="shouldShowComponentTypeError()"
-              ></p-dropdown>
+              <p-dropdown id="componentType" [options]="availableComponentTypes" [(ngModel)]="selectedComponentType"
+                name="componentType" optionLabel="label" optionValue="value" placeholder="Seleziona tipo"
+                [showClear]="true" class="w-100" (onChange)="onComponentTypeChange($event)"
+                [ngModelOptions]="{standalone: true}" [class.ng-invalid]="shouldShowComponentTypeError()"></p-dropdown>
               <small *ngIf="shouldShowComponentTypeError()" class="p-error">
                 Il tipo di componente è obbligatorio
               </small>
@@ -57,34 +39,21 @@
               <label for="componentName">
                 Nome Componente <span class="required-field">*</span>
               </label>
-              <input
-                pInputText
-                id="componentName"
-                type="text"
-                [(ngModel)]="newComponent.name"
-                name="name"
-                placeholder="Nome del componente"
-                [class.ng-invalid]="shouldShowFieldError(newComponent.name)"
-              />
+              <input pInputText id="componentName" type="text" [(ngModel)]="newComponent.name" name="name"
+                placeholder="Nome del componente" [class.ng-invalid]="shouldShowFieldError(newComponent.name)" />
               <small *ngIf="shouldShowFieldError(newComponent.name)" class="p-error">
                 Il nome del componente è obbligatorio
               </small>
-              <small *ngIf="!isEditing && (selectedComponentType || selectedSupplier || newComponent.measure)" class="field-hint">
+              <small *ngIf="!isEditing && (selectedComponentType || selectedSupplier || newComponent.measure)"
+                class="field-hint">
                 Il nome viene generato automaticamente in base al tipo, fornitore e misura selezionati
               </small>
             </div>
 
             <div class="form-group">
               <label for="componentMeasure">Misura</label>
-              <input
-                pInputText
-                id="componentMeasure"
-                type="text"
-                [(ngModel)]="newComponent.measure"
-                name="measure"
-                placeholder="es: 120x80 cm"
-                (ngModelChange)="onMeasureChange()"
-              />
+              <input pInputText id="componentMeasure" type="text" [(ngModel)]="newComponent.measure" name="measure"
+                placeholder="es: 120x80 cm" (ngModelChange)="onMeasureChange()" />
             </div>
           </div>
 
@@ -94,17 +63,9 @@
               <label for="componentPrice">
                 Prezzo <span class="required-field">*</span> (€)
               </label>
-              <p-inputNumber
-                id="componentPrice"
-                [(ngModel)]="newComponent.price"
-                name="price"
-                [minFractionDigits]="2"
-                [maxFractionDigits]="2"
-                mode="currency"
-                currency="EUR"
-                locale="it-IT"
-                [class.ng-invalid]="shouldShowPriceError()"
-              ></p-inputNumber>
+              <p-inputNumber id="componentPrice" [(ngModel)]="newComponent.price" name="price" [minFractionDigits]="2"
+                [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT"
+                [class.ng-invalid]="shouldShowPriceError()"></p-inputNumber>
               <small *ngIf="shouldShowPriceError()" class="p-error">
                 Il prezzo non può essere negativo
               </small>
@@ -112,33 +73,18 @@
 
             <div class="form-group">
               <label>&nbsp;</label>
-              <p-button
-                *ngIf="!isEditing && selectedComponentType && selectedSupplier"
-                label="Crea Multiple Misure"
-                icon="pi pi-plus-circle"
-                (onClick)="openMultipleMeasuresDialog()"
-                styleClass="p-button-outlined p-button-secondary"
-                size="small"
-                pTooltip="Crea più componenti con misure e prezzi diversi"
-              ></p-button>
+              <p-button *ngIf="!isEditing && selectedComponentType && selectedSupplier" label="Crea Multiple Misure"
+                icon="pi pi-plus-circle" (onClick)="openMultipleMeasuresDialog()"
+                styleClass="p-button-outlined p-button-secondary" size="small"
+                pTooltip="Crea più componenti con misure e prezzi diversi"></p-button>
             </div>
           </div>
 
           <div class="form-actions">
-            <p-button
-              [label]="submitButtonLabel"
-              (onClick)="addComponent()"
-              styleClass="primary-button"
-              [disabled]="saving"
-              [loading]="saving"
-            ></p-button>
-            <p-button
-              *ngIf="isEditing"
-              label="Annulla"
-              (onClick)="resetForm()"
-              styleClass="secondary-button"
-              [disabled]="saving"
-            ></p-button>
+            <p-button [label]="submitButtonLabel" (onClick)="addComponent()" styleClass="primary-button"
+              [disabled]="saving" [loading]="saving"></p-button>
+            <p-button *ngIf="isEditing" label="Annulla" (onClick)="resetForm()" styleClass="secondary-button"
+              [disabled]="saving"></p-button>
           </div>
         </form>
       </div>
@@ -157,32 +103,16 @@
               <label for="bulkComponentType">
                 Tipo di Componente <span class="required-field">*</span>
               </label>
-              <p-dropdown
-                id="bulkComponentType"
-                [options]="availableComponentTypes"
-                [(ngModel)]="bulkFixedData.type"
-                name="bulkType"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Seleziona tipo"
-                class="w-100"
-                (onChange)="onBulkTypeChange($event)"
-              ></p-dropdown>
+              <p-dropdown id="bulkComponentType" [options]="availableComponentTypes" [(ngModel)]="bulkFixedData.type"
+                name="bulkType" optionLabel="label" optionValue="value" placeholder="Seleziona tipo" class="w-100"
+                (onChange)="onBulkTypeChange($event)"></p-dropdown>
             </div>
 
             <div class="form-group">
               <label for="bulkSupplier">Fornitore <span class="required-field">*</span></label>
-              <p-dropdown
-                id="bulkSupplier"
-                [options]="availableSuppliers"
-                [(ngModel)]="bulkFixedData.supplier"
-                name="bulkSupplier"
-                optionLabel="name"
-                placeholder="Seleziona fornitore"
-                [showClear]="true"
-                class="w-100"
-                (onChange)="onBulkSupplierChange($event)"
-              ></p-dropdown>
+              <p-dropdown id="bulkSupplier" [options]="availableSuppliers" [(ngModel)]="bulkFixedData.supplier"
+                name="bulkSupplier" optionLabel="name" placeholder="Seleziona fornitore" [showClear]="true"
+                class="w-100" (onChange)="onBulkSupplierChange($event)"></p-dropdown>
             </div>
           </div>
 
@@ -208,35 +138,21 @@
           <p class="section-description">Ogni variante creerà un componente separato con misura e prezzo diversi</p>
 
           <div #variantEntriesContainer class="variable-entries">
-            <div
-              *ngFor="let variableData of bulkVariableData; let i = index"
-              class="variable-entry"
-              [attr.data-index]="i"
-            >
+            <div *ngFor="let variableData of bulkVariableData; let i = index" class="variable-entry"
+              [attr.data-index]="i">
               <div class="entry-header">
                 <h4>Variante {{ i + 1 }}</h4>
-                <p-button
-                  *ngIf="bulkVariableData.length > 1"
-                  icon="pi pi-trash"
-                  (onClick)="removeVariableDataEntry(i)"
+                <p-button *ngIf="bulkVariableData.length > 1" icon="pi pi-trash" (onClick)="removeVariableDataEntry(i)"
                   styleClass="p-button-danger p-button-text p-button-sm remove-entry-button"
-                  pTooltip="Rimuovi variante"
-                ></p-button>
+                  pTooltip="Rimuovi variante"></p-button>
               </div>
 
               <div class="form-row">
                 <div class="form-group">
                   <label [for]="'bulkMeasure_' + i">Misura <span class="required-field">*</span></label>
-                  <input
-                    pInputText
-                    [id]="'bulkMeasure_' + i"
-                    type="text"
-                    [(ngModel)]="variableData.measure"
-                    [name]="'bulkMeasure_' + i"
-                    placeholder="es: 120x80 cm"
-                    (ngModelChange)="onBulkMeasureChange(i)"
-                    [class.ng-invalid]="shouldShowBulkMeasureError(variableData.measure)"
-                  />
+                  <input pInputText [id]="'bulkMeasure_' + i" type="text" [(ngModel)]="variableData.measure"
+                    [name]="'bulkMeasure_' + i" placeholder="es: 120x80 cm" (ngModelChange)="onBulkMeasureChange(i)"
+                    [class.ng-invalid]="shouldShowBulkMeasureError(variableData.measure)" />
                   <small *ngIf="shouldShowBulkMeasureError(variableData.measure)" class="p-error">
                     La misura è obbligatoria
                   </small>
@@ -246,71 +162,70 @@
                   <label [for]="'bulkPrice_' + i">
                     Prezzo <span class="required-field">*</span> (€)
                   </label>
-                  <p-inputNumber
-                    [id]="'bulkPrice_' + i"
-                    [(ngModel)]="variableData.price"
-                    [name]="'bulkPrice_' + i"
-                    [minFractionDigits]="2"
-                    [maxFractionDigits]="2"
-                    mode="currency"
-                    currency="EUR"
-                    locale="it-IT"
-                    [class.ng-invalid]="shouldShowBulkVariablePriceError(variableData.price)"
-                  ></p-inputNumber>
+                  <p-inputNumber [id]="'bulkPrice_' + i" [(ngModel)]="variableData.price" [name]="'bulkPrice_' + i"
+                    [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT"
+                    [class.ng-invalid]="shouldShowBulkVariablePriceError(variableData.price)"></p-inputNumber>
                   <small *ngIf="shouldShowBulkVariablePriceError(variableData.price)" class="p-error">
                     Il prezzo non può essere negativo
                   </small>
                 </div>
               </div>
 
-              <!-- Nome generato per questa variante -->
-              <div class="generated-name-preview" *ngIf="bulkFixedData.type && bulkFixedData.supplier && variableData.measure">
-                <small><strong>Nome finale:</strong> {{ getBulkVariantName(variableData) }}</small>
+              <!-- Nome generato automaticamente per questa variante -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label [for]="'bulkName_' + i">Nome Componente <span class="required-field">*</span></label>
+                  <input pInputText [id]="'bulkName_' + i" type="text" [(ngModel)]="variableData.name"
+                    [name]="'bulkName_' + i" placeholder="Nome del componente"
+                    [class.ng-invalid]="shouldShowBulkNameError(variableData.name)" readonly />
+                  <small *ngIf="shouldShowBulkNameError(variableData.name)" class="p-error">
+                    Il nome del componente è obbligatorio
+                  </small>
+                  <small class="field-hint">
+                    Il nome viene generato automaticamente in base al tipo, fornitore e misura
+                  </small>
+                </div>
               </div>
+
+              <!-- Nome generato per questa variante -->
+              <div class="generated-name-preview"
+                *ngIf="bulkFixedData.type && bulkFixedData.supplier && variableData.measure">
+                <div class="auto-generated-name">
+                  <i class="pi pi-tag"></i>
+                  <span><strong>Nome generato:</strong> {{ generateComponentName(bulkFixedData.type, bulkFixedData.supplier, variableData.measure) }}</span>
+                </div>
+                <small class="field-hint">
+                  Il nome viene generato automaticamente da: Tipo + Fornitore + Misura
+                </small>
+              </div>
+            </div>
+
+            <!-- Pulsante spostato in fondo -->
+            <div class="variant-actions-bottom">
+              <p-button label="Aggiungi Variante" icon="pi pi-plus" (onClick)="addVariableDataEntry()"
+                styleClass="add-variant-button" size="small"></p-button>
             </div>
           </div>
 
-          <!-- Pulsante spostato in fondo -->
-          <div class="variant-actions-bottom">
-            <p-button
-              label="Aggiungi Variante"
-              icon="pi pi-plus"
-              (onClick)="addVariableDataEntry()"
-              styleClass="add-variant-button"
-              size="small"
-            ></p-button>
+          <div class="bulk-form-actions">
+            <p-button label="Salva Componenti" icon="pi pi-save" (onClick)="saveBulkComponents()"
+              styleClass="primary-button" [loading]="saving" [disabled]="saving"></p-button>
+            <p-button label="Reset" icon="pi pi-refresh" (onClick)="resetBulkForm()" styleClass="secondary-button"
+              [disabled]="saving"></p-button>
           </div>
-        </div>
 
-        <div class="bulk-form-actions">
-          <p-button
-            label="Salva Componenti"
-            icon="pi pi-save"
-            (onClick)="saveBulkComponents()"
-            styleClass="primary-button"
-            [loading]="saving"
-            [disabled]="saving || !canSaveBulkComponents()"
-          ></p-button>
-          <p-button
-            label="Reset"
-            icon="pi pi-refresh"
-            (onClick)="resetBulkForm()"
-            styleClass="secondary-button"
-            [disabled]="saving"
-          ></p-button>
-        </div>
-
-        <div class="bulk-preview-section" *ngIf="bulkFixedData.type && bulkFixedData.supplier">
-          <h4><i class="pi pi-eye"></i> Anteprima Componenti ({{ getValidBulkVariants().length }})</h4>
-          <div class="preview-list">
-            <div *ngFor="let variableData of getValidBulkVariants(); let i = index" class="preview-item">
-              <strong>{{ getBulkVariantName(variableData) }}</strong>
-              <span class="preview-details">
-                - {{ getComponentTypeDisplayName(bulkFixedData.type) }}
-                - {{ bulkFixedData.supplier?.name }}
-                <span *ngIf="variableData.measure"> - {{ variableData.measure }}</span>
-                - {{ variableData.price | currency:'EUR' }}
-              </span>
+          <div class="bulk-preview-section" *ngIf="bulkFixedData.type && bulkFixedData.supplier">
+            <h4><i class="pi pi-eye"></i> Anteprima Componenti ({{ getValidBulkVariants().length }})</h4>
+            <div class="preview-list">
+              <div *ngFor="let variableData of getValidBulkVariants(); let i = index" class="preview-item">
+                <strong>{{ getBulkVariantName(variableData) }}</strong>
+                <span class="preview-details">
+                  - {{ getComponentTypeDisplayName(bulkFixedData.type) }}
+                  - {{ bulkFixedData.supplier.name }}
+                  <span *ngIf="variableData.measure"> - {{ variableData.measure }}</span>
+                  - {{ variableData.price | currency:'EUR' }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -326,27 +241,14 @@
       <p>Caricamento componenti...</p>
     </div>
 
-    <p-table
-      *ngIf="dataLoaded && !loading"
-      #componentTable
-      [value]="components"
-      styleClass="p-datatable-sm components-table"
-      [paginator]="true"
-      [rows]="10"
-      [globalFilterFields]="['name','price','measure']"
-      [rowHover]="true"
-      #dt
-    >
+    <p-table *ngIf="dataLoaded && !loading" #componentTable [value]="components"
+      styleClass="p-datatable-sm components-table" [paginator]="true" [rows]="10"
+      [globalFilterFields]="['name','price','measure']" [rowHover]="true" #dt>
       <ng-template pTemplate="caption">
         <div class="table-header">
           <h4>Componenti ({{ components.length }})</h4>
           <div class="search-container">
-            <input
-              pInputText
-              type="text"
-              placeholder="Cerca componente..."
-              (input)="onGlobalFilter($event, dt)"
-            />
+            <input pInputText type="text" placeholder="Cerca componente..." (input)="onGlobalFilter($event, dt)" />
           </div>
         </div>
       </ng-template>
@@ -370,24 +272,12 @@
           <td>{{ component.measure || '-' }}</td>
           <td>{{ component.supplier?.name || 'Nessuno' }}</td>
           <td class="actions-cell">
-            <button
-              pButton
-              type="button"
-              icon="pi pi-pencil"
-              class="p-button-rounded p-button-text p-button-sm action-edit"
-              (click)="editComponent(component, i)"
-              pTooltip="Modifica"
-              aria-label="Modifica componente"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-trash"
+            <button pButton type="button" icon="pi pi-pencil"
+              class="p-button-rounded p-button-text p-button-sm action-edit" (click)="editComponent(component, i)"
+              pTooltip="Modifica" aria-label="Modifica componente"></button>
+            <button pButton type="button" icon="pi pi-trash"
               class="p-button-rounded p-button-danger p-button-text p-button-sm action-delete"
-              (click)="deleteComponent(component)"
-              pTooltip="Elimina"
-              aria-label="Elimina componente"
-            ></button>
+              (click)="deleteComponent(component)" pTooltip="Elimina" aria-label="Elimina componente"></button>
           </td>
         </tr>
       </ng-template>
@@ -401,16 +291,9 @@
   </div>
 
   <!-- Dialog per Multiple Misure -->
-  <p-dialog 
-    header="Crea Componenti con Multiple Misure"
-    [(visible)]="showMultipleMeasuresDialog"
-    [modal]="true"
-    [style]="{width: '700px'}"
-    [draggable]="false"
-    [resizable]="false"
-    [closable]="true"
-    (onHide)="onMultipleMeasuresDialogHide()"
-  >
+  <p-dialog header="Crea Componenti con Multiple Misure" [(visible)]="showMultipleMeasuresDialog" [modal]="true"
+    [style]="{width: '700px'}" [draggable]="false" [resizable]="false" [closable]="true"
+    (onHide)="onMultipleMeasuresDialogHide()">
     <div class="multiple-measures-content">
       <div class="dialog-header-info">
         <p><strong>Tipo:</strong> {{ getComponentTypeDisplayName(selectedComponentType) }}</p>
@@ -420,58 +303,34 @@
       <div class="measures-section">
         <div class="section-header">
           <h4>Misure e Prezzi</h4>
-          <p-button
-            label="Aggiungi Misura"
-            icon="pi pi-plus"
-            (onClick)="addMeasureEntry()"
-            styleClass="p-button-sm p-button-outlined"
-            size="small"
-          ></p-button>
+          <p-button label="Aggiungi Misura" icon="pi pi-plus" (onClick)="addMeasureEntry()"
+            styleClass="p-button-sm p-button-outlined" size="small"></p-button>
         </div>
 
         <div class="measure-entries">
           <div *ngFor="let measureEntry of measureEntries; let i = index" class="measure-entry">
             <div class="entry-header">
               <span class="entry-number">Misura {{ i + 1 }}</span>
-              <p-button
-                *ngIf="measureEntries.length > 1"
-                icon="pi pi-trash"
-                (onClick)="removeMeasureEntry(i)"
-                styleClass="p-button-danger p-button-text p-button-sm"
-                pTooltip="Rimuovi misura"
-              ></p-button>
+              <p-button *ngIf="measureEntries.length > 1" icon="pi pi-trash" (onClick)="removeMeasureEntry(i)"
+                styleClass="p-button-danger p-button-text p-button-sm" pTooltip="Rimuovi misura"></p-button>
             </div>
-            
+
             <div class="entry-fields">
               <div class="field-group">
                 <label [for]="'measure_' + i">Misura <span class="required-field">*</span></label>
-                <input
-                  pInputText
-                  [id]="'measure_' + i"
-                  type="text"
-                  [(ngModel)]="measureEntry.measure"
-                  [name]="'measure_' + i"
-                  placeholder="es: 120x80 cm"
-                  [class.ng-invalid]="shouldShowMeasureEntryError(measureEntry.measure)"
-                />
+                <input pInputText [id]="'measure_' + i" type="text" [(ngModel)]="measureEntry.measure"
+                  [name]="'measure_' + i" placeholder="es: 120x80 cm"
+                  [class.ng-invalid]="shouldShowMeasureEntryError(measureEntry.measure)" />
                 <small *ngIf="shouldShowMeasureEntryError(measureEntry.measure)" class="p-error">
                   La misura è obbligatoria
                 </small>
               </div>
-              
+
               <div class="field-group">
                 <label [for]="'price_' + i">Prezzo <span class="required-field">*</span> (€)</label>
-                <p-inputNumber
-                  [id]="'price_' + i"
-                  [(ngModel)]="measureEntry.price"
-                  [name]="'price_' + i"
-                  [minFractionDigits]="2"
-                  [maxFractionDigits]="2"
-                  mode="currency"
-                  currency="EUR"
-                  locale="it-IT"
-                  [class.ng-invalid]="shouldShowMeasureEntryPriceError(measureEntry.price)"
-                ></p-inputNumber>
+                <p-inputNumber [id]="'price_' + i" [(ngModel)]="measureEntry.price" [name]="'price_' + i"
+                  [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT"
+                  [class.ng-invalid]="shouldShowMeasureEntryPriceError(measureEntry.price)"></p-inputNumber>
                 <small *ngIf="shouldShowMeasureEntryPriceError(measureEntry.price)" class="p-error">
                   Il prezzo non può essere negativo
                 </small>
@@ -479,7 +338,8 @@
             </div>
 
             <div class="generated-name-preview">
-              <small><strong>Nome generato:</strong> {{ generateComponentName(selectedComponentType, selectedSupplier, measureEntry.measure) }}</small>
+              <small><strong>Nome generato:</strong> {{ generateComponentName(selectedComponentType, selectedSupplier,
+                measureEntry.measure) }}</small>
             </div>
           </div>
         </div>
@@ -489,7 +349,8 @@
         <h4>Anteprima Componenti ({{ measureEntries.length }})</h4>
         <div class="preview-list">
           <div *ngFor="let measureEntry of measureEntries; let i = index" class="preview-item">
-            <span class="preview-name">{{ generateComponentName(selectedComponentType, selectedSupplier, measureEntry.measure) }}</span>
+            <span class="preview-name">{{ generateComponentName(selectedComponentType, selectedSupplier,
+              measureEntry.measure) }}</span>
             <span class="preview-price">{{ measureEntry.price | currency:'EUR' }}</span>
           </div>
         </div>
@@ -498,20 +359,10 @@
 
     <ng-template pTemplate="footer">
       <div class="dialog-footer">
-        <p-button
-          label="Annulla"
-          icon="pi pi-times"
-          (onClick)="cancelMultipleMeasuresDialog()"
-          styleClass="p-button-text"
-          [disabled]="saving"
-        ></p-button>
-        <p-button
-          label="Salva Tutti"
-          icon="pi pi-check"
-          (onClick)="saveMultipleMeasures()"
-          [disabled]="saving || !canSaveMultipleMeasures()"
-          [loading]="saving"
-        ></p-button>
+        <p-button label="Annulla" icon="pi pi-times" (onClick)="cancelMultipleMeasuresDialog()"
+          styleClass="p-button-text" [disabled]="saving"></p-button>
+        <p-button label="Salva Tutti" icon="pi pi-check" (onClick)="saveMultipleMeasures()"
+          [disabled]="saving || !canSaveMultipleMeasures()" [loading]="saving"></p-button>
       </div>
     </ng-template>
   </p-dialog>

@@ -78,7 +78,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   components: ComponentModel[] = [];
   newComponent: ComponentModel = new ComponentModel('', '', 0);
-  
+
   // Cambiato da supplier: Supplier | null = null; a:
   availableSuppliers: Supplier[] = [];
   selectedSupplier: Supplier | null = null;
@@ -107,7 +107,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     supplier: null // Add supplier to fixed data
   };
   bulkVariableData: BulkComponentVariableData[] = [
-    { measure: '', price: 0 } // Remove supplier from variable data since it's now in fixed data
+    { measure: '', price: 0, name: '' }
   ];
   bulkFormSubmitted = false;
 
@@ -290,27 +290,27 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     }
 
     this.newComponent.name = this.generateComponentName(
-      this.selectedComponentType, 
-      this.selectedSupplier, 
+      this.selectedComponentType,
+      this.selectedSupplier,
       this.newComponent.measure
     );
   }
 
   generateComponentName(type: ComponentType | null, supplier: Supplier | null, measure?: string): string {
     const parts: string[] = [];
-    
+
     if (type !== null) {
       parts.push(this.getComponentTypeDisplayName(type));
     }
-    
+
     if (supplier) {
       parts.push(supplier.name);
     }
-    
+
     if (measure && measure.trim()) {
       parts.push(measure.trim());
     }
-    
+
     return parts.join(' ') || '';
   }
 
@@ -350,7 +350,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   }
 
   canSaveMultipleMeasures(): boolean {
-    return this.measureEntries.every(entry => 
+    return this.measureEntries.every(entry =>
       entry.measure?.trim() && entry.price >= 0
     );
   }
@@ -362,7 +362,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   saveMultipleMeasures(): void {
     this.multipleMeasuresFormSubmitted = true;
-    
+
     if (!this.canSaveMultipleMeasures()) {
       this.addError('Compila tutti i campi obbligatori per ogni misura');
       return;
@@ -509,16 +509,39 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   onBulkTypeChange(event: any): void {
     this.bulkFixedData.type = event.value;
     this.updateBulkBaseName();
+    this.updateAllVariantNames();
   }
 
   onBulkSupplierChange(event: any): void {
     this.bulkFixedData.supplier = event.value;
     this.updateBulkBaseName();
+    this.updateAllVariantNames();
   }
 
   onBulkMeasureChange(index: number): void {
-    // Trigger change detection for name preview
+    // Update the specific variant name when measure changes
+    this.updateVariantName(index);
     setTimeout(() => this.cd.detectChanges(), 0);
+  }
+
+  private updateAllVariantNames(): void {
+    this.bulkVariableData.forEach((_, index) => {
+      this.updateVariantName(index);
+    });
+    this.cd.detectChanges();
+  }
+
+  private updateVariantName(index: number): void {
+    if (index < 0 || index >= this.bulkVariableData.length) {
+      return;
+    }
+    
+    const variableData = this.bulkVariableData[index];
+    variableData.name = this.generateComponentName(
+      this.bulkFixedData.type,
+      this.bulkFixedData.supplier,
+      variableData.measure
+    );
   }
 
   private updateBulkBaseName(): void {
@@ -539,16 +562,16 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   getBulkVariantName(variableData: BulkComponentVariableData): string {
     const baseName = this.getBulkBaseName();
     if (!baseName) return '';
-    
+
     if (variableData.measure && variableData.measure.trim()) {
       return `${baseName} ${variableData.measure.trim()}`;
     }
-    
+
     return baseName;
   }
 
   getValidBulkVariants(): BulkComponentVariableData[] {
-    return this.bulkVariableData.filter(vd => 
+    return this.bulkVariableData.filter(vd =>
       vd.measure && vd.measure.trim() && vd.price >= 0
     );
   }
@@ -557,8 +580,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     if (!this.bulkFixedData.type || !this.bulkFixedData.supplier) {
       return false;
     }
-    
-    return this.bulkVariableData.some(vd => 
+
+    return this.bulkVariableData.some(vd =>
       vd.measure?.trim() && vd.price >= 0
     );
   }
@@ -575,25 +598,20 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
     this.saving = true;
 
-    // Filter only valid variants
     const validVariants = this.getValidBulkVariants();
-    
-    if (validVariants.length === 0) {
-      this.addError('Aggiungi almeno una variante valida con misura e prezzo');
-      this.saving = false;
-      return;
-    }
+    // (Non serve più questo controllo: validateBulkForm lo copre)
+    // if (validVariants.length === 0) { ... }
 
-    const componentPromises = validVariants.map(variableData => {
-      const componentName = this.getBulkVariantName(variableData);
-      
+    const componentPromises = validVariants.map(vd => {
+      const componentName = vd.name!.trim();  // prendo direttamente il nome inserito
+
       const component = new ComponentModel(
-        '', // ID will be generated
-        componentName,
-        variableData.price,
-        this.bulkFixedData.supplier || undefined,
-        this.bulkFixedData.type,
-        variableData.measure?.trim()
+        '',                           // ID sarà generato lato server
+        componentName,                // nome dalla variante
+        vd.price,                     // prezzo
+        this.bulkFixedData.supplier!, // fornitore (sicuro non nullo, validato sopra)
+        this.bulkFixedData.type,      // tipo
+        vd.measure?.trim()            // misura (opzionale)
       );
 
       return this.componentService.addComponent(component).toPromise();
@@ -614,12 +632,14 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       });
   }
 
+
   addVariableDataEntry() {
-    this.bulkVariableData.push({
-      measure: '',
-      price: 0
-    });
-    // Scroll automatico alla nuova variante (opzionale)
+    const newVariant = { 
+      measure: '', 
+      price: 0, 
+      name: this.generateComponentName(this.bulkFixedData.type, this.bulkFixedData.supplier, '')
+    };
+    this.bulkVariableData.push(newVariant);
     setTimeout(() => {
       if (this.variantEntriesContainer?.nativeElement) {
         const el = this.variantEntriesContainer.nativeElement;
@@ -634,30 +654,41 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       type: ComponentType.FUSTO,
       supplier: null
     };
-    this.bulkVariableData = [
-      { measure: '', price: 0 }
-    ];
+    this.bulkVariableData = [{ 
+      measure: '', 
+      price: 0, 
+      name: ''
+    }];
     this.bulkFormSubmitted = false;
   }
 
   private validateBulkForm(): boolean {
+    // Controllo tipo e fornitore
     if (!this.bulkFixedData.type) {
       this.addError('Il tipo di componente è obbligatorio', 'Errore di Validazione');
       return false;
     }
-
     if (!this.bulkFixedData.supplier) {
       this.addError('Il fornitore è obbligatorio', 'Errore di Validazione');
       return false;
     }
 
     const validVariants = this.getValidBulkVariants();
+    // Almeno una variante valida
     if (validVariants.length === 0) {
-      this.addError('Aggiungi almeno una variante con misura e prezzo validi', 'Errore di Validazione');
+      this.addError('Aggiungi almeno una variante con misura, prezzo e nome validi', 'Errore di Validazione');
       return false;
     }
 
-    // Check for duplicate measures
+    // Controllo campo 'name' non vuoto
+    for (const vd of validVariants) {
+      if (!vd.name?.trim()) {
+        this.addError('Il nome di ogni variante è obbligatorio', 'Errore di Validazione');
+        return false;
+      }
+    }
+
+    // Controllo misure duplicate
     const measures = validVariants.map(vd => vd.measure!.trim().toLowerCase());
     const uniqueMeasures = new Set(measures);
     if (measures.length !== uniqueMeasures.size) {
@@ -665,21 +696,32 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       return false;
     }
 
-    // Check for existing components with same name
-    for (const variableData of validVariants) {
-      const componentName = this.getBulkVariantName(variableData);
-      const existingComponent = this.components.find(comp => 
-        comp.name.toLowerCase() === componentName.toLowerCase()
+    // Controllo nomi duplicati tra le varianti stesse
+    const names = validVariants.map(vd => vd.name!.trim().toLowerCase());
+    const uniqueNames = new Set(names);
+    if (names.length !== uniqueNames.size) {
+      this.addError('Non è possibile inserire due varianti con lo stesso nome', 'Errore di Validazione');
+      return false;
+    }
+
+    // Controllo conflitto con componenti esistenti
+    for (const vd of validVariants) {
+      const nameToCheck = vd.name!.trim().toLowerCase();
+      const exists = this.components.some(comp =>
+        comp.name.toLowerCase() === nameToCheck
       );
-      
-      if (existingComponent) {
-        this.addError(`Esiste già un componente con il nome "${componentName}"`, 'Errore di Validazione');
+      if (exists) {
+        this.addError(
+          `Esiste già un componente con il nome "${vd.name!.trim()}"`,
+          'Errore di Validazione'
+        );
         return false;
       }
     }
 
     return true;
   }
+
 
   // Add missing properties and getters
   get isEditing(): boolean {
@@ -764,7 +806,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     if (type === null || type === undefined) {
       return 'N/A';
     }
-    
+
     const typeNames: { [key in ComponentType]: string } = {
       [ComponentType.FUSTO]: 'Fusto',
       [ComponentType.GOMMA]: 'Gomma',
@@ -779,7 +821,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       [ComponentType.TELA_MARCHIATA]: 'Tela Marchiata',
       [ComponentType.TRASPORTO]: 'Trasporto'
     };
-    
+
     return typeNames[type] || 'Sconosciuto';
   }
 
@@ -826,12 +868,12 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     console.log('onSupplierChange called with:', event);
     console.log('Event value:', event.value);
     console.log('Selected supplier before change:', this.selectedSupplier);
-    
+
     // Make sure we're setting the correct supplier
     this.selectedSupplier = event.value;
-    
+
     console.log('Selected supplier after change:', this.selectedSupplier);
-    
+
     // Update component name when supplier changes
     this.updateComponentName();
   }
@@ -841,13 +883,13 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     console.log('onComponentTypeChange called with:', event);
     console.log('Event value:', event.value);
     console.log('Selected component type before change:', this.selectedComponentType);
-    
+
     // Make sure we're setting the correct enum value
     this.selectedComponentType = event.value;
-    
+
     console.log('Selected component type after change:', this.selectedComponentType);
     console.log('Component type display name:', this.getComponentTypeDisplayName(this.selectedComponentType));
-    
+
     // Update component name when type changes
     this.updateComponentName();
   }
@@ -860,4 +902,12 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   private addSuccess(detail: string, summary: string = 'Successo') {
     this.messageService.add({ severity: 'success', summary, detail });
   }
+
+  /** Nel componente: */
+  shouldShowBulkNameError(name?: string): boolean {
+    return this.bulkFormSubmitted && !name?.trim();
+  }
+
+
+
 }

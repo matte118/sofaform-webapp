@@ -5,11 +5,13 @@ export interface BulkComponentFixedData {
   name: string;
   type: ComponentType;
   supplier: Supplier | null;
+  
 }
 
 export interface BulkComponentVariableData {
   measure: string;
   price: number;
+  name?: string;
 }
 
 export interface BulkComponentCreation {
