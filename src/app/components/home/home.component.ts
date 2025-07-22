@@ -172,17 +172,11 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.isBrowser) {
-      this.appRef.isStable
-        .pipe(first(isStable => isStable))
-        .subscribe(() => {
-          setInterval(() => {
-            this.loadProducts();
-            this.loadRivestimenti();
-            this.loadComponentTypes();
-            this.loadAvailableComponents();
-            this.loadRivestimentiList();
-          }, 1000);
-        });
+      this.loadProducts();
+      this.loadRivestimenti();
+      this.loadComponentTypes();
+      this.loadAvailableComponents();
+      this.loadRivestimentiList();
     }
   }
 
@@ -198,6 +192,9 @@ export class HomeComponent implements OnInit {
         });
       });
       this.cdr.detectChanges();
+    });
+    this.products.map((product) => {
+      console.log(product)
     });
   }
 
