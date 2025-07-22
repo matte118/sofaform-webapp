@@ -78,7 +78,6 @@ export class AggiungiProdottoComponent implements OnInit {
   // 1) Selezioni singole
   selectedFusto?: ComponentModel;
   selectedGomma?: ComponentModel;
-  selectedMeccanismo?: ComponentModel;
   selectedMaterasso?: ComponentModel;
   selectedImballo?: ComponentModel;
   selectedScatola?: ComponentModel;
@@ -242,7 +241,6 @@ export class AggiungiProdottoComponent implements OnInit {
 
     return !!this.selectedFusto ||
       !!this.selectedGomma ||
-      !!this.selectedMeccanismo ||
       !!this.selectedMaterasso ||
       !!this.selectedImballo ||
       !!this.selectedScatola ||
@@ -345,7 +343,6 @@ export class AggiungiProdottoComponent implements OnInit {
   private resetComponentSelections(): void {
     this.selectedFusto = undefined;
     this.selectedGomma = undefined;
-    this.selectedMeccanismo = undefined;
     this.selectedMaterasso = undefined;
     this.selectedImballo = undefined;
     this.selectedScatola = undefined;
@@ -407,7 +404,6 @@ export class AggiungiProdottoComponent implements OnInit {
 
     this.selectedFusto = this.findMatchingComponent('fusto', compsByType);
     this.selectedGomma = this.findMatchingComponent('gomma', compsByType);
-    this.selectedMeccanismo = this.findMatchingComponent('rete', compsByType); // Use 'rete' for meccanismo
     this.selectedMaterasso = this.findMatchingComponent('materasso', compsByType);
     this.selectedImballo = this.findMatchingComponent('imballo', compsByType);
     this.selectedScatola = this.findMatchingComponent('scatola', compsByType);
@@ -444,7 +440,6 @@ export class AggiungiProdottoComponent implements OnInit {
     return !!(this.selectedFusto &&
       this.selectedGomma &&
       this.selectedPiedini &&
-      this.selectedMeccanismo &&
       this.selectedMaterasso &&
       this.selectedImballo &&
       this.selectedScatola);
@@ -461,7 +456,6 @@ export class AggiungiProdottoComponent implements OnInit {
     if (!this.selectedFusto) missingComponents.push('Fusto');
     if (!this.selectedGomma) missingComponents.push('Gomma');
     if (!this.selectedPiedini) missingComponents.push('Piedini');
-    if (!this.selectedMeccanismo) missingComponents.push('Meccanismo');
     if (!this.selectedMaterasso) missingComponents.push('Materasso');
     if (!this.selectedImballo) missingComponents.push('Imballo');
     if (!this.selectedScatola) missingComponents.push('Scatola');
@@ -473,8 +467,8 @@ export class AggiungiProdottoComponent implements OnInit {
     if (!this.selectedVariant) return false;
 
     const missingComponents = [];
-    if (!this.selectedFusto && !this.selectedGomma && !this.selectedPiedini &&
-      !this.selectedMeccanismo && !this.selectedMaterasso && !this.selectedImballo &&
+    if (!this.selectedFusto && !this.selectedGomma && !this.selectedPiedini
+      && !this.selectedMaterasso && !this.selectedImballo &&
       !this.selectedScatola && this.ferramentaList.length === 0 && this.varieList.length === 0) {
       missingComponents.push('almeno un componente');
     }
@@ -494,7 +488,7 @@ export class AggiungiProdottoComponent implements OnInit {
     }
 
     const comps: ComponentModel[] = [];
-    [this.selectedFusto, this.selectedGomma, this.selectedMeccanismo, this.selectedMaterasso, this.selectedImballo, this.selectedScatola]
+    [this.selectedFusto, this.selectedGomma, this.selectedMaterasso, this.selectedImballo, this.selectedScatola]
       .forEach(c => c && comps.push(c));
     if (this.selectedPiedini) for (let i = 0; i < Math.max(2, this.piediniQty); i++) comps.push(this.selectedPiedini);
     this.ferramentaList.forEach(c => comps.push(c));
@@ -542,8 +536,7 @@ export class AggiungiProdottoComponent implements OnInit {
 
           // Only try to auto-apply if there are selected components
           const hasSelections = this.selectedFusto || this.selectedGomma || this.selectedPiedini ||
-            this.selectedMeccanismo || this.selectedMaterasso ||
-            this.selectedImballo || this.selectedScatola ||
+            this.selectedMaterasso || this.selectedImballo || this.selectedScatola ||
             this.ferramentaList.length > 0 || this.varieList.length > 0;
 
           if (hasSelections) {
@@ -573,7 +566,11 @@ export class AggiungiProdottoComponent implements OnInit {
 
   private createVariants(productId: string): void {
     const calls = this.variants.map(v => {
-      v.sofaId = productId; v.price = this.finalPrices.get(v.longName) || 0;
+      v.sofaId = productId;
+
+      const sumPrice = v.components.reduce((acc, comp) => acc + (comp.price || 0), 0);
+      v.price = sumPrice;
+
       return this.variantService.createVariant(v);
     });
     forkJoin(calls).subscribe(ids => {
@@ -751,7 +748,6 @@ export class AggiungiProdottoComponent implements OnInit {
       'varie': ComponentType.VARIE,
       'imballo': ComponentType.IMBALLO,
       'scatola': ComponentType.SCATOLA,
-      'meccanismo': ComponentType.RETE, 
     };
     return typeMap[type.toLowerCase()];
   }
@@ -773,7 +769,7 @@ export class AggiungiProdottoComponent implements OnInit {
 
     // Base (senza fornitore)
     let base = component.name;
-    
+
     if (hasMeasure) {
       base += ` (${component.measure})`;
     }

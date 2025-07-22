@@ -319,31 +319,6 @@
                 </div>
               </div>
 
-              <!-- Meccanismo -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Meccanismo <span class="required-field">*</span></label>
-                <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('meccanismo') || []" 
-                              [(ngModel)]="selectedMeccanismo"
-                              optionLabel="name" 
-                              placeholder="Seleziona meccanismo" 
-                              [showClear]="true"
-                              [disabled]="(getComponentsByType('meccanismo') || []).length === 0"
-                              (onChange)="onComponentSelected('meccanismo', $event.value)" 
-                              name="meccanismo">
-                    <ng-template let-item pTemplate="item">
-                      {{ formatComponentName(item) }}
-                    </ng-template>
-                    <ng-template let-selectedItem pTemplate="selectedItem">
-                      {{ formatComponentName(selectedItem) }}
-                    </ng-template>
-                  </p-dropdown>
-                  <small *ngIf="(getComponentsByType('meccanismo') || []).length === 0" class="p-error">
-                    Nessun componente di tipo meccanismo disponibile
-                  </small>
-                </div>
-              </div>
-
               <!-- Materasso -->
               <div class="p-field p-grid">
                 <label class="p-col-12 p-md-2">Materasso <span class="required-field">*</span></label>
@@ -551,7 +526,7 @@
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button label="Chiudi" icon="pi pi-check" (onClick)="showSchienaleDialog = false"></p-button>
+      <p-button label="Salva" icon="pi pi-check" (onClick)="showSchienaleDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 
@@ -566,7 +541,7 @@
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button label="Chiudi" icon="pi pi-check" (onClick)="showMeccanicaDialog = false"></p-button>
+      <p-button label="Salva" icon="pi pi-check" (onClick)="showMeccanicaDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 
@@ -581,7 +556,7 @@
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button label="Chiudi" icon="pi pi-check" (onClick)="showMaterassoDialog = false"></p-button>
+      <p-button label="Salva" icon="pi pi-check" (onClick)="showMaterassoDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 </div>

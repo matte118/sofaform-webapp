@@ -70,14 +70,6 @@
                 Il prezzo non può essere negativo
               </small>
             </div>
-
-            <div class="form-group">
-              <label>&nbsp;</label>
-              <p-button *ngIf="!isEditing && selectedComponentType && selectedSupplier" label="Crea Multiple Misure"
-                icon="pi pi-plus-circle" (onClick)="openMultipleMeasuresDialog()"
-                styleClass="p-button-outlined p-button-secondary" size="small"
-                pTooltip="Crea più componenti con misure e prezzi diversi"></p-button>
-            </div>
           </div>
 
           <div class="form-actions">
@@ -192,7 +184,8 @@
                 *ngIf="bulkFixedData.type && bulkFixedData.supplier && variableData.measure">
                 <div class="auto-generated-name">
                   <i class="pi pi-tag"></i>
-                  <span><strong>Nome generato:</strong> {{ generateComponentName(bulkFixedData.type, bulkFixedData.supplier, variableData.measure) }}</span>
+                  <span><strong>Nome generato:</strong> {{ generateComponentName(bulkFixedData.type,
+                    bulkFixedData.supplier, variableData.measure) }}</span>
                 </div>
                 <small class="field-hint">
                   Il nome viene generato automaticamente da: Tipo + Fornitore + Misura
@@ -289,83 +282,6 @@
       </ng-template>
     </p-table>
   </div>
-
-  <!-- Dialog per Multiple Misure -->
-  <p-dialog header="Crea Componenti con Multiple Misure" [(visible)]="showMultipleMeasuresDialog" [modal]="true"
-    [style]="{width: '700px'}" [draggable]="false" [resizable]="false" [closable]="true"
-    (onHide)="onMultipleMeasuresDialogHide()">
-    <div class="multiple-measures-content">
-      <div class="dialog-header-info">
-        <p><strong>Tipo:</strong> {{ getComponentTypeDisplayName(selectedComponentType) }}</p>
-        <p><strong>Fornitore:</strong> {{ selectedSupplier?.name || 'Nessuno' }}</p>
-      </div>
-
-      <div class="measures-section">
-        <div class="section-header">
-          <h4>Misure e Prezzi</h4>
-          <p-button label="Aggiungi Misura" icon="pi pi-plus" (onClick)="addMeasureEntry()"
-            styleClass="p-button-sm p-button-outlined" size="small"></p-button>
-        </div>
-
-        <div class="measure-entries">
-          <div *ngFor="let measureEntry of measureEntries; let i = index" class="measure-entry">
-            <div class="entry-header">
-              <span class="entry-number">Misura {{ i + 1 }}</span>
-              <p-button *ngIf="measureEntries.length > 1" icon="pi pi-trash" (onClick)="removeMeasureEntry(i)"
-                styleClass="p-button-danger p-button-text p-button-sm" pTooltip="Rimuovi misura"></p-button>
-            </div>
-
-            <div class="entry-fields">
-              <div class="field-group">
-                <label [for]="'measure_' + i">Misura <span class="required-field">*</span></label>
-                <input pInputText [id]="'measure_' + i" type="text" [(ngModel)]="measureEntry.measure"
-                  [name]="'measure_' + i" placeholder="es: 120x80 cm"
-                  [class.ng-invalid]="shouldShowMeasureEntryError(measureEntry.measure)" />
-                <small *ngIf="shouldShowMeasureEntryError(measureEntry.measure)" class="p-error">
-                  La misura è obbligatoria
-                </small>
-              </div>
-
-              <div class="field-group">
-                <label [for]="'price_' + i">Prezzo <span class="required-field">*</span> (€)</label>
-                <p-inputNumber [id]="'price_' + i" [(ngModel)]="measureEntry.price" [name]="'price_' + i"
-                  [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT"
-                  [class.ng-invalid]="shouldShowMeasureEntryPriceError(measureEntry.price)"></p-inputNumber>
-                <small *ngIf="shouldShowMeasureEntryPriceError(measureEntry.price)" class="p-error">
-                  Il prezzo non può essere negativo
-                </small>
-              </div>
-            </div>
-
-            <div class="generated-name-preview">
-              <small><strong>Nome generato:</strong> {{ generateComponentName(selectedComponentType, selectedSupplier,
-                measureEntry.measure) }}</small>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="preview-section" *ngIf="measureEntries.length > 0">
-        <h4>Anteprima Componenti ({{ measureEntries.length }})</h4>
-        <div class="preview-list">
-          <div *ngFor="let measureEntry of measureEntries; let i = index" class="preview-item">
-            <span class="preview-name">{{ generateComponentName(selectedComponentType, selectedSupplier,
-              measureEntry.measure) }}</span>
-            <span class="preview-price">{{ measureEntry.price | currency:'EUR' }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <ng-template pTemplate="footer">
-      <div class="dialog-footer">
-        <p-button label="Annulla" icon="pi pi-times" (onClick)="cancelMultipleMeasuresDialog()"
-          styleClass="p-button-text" [disabled]="saving"></p-button>
-        <p-button label="Salva Tutti" icon="pi pi-check" (onClick)="saveMultipleMeasures()"
-          [disabled]="saving || !canSaveMultipleMeasures()" [loading]="saving"></p-button>
-      </div>
-    </ng-template>
-  </p-dialog>
 
   <p-confirmDialog header="Conferma" [closable]="false"></p-confirmDialog>
 </div>
