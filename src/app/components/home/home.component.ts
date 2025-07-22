@@ -1,3 +1,5 @@
+import { ApplicationRef } from '@angular/core';
+import { first } from 'rxjs';
 import {
   Component,
   OnInit,
@@ -116,7 +118,7 @@ export class HomeComponent implements OnInit {
   editingVariants: Variant[] = [];
   editingVariantIndex = -1;
   newVariant: Variant = new Variant('', '', '', 0);
-  
+
   // Image handling
   tempImageFile?: File;
   tempImageUrl?: string;
@@ -154,9 +156,8 @@ export class HomeComponent implements OnInit {
   isBrowser: boolean;
 
   constructor(
-    private router: Router,
+    private appRef: ApplicationRef,
     private sofaProductService: SofaProductService,
-    private componentTypeService: ComponentTypeService,
     private variantService: VariantService,
     private rivestimentoService: RivestimentoService,
     private uploadService: PhotoUploadService,
@@ -171,11 +172,17 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.isBrowser) {
-      this.loadProducts();
-      this.loadRivestimenti();
-      this.loadComponentTypes();
-      this.loadAvailableComponents();
-      this.loadRivestimentiList();
+      this.appRef.isStable
+        .pipe(first(isStable => isStable))
+        .subscribe(() => {
+          setInterval(() => {
+            this.loadProducts();
+            this.loadRivestimenti();
+            this.loadComponentTypes();
+            this.loadAvailableComponents();
+            this.loadRivestimentiList();
+          }, 1000);
+        });
     }
   }
 
@@ -233,29 +240,29 @@ export class HomeComponent implements OnInit {
   }
 
   // === Utility Methods ===
-  trackById(_: number, item: SofaProduct) { 
-    return item.id; 
+  trackById(_: number, item: SofaProduct) {
+    return item.id;
   }
 
-  getProductVariants(productId: string): Variant[] { 
-    return this.productVariants.get(productId) || []; 
+  getProductVariants(productId: string): Variant[] {
+    return this.productVariants.get(productId) || [];
   }
 
-  getProductImageUrl(productId: string): string | null { 
-    return this.products.find(p => p.id === productId)?.photoUrl || null; 
+  getProductImageUrl(productId: string): string | null {
+    return this.products.find(p => p.id === productId)?.photoUrl || null;
   }
 
-  hasProductImage(productId: string): boolean { 
-    return !!this.getProductImageUrl(productId) && !this.imageLoadErrors.has(productId); 
+  hasProductImage(productId: string): boolean {
+    return !!this.getProductImageUrl(productId) && !this.imageLoadErrors.has(productId);
   }
 
-  onImageError(productId: string): void { 
-    this.imageLoadErrors.add(productId); 
-    this.cdr.detectChanges(); 
+  onImageError(productId: string): void {
+    this.imageLoadErrors.add(productId);
+    this.cdr.detectChanges();
   }
 
-  getDefaultImage(): string { 
-    return 'assets/images/no-image-placeholder.png'; 
+  getDefaultImage(): string {
+    return 'assets/images/no-image-placeholder.png';
   }
 
   // === Rivestimenti Management ===
@@ -270,16 +277,16 @@ export class HomeComponent implements OnInit {
 
   onRivestimentiChange(): void {
     const selectedIds = new Set(this.tempRivestimentiSelection.map(r => r.id));
-    Object.keys(this.metersPerRivestimento).forEach(id => { 
-      if (!selectedIds.has(id)) delete this.metersPerRivestimento[id]; 
+    Object.keys(this.metersPerRivestimento).forEach(id => {
+      if (!selectedIds.has(id)) delete this.metersPerRivestimento[id];
     });
-    
+
     this.tempRivestimentiSelection.forEach(r => {
       if (!this.metersPerRivestimento[r.id]) {
         this.metersPerRivestimento[r.id] = 0.1;
       }
     });
-    
+
     this.cdr.detectChanges();
   }
 
@@ -311,10 +318,10 @@ export class HomeComponent implements OnInit {
       .map(r => ({ rivestimento: r, metri: this.metersPerRivestimento[r.id] }));
 
     if (!this.selectedRivestimentiForListino.length) {
-      this.messageService.add({ 
-        severity: 'error', 
-        summary: 'Errore', 
-        detail: 'Specifica i metri per almeno un rivestimento' 
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'Specifica i metri per almeno un rivestimento'
       });
       return;
     }
@@ -342,9 +349,9 @@ export class HomeComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  cancelMarkup() { 
-    this.showMarkupDialog = false; 
-    this.cdr.detectChanges(); 
+  cancelMarkup() {
+    this.showMarkupDialog = false;
+    this.cdr.detectChanges();
   }
 
   getVariantFinalPrice(variant: Variant): number {
@@ -415,8 +422,8 @@ export class HomeComponent implements OnInit {
   }
 
   // === Product Editing ===
-  editProduct(product: SofaProduct) { 
-    this.openEditDialog(product); 
+  editProduct(product: SofaProduct) {
+    this.openEditDialog(product);
   }
 
   openEditDialog(product: SofaProduct, event?: Event) {
@@ -466,19 +473,19 @@ export class HomeComponent implements OnInit {
           next: () => {
             this.products = this.products.filter(p => p.id !== product.id);
             this.productVariants.delete(product.id);
-            this.messageService.add({ 
-              severity: 'success', 
-              summary: 'Prodotto eliminato', 
-              detail: `Il prodotto "${product.name}" è stato eliminato` 
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Prodotto eliminato',
+              detail: `Il prodotto "${product.name}" è stato eliminato`
             });
             this.cdr.detectChanges();
           },
           error: (err) => {
             console.error('Error deleting product:', err);
-            this.messageService.add({ 
-              severity: 'error', 
-              summary: 'Errore', 
-              detail: 'Errore durante l\'eliminazione del prodotto' 
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Errore',
+              detail: 'Errore durante l\'eliminazione del prodotto'
             });
           }
         });
@@ -486,8 +493,8 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  get editProductDialogTitle(): string { 
-    return this.editingProduct ? `Modifica Prodotto: ${this.editingProduct.name}` : 'Modifica Prodotto'; 
+  get editProductDialogTitle(): string {
+    return this.editingProduct ? `Modifica Prodotto: ${this.editingProduct.name}` : 'Modifica Prodotto';
   }
 
   onEditDialogHide(): void {
@@ -498,17 +505,17 @@ export class HomeComponent implements OnInit {
   }
 
   // === Image Management ===
-  get currentImageToShow(): string | undefined { 
-    return this.tempImageUrl || this.editingProduct?.photoUrl; 
+  get currentImageToShow(): string | undefined {
+    return this.tempImageUrl || this.editingProduct?.photoUrl;
   }
 
-  get shouldShowImagePlaceholder(): boolean { 
-    return !this.tempImageUrl && !this.editingProduct?.photoUrl; 
+  get shouldShowImagePlaceholder(): boolean {
+    return !this.tempImageUrl && !this.editingProduct?.photoUrl;
   }
 
-  showImageUpload(): void { 
-    this.isUploadMode = true; 
-    this.cdr.detectChanges(); 
+  showImageUpload(): void {
+    this.isUploadMode = true;
+    this.cdr.detectChanges();
   }
 
   removeProductImage(): void {
@@ -527,8 +534,8 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  triggerFileInput(): void { 
-    this.hiddenFileInput?.nativeElement.click(); 
+  triggerFileInput(): void {
+    this.hiddenFileInput?.nativeElement.click();
   }
 
   onFileSelected(event: any): void {
@@ -536,19 +543,19 @@ export class HomeComponent implements OnInit {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      this.messageService.add({ 
-        severity: 'error', 
-        summary: 'Errore', 
-        detail: 'Seleziona un file immagine valido' 
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'Seleziona un file immagine valido'
       });
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      this.messageService.add({ 
-        severity: 'error', 
-        summary: 'Errore', 
-        detail: 'L\'immagine deve essere inferiore a 5MB' 
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'L\'immagine deve essere inferiore a 5MB'
       });
       return;
     }
@@ -556,10 +563,10 @@ export class HomeComponent implements OnInit {
     this.tempImageFile = file;
     this.imageRemoved = false;
     const reader = new FileReader();
-    reader.onload = (e: any) => { 
-      this.tempImageUrl = e.target.result; 
-      this.isUploadMode = false; 
-      this.cdr.detectChanges(); 
+    reader.onload = (e: any) => {
+      this.tempImageUrl = e.target.result;
+      this.isUploadMode = false;
+      this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
   }
@@ -579,10 +586,10 @@ export class HomeComponent implements OnInit {
   // === Variant Management ===
   addVariantToProduct(): void {
     if (!this.newVariant.longName.trim()) {
-      this.messageService.add({ 
-        severity: 'error', 
-        summary: 'Errore', 
-        detail: 'Il nome della variante è obbligatorio' 
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'Il nome della variante è obbligatorio'
       });
       return;
     }
@@ -654,8 +661,8 @@ export class HomeComponent implements OnInit {
     }
 
     const components: ComponentModel[] = [];
-    [this.selectedFusto, this.selectedGomma, this.selectedMeccanismo, 
-     this.selectedMaterasso, this.selectedImballo, this.selectedScatola]
+    [this.selectedFusto, this.selectedGomma, this.selectedMeccanismo,
+    this.selectedMaterasso, this.selectedImballo, this.selectedScatola]
       .forEach(c => c && components.push(c));
 
     if (this.selectedPiedini) {
@@ -694,10 +701,10 @@ export class HomeComponent implements OnInit {
     this.showVariantComponentsDialog = false;
     this.resetVariantComponentSelections();
 
-    this.messageService.add({ 
-      severity: 'success', 
-      summary: 'Variante aggiunta', 
-      detail: `Variante "${variant.longName}" aggiunta con successo` 
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Variante aggiunta',
+      detail: `Variante "${variant.longName}" aggiunta con successo`
     });
     this.cdr.detectChanges();
   }
@@ -721,9 +728,9 @@ export class HomeComponent implements OnInit {
       message: 'Sei sicuro di voler eliminare questa variante?',
       header: 'Conferma eliminazione',
       icon: 'pi pi-exclamation-triangle',
-      accept: () => { 
-        this.editingVariants.splice(index, 1); 
-        this.cdr.detectChanges(); 
+      accept: () => {
+        this.editingVariants.splice(index, 1);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -732,7 +739,7 @@ export class HomeComponent implements OnInit {
   getComponentsByType(type: string): ComponentModel[] {
     const componentType = this.getComponentTypeFromString(type);
     if (componentType === undefined) return [];
-    
+
     const key = type.toLowerCase();
     if (!this.componentsByTypeCache.has(key)) {
       const filtered = this.availableComponents.filter(c => c.type === componentType);
@@ -757,8 +764,8 @@ export class HomeComponent implements OnInit {
     return map[type.toLowerCase()];
   }
 
-  getComponentTypeName(type: ComponentType): string { 
-    return this.componentTypeMap.get(type) || 'Tipo sconosciuto'; 
+  getComponentTypeName(type: ComponentType): string {
+    return this.componentTypeMap.get(type) || 'Tipo sconosciuto';
   }
 
   openAddComponentToVariant(variant: Variant): void {
@@ -770,17 +777,17 @@ export class HomeComponent implements OnInit {
 
   addComponentToVariant(): void {
     if (!this.selectedComponentForVariant || !this.currentEditingVariant) return;
-    
+
     for (let i = 0; i < this.componentQuantityForVariant; i++) {
       this.currentEditingVariant.components.push({ ...this.selectedComponentForVariant });
     }
     this.currentEditingVariant.updatePrice();
     this.showAddComponentDialog = false;
     this.cdr.detectChanges();
-    this.messageService.add({ 
-      severity: 'success', 
-      summary: 'Componente aggiunto', 
-      detail: `${this.selectedComponentForVariant.name} aggiunto alla variante` 
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Componente aggiunto',
+      detail: `${this.selectedComponentForVariant.name} aggiunto alla variante`
     });
   }
 
@@ -797,18 +804,18 @@ export class HomeComponent implements OnInit {
     this.saving = true;
 
     const saveVariants = () => {
-      if (!this.editingVariants.length) { 
-        this.completeSave(); 
-        return; 
+      if (!this.editingVariants.length) {
+        this.completeSave();
+        return;
       }
-      
+
       const promises = this.editingVariants.map(variant => {
         variant.sofaId = this.editingProduct!.id;
         return variant.id
           ? this.variantService.updateVariant(variant.id, variant).toPromise()
           : this.variantService.createVariant(variant).toPromise();
       });
-      
+
       Promise.all(promises)
         .then(ids => {
           const newIds = ids.filter(id => id).map(id => id as string);
@@ -818,10 +825,10 @@ export class HomeComponent implements OnInit {
         })
         .catch(err => {
           console.error('Error saving variants:', err);
-          this.messageService.add({ 
-            severity: 'error', 
-            summary: 'Errore', 
-            detail: 'Errore durante il salvataggio delle varianti' 
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Errore',
+            detail: 'Errore durante il salvataggio delle varianti'
           });
           this.saving = false;
           this.cdr.detectChanges();
@@ -834,10 +841,10 @@ export class HomeComponent implements OnInit {
           () => saveVariants(),
           (error) => {
             console.error('Errore durante il salvataggio:', error);
-            this.messageService.add({ 
-              severity: 'error', 
-              summary: 'Errore', 
-              detail: 'Errore durante il salvataggio delle modifiche' 
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Errore',
+              detail: 'Errore durante il salvataggio delle modifiche'
             });
             this.saving = false;
             this.cdr.detectChanges();
@@ -860,10 +867,10 @@ export class HomeComponent implements OnInit {
         },
         error: err => {
           console.error('Errore upload:', err);
-          this.messageService.add({ 
-            severity: 'error', 
-            summary: 'Errore', 
-            detail: 'Impossibile caricare l\'immagine' 
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Errore',
+            detail: 'Impossibile caricare l\'immagine'
           });
           this.saving = false;
           this.cdr.detectChanges();
@@ -878,10 +885,10 @@ export class HomeComponent implements OnInit {
     const idx = this.products.findIndex(p => p.id === this.editingProduct!.id);
     if (idx !== -1) this.products[idx] = { ...this.editingProduct! };
     this.productVariants.set(this.editingProduct!.id, [...this.editingVariants]);
-    this.messageService.add({ 
-      severity: 'success', 
-      summary: 'Prodotto Aggiornato', 
-      detail: 'Modifiche salvate con successo' 
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Prodotto Aggiornato',
+      detail: 'Modifiche salvate con successo'
     });
     this.showEditProductDialog = false;
     this.saving = false;
@@ -889,7 +896,7 @@ export class HomeComponent implements OnInit {
   }
 
   // === Display Utilities ===
-  onVariantComponentSelected(type: string, component: any): void {}
+  onVariantComponentSelected(type: string, component: any): void { }
 
   formatComponentName(component: ComponentModel): string {
     if (!component) return '';
@@ -905,15 +912,15 @@ export class HomeComponent implements OnInit {
     return base;
   }
 
-  isVariantExpanded(variantId: string): boolean { 
-    return this.expandedVariants.has(variantId); 
+  isVariantExpanded(variantId: string): boolean {
+    return this.expandedVariants.has(variantId);
   }
 
-  toggleVariantExpansion(variantId: string): void { 
-    this.expandedVariants.has(variantId) 
-      ? this.expandedVariants.delete(variantId) 
-      : this.expandedVariants.add(variantId); 
-    this.cdr.detectChanges(); 
+  toggleVariantExpansion(variantId: string): void {
+    this.expandedVariants.has(variantId)
+      ? this.expandedVariants.delete(variantId)
+      : this.expandedVariants.add(variantId);
+    this.cdr.detectChanges();
   }
 
   getGroupedComponents(variant: Variant): GroupedComponent[] {
@@ -921,8 +928,8 @@ export class HomeComponent implements OnInit {
     variant.components.forEach(c => {
       const key = `${c.id}-${c.name}`;
       if (map.has(key)) {
-        const existing = map.get(key)!; 
-        existing.quantity++; 
+        const existing = map.get(key)!;
+        existing.quantity++;
         existing.totalPrice += c.price;
       } else {
         map.set(key, { component: c, quantity: 1, totalPrice: c.price });
@@ -935,11 +942,11 @@ export class HomeComponent implements OnInit {
     const groups: EditGroupedComponent[] = [];
     variant.components.forEach((comp, idx) => {
       const found = groups.find(g => this.areComponentsEqual(g.component, comp));
-      if (found) { 
-        found.quantity++; 
-        found.indices.push(idx); 
-      } else { 
-        groups.push({ component: comp, quantity: 1, indices: [idx] }); 
+      if (found) {
+        found.quantity++;
+        found.indices.push(idx);
+      } else {
+        groups.push({ component: comp, quantity: 1, indices: [idx] });
       }
     });
     return groups;
@@ -947,8 +954,8 @@ export class HomeComponent implements OnInit {
 
   removeGroupedComponent(variant: Variant, group: EditGroupedComponent): void {
     this.confirmationService.confirm({
-      message: group.quantity > 1 
-        ? `Rimuovere tutte le ${group.quantity} occorrenze di "${group.component.name}"?` 
+      message: group.quantity > 1
+        ? `Rimuovere tutte le ${group.quantity} occorrenze di "${group.component.name}"?`
         : `Rimuovere il componente "${group.component.name}"?`,
       header: 'Conferma rimozione',
       icon: 'pi pi-exclamation-triangle',
@@ -963,17 +970,17 @@ export class HomeComponent implements OnInit {
   // === Private Utilities ===
   private areComponentsEqual(a: ComponentModel, b: ComponentModel): boolean {
     if (a === b) return true;
-    return a.id === b.id && a.name === b.name && a.price === b.price && 
-           a.measure === b.measure && a.type === b.type && this.sameSupplier(a, b);
+    return a.id === b.id && a.name === b.name && a.price === b.price &&
+      a.measure === b.measure && a.type === b.type && this.sameSupplier(a, b);
   }
 
   private sameSupplier(a: ComponentModel, b: ComponentModel): boolean {
     const supA = a.supplier;
     const supB = b.supplier;
-    
+
     if (!supA && !supB) return true;
     if (!supA || !supB) return false;
-    
+
     return supA.id === supB.id && supA.name === supB.name;
   }
 

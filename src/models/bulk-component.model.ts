@@ -11,7 +11,7 @@ export interface BulkComponentFixedData {
 export interface BulkComponentVariableData {
   measure: string;
   price: number;
-  name?: string;
+  name: string;
 }
 
 export interface BulkComponentCreation {
