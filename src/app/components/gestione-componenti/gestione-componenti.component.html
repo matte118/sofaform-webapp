@@ -107,20 +107,6 @@
                 class="w-100" (onChange)="onBulkSupplierChange($event)"></p-dropdown>
             </div>
           </div>
-
-          <!-- Nome base generato automaticamente -->
-          <div class="form-row" *ngIf="bulkFixedData.type && bulkFixedData.supplier">
-            <div class="form-group">
-              <label>Nome Base Generato</label>
-              <div class="generated-base-name">
-                <i class="pi pi-tag"></i>
-                <span>{{ getBulkBaseName() }}</span>
-              </div>
-              <small class="field-hint">
-                Ogni variante avrà questo nome base + la propria misura
-              </small>
-            </div>
-          </div>
         </div>
 
         <div class="bulk-section variable-data-section">
@@ -177,19 +163,6 @@
                     Il nome viene generato automaticamente in base al tipo, fornitore e misura
                   </small>
                 </div>
-              </div>
-
-              <!-- Nome generato per questa variante -->
-              <div class="generated-name-preview"
-                *ngIf="bulkFixedData.type && bulkFixedData.supplier && variableData.measure">
-                <div class="auto-generated-name">
-                  <i class="pi pi-tag"></i>
-                  <span><strong>Nome generato:</strong> {{ generateComponentName(bulkFixedData.type,
-                    bulkFixedData.supplier, variableData.measure) }}</span>
-                </div>
-                <small class="field-hint">
-                  Il nome viene generato automaticamente da: Tipo + Fornitore + Misura
-                </small>
               </div>
             </div>
 
