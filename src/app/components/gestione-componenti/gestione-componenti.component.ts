@@ -208,6 +208,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       { value: ComponentType.GOMMA, label: 'Gomma' },
       { value: ComponentType.RETE, label: 'Rete' },
       { value: ComponentType.MATERASSO, label: 'Materasso' },
+      { value: ComponentType.TAPPEZZERIA, label: 'Tappezzeria' },
       { value: ComponentType.PIEDINI, label: 'Piedini' },
       { value: ComponentType.FERRAMENTA, label: 'Ferramenta' },
       { value: ComponentType.VARIE, label: 'Varie' },
@@ -365,14 +366,6 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
     if (!this.canSaveMultipleMeasures()) {
       this.addError('Compila tutti i campi obbligatori per ogni misura');
-      return;
-    }
-
-    // Check for duplicate measures
-    const measures = this.measureEntries.map(e => e.measure.trim().toLowerCase());
-    const uniqueMeasures = new Set(measures);
-    if (measures.length !== uniqueMeasures.size) {
-      this.addError('Non è possibile inserire misure duplicate');
       return;
     }
 
@@ -572,12 +565,12 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   getValidBulkVariants(): BulkComponentVariableData[] {
     return this.bulkVariableData.filter(vd =>
-      vd.measure && vd.measure.trim() && vd.price >= 0
+       vd.price >= 0
     );
   }
 
   canSaveBulkComponents(): boolean {
-    if (!this.bulkFixedData.type || !this.bulkFixedData.supplier) {
+    if (this.bulkFixedData.type == null || !this.bulkFixedData.supplier) {
       return false;
     }
 
@@ -664,10 +657,11 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   private validateBulkForm(): boolean {
     // Controllo tipo e fornitore
-    if (!this.bulkFixedData.type) {
+    if (this.bulkFixedData.type == null) {
       this.addError('Il tipo di componente è obbligatorio', 'Errore di Validazione');
       return false;
     }
+
     if (!this.bulkFixedData.supplier) {
       this.addError('Il fornitore è obbligatorio', 'Errore di Validazione');
       return false;
@@ -686,14 +680,6 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         this.addError('Il nome di ogni variante è obbligatorio', 'Errore di Validazione');
         return false;
       }
-    }
-
-    // Controllo misure duplicate
-    const measures = validVariants.map(vd => vd.measure!.trim().toLowerCase());
-    const uniqueMeasures = new Set(measures);
-    if (measures.length !== uniqueMeasures.size) {
-      this.addError('Non è possibile inserire misure duplicate', 'Errore di Validazione');
-      return false;
     }
 
     // Controllo nomi duplicati tra le varianti stesse

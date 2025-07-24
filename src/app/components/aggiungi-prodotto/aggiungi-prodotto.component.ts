@@ -78,9 +78,12 @@ export class AggiungiProdottoComponent implements OnInit {
   // 1) Selezioni singole
   selectedFusto?: ComponentModel;
   selectedGomma?: ComponentModel;
+  selectedRete?: ComponentModel;
   selectedMaterasso?: ComponentModel;
   selectedImballo?: ComponentModel;
   selectedScatola?: ComponentModel;
+  selectedTelaMarchiata?: ComponentModel;
+  selectedTrasporto?: ComponentModel;
 
   // 2) Piedini (minimo 2)
   selectedPiedini?: ComponentModel;
@@ -90,6 +93,7 @@ export class AggiungiProdottoComponent implements OnInit {
   // 3) Liste multiple
   ferramentaList: ComponentModel[] = [];
   varieList: ComponentModel[] = [];
+  tappezzeriaList: ComponentModel[] = [];
 
   // 4) Remove rivestimenti properties
   // rivestimentiList: Rivestimento[] = [];
@@ -343,13 +347,17 @@ export class AggiungiProdottoComponent implements OnInit {
   private resetComponentSelections(): void {
     this.selectedFusto = undefined;
     this.selectedGomma = undefined;
+    this.selectedRete = undefined;
     this.selectedMaterasso = undefined;
     this.selectedImballo = undefined;
     this.selectedScatola = undefined;
     this.selectedPiedini = undefined;
+    this.selectedTelaMarchiata = undefined;
+    this.selectedTrasporto = undefined;
     this.piediniQty = 2;
     this.ferramentaList = [];
     this.varieList = [];
+    this.tappezzeriaList = [];
   }
 
   // Helper to populate component selections from existing components
@@ -372,6 +380,9 @@ export class AggiungiProdottoComponent implements OnInit {
           break;
         case ComponentType.MATERASSO:
           typeString = 'materasso';
+          break;
+        case ComponentType.TAPPEZZERIA:
+          typeString = 'tappezzeria';
           break;
         case ComponentType.PIEDINI:
           typeString = 'piedini';
@@ -404,9 +415,12 @@ export class AggiungiProdottoComponent implements OnInit {
 
     this.selectedFusto = this.findMatchingComponent('fusto', compsByType);
     this.selectedGomma = this.findMatchingComponent('gomma', compsByType);
+    this.selectedRete = this.findMatchingComponent('rete', compsByType);
     this.selectedMaterasso = this.findMatchingComponent('materasso', compsByType);
     this.selectedImballo = this.findMatchingComponent('imballo', compsByType);
     this.selectedScatola = this.findMatchingComponent('scatola', compsByType);
+    this.selectedTelaMarchiata = this.findMatchingComponent('tela_marchiata', compsByType);
+    this.selectedTrasporto = this.findMatchingComponent('trasporto', compsByType);
 
     const piedini = compsByType.get('piedini');
     if (piedini?.length) {
@@ -416,6 +430,7 @@ export class AggiungiProdottoComponent implements OnInit {
 
     this.ferramentaList = compsByType.get('ferramenta') || [];
     this.varieList = compsByType.get('varie') || [];
+    this.tappezzeriaList = compsByType.get('tappezzeria') || [];
   }
 
   // Helper to find a component in the availableComponents list
@@ -439,12 +454,13 @@ export class AggiungiProdottoComponent implements OnInit {
     // Verifica che tutti i componenti obbligatori siano selezionati
     return !!(this.selectedFusto &&
       this.selectedGomma &&
+      this.selectedRete &&
       this.selectedPiedini &&
       this.selectedMaterasso &&
       this.selectedImballo &&
       this.selectedScatola);
 
-    // I campi opzionali (ferramentaList e varieList) non influiscono sulla validazione
+    // I campi opzionali (ferramentaList, varieList, tappezzeriaList, selectedTelaMarchiata, selectedTrasporto) non influiscono sulla validazione
   }
 
   /**
@@ -455,6 +471,7 @@ export class AggiungiProdottoComponent implements OnInit {
     const missingComponents = [];
     if (!this.selectedFusto) missingComponents.push('Fusto');
     if (!this.selectedGomma) missingComponents.push('Gomma');
+    if (!this.selectedRete) missingComponents.push('Rete');
     if (!this.selectedPiedini) missingComponents.push('Piedini');
     if (!this.selectedMaterasso) missingComponents.push('Materasso');
     if (!this.selectedImballo) missingComponents.push('Imballo');
@@ -467,13 +484,12 @@ export class AggiungiProdottoComponent implements OnInit {
     if (!this.selectedVariant) return false;
 
     const missingComponents = [];
-    if (!this.selectedFusto && !this.selectedGomma && !this.selectedPiedini
+    if (!this.selectedFusto && !this.selectedGomma && !this.selectedRete && !this.selectedPiedini
       && !this.selectedMaterasso && !this.selectedImballo &&
-      !this.selectedScatola && this.ferramentaList.length === 0 && this.varieList.length === 0) {
+      !this.selectedScatola && this.ferramentaList.length === 0 && this.varieList.length === 0 && 
+      this.tappezzeriaList.length === 0 && !this.selectedTelaMarchiata && !this.selectedTrasporto) {
       missingComponents.push('almeno un componente');
     }
-
-    // Remove rivestimenti validation
 
     if (missingComponents.length > 0) {
       if (!silent) {
@@ -488,16 +504,14 @@ export class AggiungiProdottoComponent implements OnInit {
     }
 
     const comps: ComponentModel[] = [];
-    [this.selectedFusto, this.selectedGomma, this.selectedMaterasso, this.selectedImballo, this.selectedScatola]
+    [this.selectedFusto, this.selectedGomma, this.selectedRete, this.selectedMaterasso, this.selectedImballo, this.selectedScatola, this.selectedTelaMarchiata, this.selectedTrasporto]
       .forEach(c => c && comps.push(c));
     if (this.selectedPiedini) for (let i = 0; i < Math.max(2, this.piediniQty); i++) comps.push(this.selectedPiedini);
     this.ferramentaList.forEach(c => comps.push(c));
     this.varieList.forEach(c => comps.push(c));
-    // Remove rivestimenti logic
+    this.tappezzeriaList.forEach(c => comps.push(c));
 
     this.selectedVariant.components = comps;
-
-    // Remove rivestimenti assignment
 
     this.selectedVariant.updatePrice();
 
@@ -743,11 +757,14 @@ export class AggiungiProdottoComponent implements OnInit {
       'gomma': ComponentType.GOMMA,
       'rete': ComponentType.RETE,
       'materasso': ComponentType.MATERASSO,
+      'tappezzeria': ComponentType.TAPPEZZERIA,
       'piedini': ComponentType.PIEDINI,
       'ferramenta': ComponentType.FERRAMENTA,
       'varie': ComponentType.VARIE,
       'imballo': ComponentType.IMBALLO,
       'scatola': ComponentType.SCATOLA,
+      'tela_marchiata': ComponentType.TELA_MARCHIATA,
+      'trasporto': ComponentType.TRASPORTO,
     };
     return typeMap[type.toLowerCase()];
   }

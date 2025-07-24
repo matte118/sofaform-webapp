@@ -9,7 +9,7 @@ export interface BulkComponentFixedData {
 }
 
 export interface BulkComponentVariableData {
-  measure: string;
+  measure?: string;
   price: number;
   name: string;
 }

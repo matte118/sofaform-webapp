@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:sofaform-webapp": "node dist/sofaform-webapp/server/server.mjs"
+    "serve:ssr:sofaform-webapp": "node dist/sofaform-webapp/server/server.mjs",
+    "seed": "ts-node scripts/seed‑components.ts"
   },
   "private": true,
   "dependencies": {

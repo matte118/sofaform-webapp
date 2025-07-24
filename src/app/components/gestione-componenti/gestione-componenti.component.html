@@ -127,13 +127,10 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label [for]="'bulkMeasure_' + i">Misura <span class="required-field">*</span></label>
+                  <label [for]="'bulkMeasure_' + i">Misura</label>
                   <input pInputText [id]="'bulkMeasure_' + i" type="text" [(ngModel)]="variableData.measure"
-                    [name]="'bulkMeasure_' + i" placeholder="es: 120x80 cm" (ngModelChange)="onBulkMeasureChange(i)"
-                    [class.ng-invalid]="shouldShowBulkMeasureError(variableData.measure)" />
-                  <small *ngIf="shouldShowBulkMeasureError(variableData.measure)" class="p-error">
-                    La misura è obbligatoria
-                  </small>
+                    [name]="'bulkMeasure_' + i" placeholder="La tua misura" (ngModelChange)="onBulkMeasureChange(i)"
+                    />
                 </div>
 
                 <div class="form-group">
@@ -155,7 +152,7 @@
                   <label [for]="'bulkName_' + i">Nome Componente <span class="required-field">*</span></label>
                   <input pInputText [id]="'bulkName_' + i" type="text" [(ngModel)]="variableData.name"
                     [name]="'bulkName_' + i" placeholder="Nome del componente"
-                    [class.ng-invalid]="shouldShowBulkNameError(variableData.name)" readonly />
+                    [class.ng-invalid]="shouldShowBulkNameError(variableData.name)" />
                   <small *ngIf="shouldShowBulkNameError(variableData.name)" class="p-error">
                     Il nome del componente è obbligatorio
                   </small>
@@ -184,7 +181,7 @@
             <h4><i class="pi pi-eye"></i> Anteprima Componenti ({{ getValidBulkVariants().length }})</h4>
             <div class="preview-list">
               <div *ngFor="let variableData of getValidBulkVariants(); let i = index" class="preview-item">
-                <strong>{{ getBulkVariantName(variableData) }}</strong>
+                <strong>{{ variableData.name }}</strong>
                 <span class="preview-details">
                   - {{ getComponentTypeDisplayName(bulkFixedData.type) }}
                   - {{ bulkFixedData.supplier.name }}
