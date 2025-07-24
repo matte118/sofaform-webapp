@@ -1,5 +1,3 @@
-import { Variant } from './variant.model';
-
 export class SofaProduct {
   constructor(
     public id: string,

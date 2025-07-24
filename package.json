@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:sofaform-webapp": "node dist/sofaform-webapp/server/server.mjs",
-    "seed": "ts-node scripts/seed‑components.ts"
+    "seed": "node ./scripts/seed-components.js"
   },
   "private": true,
   "dependencies": {
@@ -43,13 +43,14 @@
     "@angular/compiler-cli": "^18.0.0",
     "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.0",
-    "@types/node": "^18.18.0",
+    "@types/node": "^18.19.120",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "ts-node": "^10.9.2",
     "typescript": "~5.4.2"
   }
 }

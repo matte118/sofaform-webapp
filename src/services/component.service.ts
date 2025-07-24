@@ -30,8 +30,9 @@ export class ComponentService {
       id: component.id,
       name: component.name,
       price: component.price,
-      supplier: component.supplier || null, // Changed from suppliers array to single supplier
-      type: typeToSave
+      supplier: component.supplier || null,
+      type: typeToSave,
+      measure: component.measure || null
     };
 
     // Add explicit logging to see what's being saved
@@ -50,8 +51,9 @@ export class ComponentService {
               c.id,
               c.data.name,
               c.data.price,
-              c.data.supplier || undefined, // Changed from suppliers array to single supplier
-              this.parseComponentType(c.data.type)
+              c.data.supplier || undefined,
+              this.parseComponentType(c.data.type),
+              c.data.measure
             )
         );
         console.log('ComponentService: Mapped components', mappedComponents);
@@ -70,8 +72,9 @@ export class ComponentService {
                 c.id,
                 c.data.name,
                 c.data.price,
-                c.data.supplier || undefined, // Changed from suppliers array to single supplier
-                this.parseComponentType(c.data.type)
+                c.data.supplier || undefined,
+                this.parseComponentType(c.data.type),
+                c.data.measure
               )
           );
           observer.next(mappedComponents);
@@ -98,8 +101,9 @@ export class ComponentService {
       id: component.id,
       name: component.name,
       price: component.price,
-      supplier: component.supplier || null, // Changed from suppliers array to single supplier
-      type: typeToSave
+      supplier: component.supplier || null,
+      type: typeToSave,
+      measure: component.measure || null
     };
 
     // Add explicit logging to see what's being saved
@@ -172,8 +176,9 @@ export class ComponentService {
               c.id,
               c.data.name,
               c.data.price,
-              c.data.supplier || undefined, // Changed from suppliers array to single supplier
-              this.parseComponentType(c.data.type)
+              c.data.supplier || undefined,
+              this.parseComponentType(c.data.type),
+              c.data.measure
             )
         );
 

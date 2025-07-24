@@ -1,0 +1,132 @@
+[
+    {
+        "name": "Omega Doghe 182 h16",
+        "price": 140.00,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "182 h16"
+    },
+    {
+        "name": "Omega Doghe 162 h16",
+        "price": 137.00,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "162 h16"
+    },
+    {
+        "name": "Omega Doghe 142 h16",
+        "price": 135.00,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "142 h16"
+    },
+    {
+        "name": "Omega Doghe 122 h16",
+        "price": 132.00,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "122 h16"
+    },
+    {
+        "name": "Omega Doghe 110 h16",
+        "price": 125.50,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "110 h16"
+    },
+    {
+        "name": "Omega Doghe 100 h16",
+        "price": 120.50,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "100 h16"
+    },
+    {
+        "name": "Omega Doghe 90 h16",
+        "price": 120.50,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "90 h16"
+    },
+    {
+        "name": "Positano 182 Ferro piede h13",
+        "price": 119.00,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "182 Ferro piede h13"
+    },
+    {
+        "name": "Positano 162 Ferro piede h13",
+        "price": 110.00,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "162 Ferro piede h13"
+    },
+    {
+        "name": "Positano 142 Ferro piede h13",
+        "price": 110.00,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "142 Ferro piede h13"
+    },
+    {
+        "name": "Positano 182 Doghe piede h13",
+        "price": 145.00,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "182 Doghe piede h13"
+    },
+    {
+        "name": "Positano 162 Doghe piede h13",
+        "price": 141.00,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "162 Doghe piede h13"
+    },
+    {
+        "name": "Positano 142 Doghe piede h13",
+        "price": 140.00,
+        "supplier": {
+            "id": "-OVwj_UakQw6Ps7MWxuE",
+            "name": "D'ANIELLO"
+        },
+        "type": "RETE",
+        "measure": "142 Doghe piede h13"
+    }
+]
