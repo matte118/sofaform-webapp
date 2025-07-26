@@ -44,10 +44,11 @@
               <small *ngIf="shouldShowFieldError(newComponent.name)" class="p-error">
                 Il nome del componente è obbligatorio
               </small>
-              <small *ngIf="!isEditing && (selectedComponentType || selectedSupplier || newComponent.measure)"
-                class="field-hint">
-                Il nome viene generato automaticamente in base al tipo, fornitore e misura selezionati
-              </small>
+
+              <div class="field-hint">
+                <i class="pi pi-info-circle info-icon"></i>
+                Il nome viene generato automaticamente in base al tipo, fornitore e misura
+              </div>
             </div>
 
             <div class="form-group">
@@ -129,8 +130,7 @@
                 <div class="form-group">
                   <label [for]="'bulkMeasure_' + i">Misura</label>
                   <input pInputText [id]="'bulkMeasure_' + i" type="text" [(ngModel)]="variableData.measure"
-                    [name]="'bulkMeasure_' + i" placeholder="La tua misura" (ngModelChange)="onBulkMeasureChange(i)"
-                    />
+                    [name]="'bulkMeasure_' + i" placeholder="La tua misura" (ngModelChange)="onBulkMeasureChange(i)" />
                 </div>
 
                 <div class="form-group">
@@ -156,9 +156,10 @@
                   <small *ngIf="shouldShowBulkNameError(variableData.name)" class="p-error">
                     Il nome del componente è obbligatorio
                   </small>
-                  <small class="field-hint">
+                  <div class="field-hint">
+                    <i class="pi pi-info-circle info-icon"></i>
                     Il nome viene generato automaticamente in base al tipo, fornitore e misura
-                  </small>
+                  </div>
                 </div>
               </div>
             </div>
@@ -235,12 +236,12 @@
           <td>{{ component.measure || '-' }}</td>
           <td>{{ component.supplier?.name || 'Nessuno' }}</td>
           <td class="actions-cell">
-            <button pButton type="button" icon="pi pi-pencil"
-              class="p-button-rounded p-button-text p-button-sm action-edit" (click)="editComponent(component, i)"
-              pTooltip="Modifica" aria-label="Modifica componente"></button>
-            <button pButton type="button" icon="pi pi-trash"
-              class="p-button-rounded p-button-danger p-button-text p-button-sm action-delete"
-              (click)="deleteComponent(component)" pTooltip="Elimina" aria-label="Elimina componente"></button>
+            <p-button type="button" icon="pi pi-pencil"
+              styleClass="p-button-rounded p-button-text p-button transparent-icon-btn"
+              (click)="editComponent(component, i)" pTooltip="Modifica"></p-button>
+            <p-button type="button" icon="pi pi-trash"
+              styleClass="p-button-rounded p-button-text p-button transparent-red-icon"
+              (click)="deleteComponent(component)" pTooltip="Elimina"></p-button>
           </td>
         </tr>
       </ng-template>
@@ -253,5 +254,48 @@
     </p-table>
   </div>
 
-  <p-confirmDialog header="Conferma" [closable]="false"></p-confirmDialog>
+  <p-dialog header="Conferma Eliminazione" [(visible)]="displayConfirmDelete" [modal]="true" [closable]="false"
+    [style]="{ width: '600px', maxWidth: '95vw' }">
+    <ng-container *ngIf="loadingDependencies; else loadedList">
+      <div class="loading-list">
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Verifica utilizzo componente…</span>
+      </div>
+    </ng-container>
+
+    <ng-template #loadedList>
+      <ng-container *ngIf="componentDependentProducts.length > 0; else noDeps">
+        <div class="component-usage-warning">
+          <div class="warning-text">
+            Questo componente è utilizzato nei seguenti prodotti:
+          </div>
+          <ul class="product-list">
+            <li *ngFor="let name of componentDependentProducts" class="product-item">
+              {{ name }}
+            </li>
+          </ul>
+          <div class="field-hint">
+            <i class="pi pi-info-circle info-icon"></i>
+            <strong>
+              Se procedi, questo componente verrà rimosso da tutti i prodotti elencati.
+            </strong>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #noDeps>
+        <p>Sei sicuro di voler eliminare il componente
+          <strong>{{ componentToDelete?.name }}</strong>?
+        </p>
+      </ng-template>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="No" icon="pi pi-times" class="btn-dialog-no"
+        (click)="rejectDelete()"></button>
+      <button pButton type="button" label="Sì" icon="pi pi-check" class="btn-dialog-yes" (click)="confirmDelete()"
+        [disabled]="loadingDependencies" autofocus></button>
+    </ng-template>
+  </p-dialog>
+
 </div>

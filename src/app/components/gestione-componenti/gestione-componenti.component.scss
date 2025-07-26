@@ -369,18 +369,7 @@
         align-items: flex-start;
         margin-bottom: 0.5rem;
 
-        .add-variant-button {
-          ::ng-deep .p-button {
-            background-color: #28a745;
-            border-color: #28a745;
-            font-size: 0.875rem;
 
-            &:hover {
-              background-color: #218838;
-              border-color: #1e7e34;
-            }
-          }
-        }
       }
     }
 
@@ -1077,17 +1066,6 @@
     cursor: pointer;
   }
 
-  /* Hover focus */
-  ::ng-deep .component-mode-tabview .p-tabview-nav-link:hover,
-  ::ng-deep .component-mode-tabview .p-tabview-nav-link:focus-visible {
-    color: #1e3a5f;
-  }
-
-  /* Stato attivo + indicatore */
-  ::ng-deep .component-mode-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
-    color: #0d62c7;
-  }
-
   ::ng-deep .component-mode-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link::after {
     content: "";
     position: absolute;
@@ -1145,6 +1123,7 @@
       border-color: #28a745;
       font-size: 0.85rem;
       padding: 0.55rem 1rem;
+      border-radius: 8px;
 
       &:hover {
         background-color: #218838;
@@ -1158,12 +1137,6 @@
     justify-content: center;
   }
 
-  .add-variant-button {
-    border: none !important;
-    border-radius: 0 !important;
-  }
-
-  // Ensure all pencil icons have the correct color
   ::ng-deep .pi-pencil {
     color: #007bff !important;
   }
@@ -1177,3 +1150,96 @@
   }
 }
 
+.field-hint {
+  display: flex;
+  align-items: center;
+  color: #6c757d;
+  font-size: 0.875rem;
+  padding-top: 10px;
+
+  .info-icon {
+    margin-right: 0.5rem;
+    font-size: 1rem;
+    color: #007bff;
+  }
+}
+
+:host ::ng-deep .transparent-red-icon {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep button.transparent-red-icon.p-button {
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep button.transparent-red-icon.p-button,
+button.transparent-red-icon.p-button:hover,
+button.transparent-red-icon.p-button:focus,
+button.transparent-red-icon.p-button:active {
+  background-color: transparent !important;
+}
+
+:host ::ng-deep button.transparent-red-icon.p-button .p-button-icon {
+  color: red !important;
+}
+
+:host ::ng-deep button.transparent-icon-btn.p-button {
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep button.transparent-icon-btn.p-button,
+button.transparent-icon-btn.p-button:hover,
+button.transparent-icon-btn.p-button:focus,
+button.transparent-icon-btn.p-button:active {
+  background-color: transparent !important;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button {
+  background-color: #c0392b !important;
+  border-color: #c0392b !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button:hover {
+  background-color: #e74c3c !important;
+  border-color: #e74c3c !important;
+}
+
+:host ::ng-deep .btn-dialog-yes.p-button {
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+:host ::ng-deep .btn-dialog-yes.p-button:hover {
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-footer {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 1rem;
+  /* spazio orizzontale tra i bottoni */
+  padding: 10px;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button,
+:host ::ng-deep .btn-dialog-yes.p-button {
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+::ng-deep .component-mode-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  color: #007bff !important;
+}

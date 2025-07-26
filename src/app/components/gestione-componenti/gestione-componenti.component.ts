@@ -104,7 +104,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   bulkFixedData: BulkComponentFixedData = {
     name: '',
     type: ComponentType.FUSTO,
-    supplier: null // Add supplier to fixed data
+    supplier: null
   };
   bulkVariableData: BulkComponentVariableData[] = [
     { measure: '', price: 0, name: '' }
@@ -113,10 +113,14 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   activeTabIndex = 0;
 
-  // Multiple measures dialog
   showMultipleMeasuresDialog = false;
   measureEntries: { measure: string; price: number }[] = [{ measure: '', price: 0 }];
   multipleMeasuresFormSubmitted = false;
+
+  displayConfirmDelete = false;
+  loadingDependencies = false;
+  componentToDelete?: ComponentModel;
+  componentDependentProducts: string[] = [];
 
   constructor(
     private componentService: ComponentService,
@@ -439,41 +443,46 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   }
 
   deleteComponent(component: ComponentModel) {
-    this.getProductsUsingComponent(component.id).then(productNames => {
-      if (productNames.length === 0) {
-        this.performDelete(component);
-        return;
-      }
+    this.componentToDelete = component;
+    this.componentDependentProducts = [];
+    this.loadingDependencies = true;
+    this.displayConfirmDelete = true;
 
-      const message = `
-        <div class="component-usage-warning">
-          <div class="warning-content">
-            <div class="warning-text">Questo componente è utilizzato nei seguenti prodotti:</div>
-            <ul class="product-list">
-              ${productNames.map(n => `<li class="product-item">${n}</li>`).join('')}
-            </ul>
-            <div class="removal-warning">
-              <i class="pi pi-info-circle info-icon"></i>
-              <span>
-                <strong>Se procedi con l'eliminazione, il componente verrà automaticamente rimosso da tutti questi prodotti.</strong>
-              </span>
-            </div>
-          </div>
-        </div>
-      `;
-
-      this.confirmationService.confirm({
-        message,
-        header: 'Conferma Eliminazione',
-        icon: 'pi pi-exclamation-triangle',
-        acceptLabel: 'Sì',
-        rejectLabel: 'No',
-        acceptButtonStyleClass: 'p-button-primary',
-        rejectButtonStyleClass: 'p-button-danger',
-        accept: () => this.performDelete(component),
-        reject: () => { }
+    // Recupera i prodotti che usano questo componente
+    this.getProductsUsingComponent(component.id)
+      .then(names => {
+        this.componentDependentProducts = names;
+        this.loadingDependencies = false;
+      })
+      .catch(() => {
+        this.addError('Errore durante verifica dipendenze');
+        this.loadingDependencies = false;
+        this.displayConfirmDelete = false;
       });
-    });
+  }
+
+  // Se l’utente scarta
+  rejectDelete() {
+    this.displayConfirmDelete = false;
+    this.componentToDelete = undefined;
+  }
+
+  // Se l’utente conferma
+  confirmDelete() {
+    if (!this.componentToDelete) { this.displayConfirmDelete = false; return; }
+    this.saving = true;
+    // (Eventualmente, qui cancelli anche relazioni / varianti se serve)
+    this.componentService.deleteComponent(this.componentToDelete.id)
+      .subscribe(() => {
+        this.addSuccess('Componente eliminato con successo');
+        this.refresh$.next();
+        this.displayConfirmDelete = false;
+        this.saving = false;
+      }, err => {
+        this.addError('Errore durante eliminazione');
+        this.saving = false;
+        this.displayConfirmDelete = false;
+      });
   }
 
   private performDelete(component: ComponentModel) {
@@ -528,7 +537,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     if (index < 0 || index >= this.bulkVariableData.length) {
       return;
     }
-    
+
     const variableData = this.bulkVariableData[index];
     variableData.name = this.generateComponentName(
       this.bulkFixedData.type,
@@ -565,7 +574,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   getValidBulkVariants(): BulkComponentVariableData[] {
     return this.bulkVariableData.filter(vd =>
-       vd.price >= 0
+      vd.price >= 0
     );
   }
 
@@ -627,9 +636,9 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
 
   addVariableDataEntry() {
-    const newVariant = { 
-      measure: '', 
-      price: 0, 
+    const newVariant = {
+      measure: '',
+      price: 0,
       name: this.generateComponentName(this.bulkFixedData.type, this.bulkFixedData.supplier, '')
     };
     this.bulkVariableData.push(newVariant);
@@ -647,9 +656,9 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       type: ComponentType.FUSTO,
       supplier: null
     };
-    this.bulkVariableData = [{ 
-      measure: '', 
-      price: 0, 
+    this.bulkVariableData = [{
+      measure: '',
+      price: 0,
       name: ''
     }];
     this.bulkFormSubmitted = false;
