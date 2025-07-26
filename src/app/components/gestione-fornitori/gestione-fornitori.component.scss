@@ -169,7 +169,7 @@
       }
 
       // Centra l’intestazione "Azioni"
-      .p-datatable-thead > tr > th {
+      .p-datatable-thead>tr>th {
         background: #f8f9fa;
         color: #495057;
         font-weight: 600;
@@ -181,14 +181,14 @@
         }
       }
 
-      .p-datatable-tbody > tr {
+      .p-datatable-tbody>tr {
         transition: background-color 0.2s ease;
 
         &:hover {
           background-color: #f8f9fa;
         }
 
-        > td {
+        >td {
           padding: 16px 20px;
           border-bottom: 1px solid #f1f3f4;
           vertical-align: middle;
@@ -200,7 +200,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem; /* 8px */
+        gap: 0.5rem;
+        /* 8px */
 
         button.icon-edit,
         button.icon-delete {
@@ -222,9 +223,11 @@
         button.icon-edit:hover {
           color: #007bff;
         }
+
         button.icon-delete {
           color: #c0392b;
         }
+
         button.icon-delete:hover {
           color: #e74c3c;
         }
@@ -343,159 +346,117 @@
     z-index: 9999;
   }
 
-  // Confirmation dialog styling for supplier deletion
-  :host ::ng-deep .p-confirmdialog {
-    .p-dialog-header {
-      background: #f8f9fa;
-      border-bottom: 1px solid #e9ecef;
+}
 
-      .p-dialog-title {
-        font-weight: 600;
-        color: #495057;
+:host ::ng-deep .transparent-red-icon {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep button.transparent-red-icon.p-button {
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep button.transparent-red-icon.p-button,
+button.transparent-red-icon.p-button:hover,
+button.transparent-red-icon.p-button:focus,
+button.transparent-red-icon.p-button:active {
+  background-color: transparent !important;
+}
+
+:host ::ng-deep button.transparent-red-icon.p-button .p-button-icon {
+  color: red !important;
+}
+
+:host ::ng-deep button.transparent-icon-btn.p-button {
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep button.transparent-icon-btn.p-button,
+button.transparent-icon-btn.p-button:hover,
+button.transparent-icon-btn.p-button:focus,
+button.transparent-icon-btn.p-button:active {
+  background-color: transparent !important;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button {
+  background-color: #c0392b !important;
+  border-color: #c0392b !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button:hover {
+  background-color: #e74c3c !important;
+  border-color: #e74c3c !important;
+}
+
+:host ::ng-deep .btn-dialog-yes.p-button {
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+:host ::ng-deep .btn-dialog-yes.p-button:hover {
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-footer {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 1rem; /* spazio orizzontale tra i bottoni */
+  padding: 10px;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button,
+:host ::ng-deep .btn-dialog-yes.p-button {
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+// component-list styles
+
+:host ::ng-deep .supplier-usage-warning {
+  .component-list {
+    padding-left: 1.25rem;
+    margin: 1rem 0;
+
+    .component-item {
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+
+      &::marker {
+        color: #007bff;
       }
     }
-
-    .p-dialog-content {
-      padding: 24px;
-
-      .p-confirm-dialog-message {
-        margin-left: 16px;
-        font-size: 1rem;
-        line-height: 1.6;
-
-        .supplier-usage-warning {
-          margin-top: 20px;
-          padding: 20px;
-          background: linear-gradient(135deg, #fff3cd 0%, #fef9e7 100%);
-          border: 1px solid #ffeaa7;
-          border-radius: 12px;
-          border-left: 5px solid #f39c12;
-          box-shadow: 0 2px 8px rgba(243, 156, 18, 0.1);
-
-          .warning-content {
-            .warning-text {
-              color: #856404;
-              margin-bottom: 12px;
-              font-weight: 500;
-              font-size: 1rem;
-            }
-
-            .component-list {
-              margin: 16px 0;
-              padding: 16px 20px;
-              background: rgba(255, 255, 255, 0.7);
-              border-radius: 8px;
-              border: 1px solid #f8e7a1;
-
-              .component-item {
-                color: #495057;
-                margin-bottom: 8px;
-                font-weight: 500;
-                list-style-type: none;
-                position: relative;
-                padding-left: 20px;
-
-                &:before {
-                  content: "•";
-                  color: #f39c12;
-                  font-weight: bold;
-                  position: absolute;
-                  left: 0;
-                  font-size: 1.2rem;
-                }
-
-                &:last-child {
-                  margin-bottom: 0;
-                }
-              }
-            }
-
-            .removal-warning {
-              margin-top: 16px;
-              padding: 16px;
-              background: linear-gradient(135deg, #f8d7da 0%, #fce4ec 100%);
-              border: 1px solid #f5c6cb;
-              border-radius: 8px;
-              border-left: 4px solid #dc3545;
-              display: flex;
-              align-items: flex-start;
-              gap: 10px;
-
-              .info-icon {
-                color: #721c24;
-                font-size: 1.1rem;
-                margin-top: 2px;
-                flex-shrink: 0;
-              }
-
-              span {
-                color: #721c24;
-                font-size: 0.95rem;
-                line-height: 1.5;
-
-                strong {
-                  color: #721c24;
-                  font-weight: 600;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      .p-confirm-dialog-icon {
-        font-size: 2rem;
-        color: #f39c12;
-      }
-    }
-
-    .p-dialog-footer {
-      padding: 16px 24px;
-      border-top: 1px solid #e9ecef;
-      background: #f8f9fa;
-
-      .p-button {
-        margin-left: 8px;
-        font-weight: 600;
-
-        &.p-button-danger {
-          background-color: #dc3545;
-          border-color: #dc3545;
-
-          &:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-          }
-        }
-
-        &.p-button-primary {
-          background-color: #007bff;
-          border-color: #007bff;
-
-          &:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-          }
-        }
-      }
-    }
-  }
-
-  .required-field {
-    color: red;
-    margin-left: 2px;
-  }
-
-  // Ensure all pencil icons have the correct color
-  ::ng-deep .pi-pencil {
-    color: #007bff !important;
-  }
-
-  ::ng-deep .p-button .pi-pencil {
-    color: #007bff !important;
-  }
-
-  ::ng-deep .p-button-text .pi-pencil {
-    color: #007bff !important;
   }
 }
+
+:host ::ng-deep .supplier-usage-warning {
+  .removal-warning {
+    .info-icon {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// spinner 
+
+:host ::ng-deep .loading-list {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  justify-content: center;
+  color: #495057;
+}
+

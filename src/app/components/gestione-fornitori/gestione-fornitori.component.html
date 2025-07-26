@@ -11,18 +11,9 @@
     <form class="supplier-form" #supplierForm="ngForm">
       <div class="form-row">
         <div class="form-group">
-          <label for="supplierName"
-            >Nome <span class="required-field">*</span></label
-          >
-          <input
-            pInputText
-            id="supplierName"
-            type="text"
-            [(ngModel)]="newSupplier.name"
-            name="name"
-            placeholder="Nome del fornitore"
-            [class.ng-invalid]="shouldShowFieldError(newSupplier.name)"
-          />
+          <label for="supplierName">Nome <span class="required-field">*</span></label>
+          <input pInputText id="supplierName" name="name" type="text" placeholder="Nome del fornitore"
+            [(ngModel)]="newSupplier.name" [class.ng-invalid]="shouldShowFieldError(newSupplier.name)" />
           <small *ngIf="shouldShowFieldError(newSupplier.name)" class="p-error">
             Il nome del fornitore è obbligatorio
           </small>
@@ -30,29 +21,14 @@
 
         <div class="form-group">
           <label for="supplierContact">Contatto (facoltativo)</label>
-          <input
-            pInputText
-            id="supplierContact"
-            type="text"
-            [(ngModel)]="newSupplier.contact"
-            name="contact"
-            placeholder="Email o telefono"
-          />
+          <input pInputText id="supplierContact" name="contact" type="text" placeholder="Email o telefono"
+            [(ngModel)]="newSupplier.contact" />
         </div>
       </div>
 
       <div class="form-actions">
-        <p-button
-          [label]="submitButtonLabel"
-          (onClick)="addSupplier()"
-          styleClass="primary-button"
-        ></p-button>
-        <p-button
-          *ngIf="isEditing"
-          label="Annulla"
-          (onClick)="resetForm()"
-          styleClass="secondary-button"
-        ></p-button>
+        <p-button [label]="submitButtonLabel" (onClick)="addSupplier()" styleClass="primary-button"></p-button>
+        <p-button *ngIf="isEditing" label="Annulla" (onClick)="resetForm()" styleClass="secondary-button"></p-button>
       </div>
     </form>
   </div>
@@ -60,33 +36,19 @@
   <div class="supplier-table-section">
     <h3>Lista Fornitori</h3>
 
-    <!-- Aggiungi messaggio di caricamento -->
     <div *ngIf="loading" class="loading-message">
       <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
       <p>Caricamento fornitori...</p>
     </div>
 
-    <p-table
-      [value]="suppliers"
-      *ngIf="dataLoaded && !loading"
-      #supplierTable
-      styleClass="p-datatable-sm suppliers-table"
-      [paginator]="true"
-      [rows]="10"
-      [globalFilterFields]="['name', 'contact']"
-      [rowHover]="true"
-      #dt
-    >
+    <p-table *ngIf="dataLoaded && !loading" #supplierTable [value]="suppliers"
+      styleClass="p-datatable-sm suppliers-table" [paginator]="true" [rows]="10"
+      [globalFilterFields]="['name', 'contact']" [rowHover]="true" #dt>
       <ng-template pTemplate="caption">
         <div class="table-header">
           <h4>Fornitori ({{ suppliers.length }})</h4>
           <div class="search-container">
-            <input
-              pInputText
-              type="text"
-              placeholder="Cerca fornitore..."
-              (input)="onGlobalFilter($event, dt)"
-            />
+            <input pInputText type="text" placeholder="Cerca fornitore..." (input)="onGlobalFilter($event, dt)" />
           </div>
         </div>
       </ng-template>
@@ -102,25 +64,15 @@
       <ng-template pTemplate="body" let-supplier let-i="rowIndex">
         <tr>
           <td>{{ supplier.name }}</td>
-          <td>{{ supplier.contact ? supplier.contact : "ND" }}</td>
+          <td>{{ supplier.contact ? supplier.contact : 'ND' }}</td>
           <td class="actions-cell">
             <div class="action-buttons">
-              <button
-                pButton
-                type="button"
-                icon="pi pi-pencil"
-                class="p-button-rounded p-button-text p-button-sm action-edit"
-                (click)="editSupplier(supplier, i)"
-                pTooltip="Modifica"
-              ></button>
-              <button
-                pButton
-                type="button"
-                icon="pi pi-trash"
-                class="p-button-rounded p-button-danger p-button-text p-button-sm action-delete"
-                (click)="deleteSupplier(supplier)"
-                pTooltip="Elimina"
-              ></button>
+              <p-button type="button" icon="pi pi-pencil"
+                styleClass="p-button-rounded p-button-text p-button transparent-icon-btn"
+                (click)="editSupplier(supplier, i)" pTooltip="Modifica"></p-button>
+              <p-button type="button" icon="pi pi-trash"
+                styleClass="p-button-rounded p-button-text p-button transparent-red-icon"
+                (click)="deleteSupplier(supplier)" pTooltip="Elimina"></p-button>
             </div>
           </td>
         </tr>
@@ -134,5 +86,49 @@
     </p-table>
   </div>
 
-  <p-confirmDialog header="Conferma" [closable]="false"></p-confirmDialog>
+  <!-- Dialog di conferma eliminazione -->
+  <p-dialog header="Conferma Eliminazione" [(visible)]="displayConfirmDelete" [modal]="true" [closable]="false"
+    [style]="{ width: '600px', maxWidth: '95vw' }">
+    <!-- 1) Se stiamo caricando, mostro spinner -->
+    <ng-container *ngIf="loadingDependencies; else loadedList">
+      <div class="loading-list">
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Caricamento componenti…</span>
+      </div>
+    </ng-container>
+
+    <!-- 2) Quando finito, se ci sono dipendenze -->
+    <ng-template #loadedList>
+      <ng-container *ngIf="supplierDependentComponents.length > 0; else noDeps">
+        <div class="supplier-usage-warning">
+          <div class="warning-text">
+            Questo fornitore fornisce i seguenti componenti:
+          </div>
+          <ul class="component-list">
+            <li *ngFor="let name of supplierDependentComponents" class="component-item">
+              {{ name }}
+            </li>
+          </ul>
+          <div class="removal-warning">
+            <i class="pi pi-info-circle info-icon"></i>
+            <strong>Se procedi, tutti questi componenti verranno eliminati.</strong>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #noDeps>
+        <p>
+          Sei sicuro di voler eliminare il fornitore
+          <strong>{{ supplierToDelete?.name }}</strong>?
+        </p>
+      </ng-template>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="No" icon="pi pi-times" class="btn-dialog-no"
+        (click)="rejectDelete()"></button>
+      <button pButton type="button" label="Sì" icon="pi pi-check" class="btn-dialog-yes" (click)="confirmDelete()"
+        [disabled]="loadingDependencies" autofocus></button>
+    </ng-template>
+  </p-dialog>
+
 </div>
