@@ -64,10 +64,65 @@
 /* Navigation buttons spacing */
 .navigation-row {
   margin-top: 1.5rem;
+
+  ::ng-deep .p-button {
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &.p-button-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+
+      &:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateY(-1px);
+      }
+    }
+
+    &.p-button-outlined {
+      background-color: #6c757d;
+      border-color: #6c757d;
+      color: #fff;
+
+      &:hover {
+        background-color: #545b62;
+        border-color: #545b62;
+      }
+    }
+  }
 }
 
-.nav-buttons :global(.p-button) {
+.nav-buttons ::ng-deep .p-button {
   min-width: 6rem;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &.p-button-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+
+    &:hover {
+      background-color: #0056b3;
+      border-color: #0056b3;
+      transform: translateY(-1px);
+    }
+  }
+
+  &.p-button-outlined {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+
+    &:hover {
+      background-color: #545b62;
+      border-color: #545b62;
+    }
+  }
 }
 
 /* Button container for vertical layout with full width */
@@ -76,9 +131,34 @@
   flex-direction: column; // Questa proprietà forza un layout verticale
   gap: 1rem;
 
-  .p-button {
+  ::ng-deep .p-button {
     width: 100%;
     min-height: 3rem;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &.p-button-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+
+      &:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateY(-1px);
+      }
+    }
+
+    &.p-button-outlined {
+      background-color: transparent;
+      border-color: #6c757d;
+
+      &:hover {
+        background-color: #545b62;
+        border-color: #545b62;
+      }
+    }
   }
 }
 
@@ -88,6 +168,35 @@
   justify-content: center;
   gap: 2rem;
   margin-top: 1rem;
+
+  ::ng-deep .p-button {
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &.p-button-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+
+      &:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateY(-1px);
+      }
+    }
+
+    &.p-button-outlined {
+      background-color: transparent;
+      border-color: #6c757d;
+      color: #fff;
+
+      &:hover {
+        background-color: #545b62;
+        border-color: #545b62;
+      }
+    }
+  }
 }
 
 /* Image upload styling */
@@ -311,95 +420,228 @@
 }
 
 .optional-btn,
-.optional-field-cell .p-button {
+.optional-field-cell ::ng-deep .p-button {
   min-width: 160px;
   width: 100%;
   justify-content: center;
-}
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
 
-.icon-trash {
-  background: transparent !important;
-  border: none !important;
-  color: #888 !important;
-  font-size: 1.2rem !important;
-  margin-left: 0.2rem;
-  cursor: pointer;
-  transition: color 0.2s;
-  min-width: 2.5rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  &.p-button-outlined {
+    background-color: transparent;
+    border-color: #007bff;
+    color: #007bff;
 
-.icon-trash:hover {
-  color: #e53935 !important;
-}
-
-.required-field {
-  color: red;
-  margin-left: 2px;
-}
-
-/* styles.scss (o nel file SCSS del componente) */
-.full-width-container {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-.components-row {
-  display: flex;
-  flex-wrap: wrap;
-  /* in caso di schermi stretti cadano in colonna */
-  align-items: flex-end;
-  gap: 1rem;
-  width: 100%;
-  padding-bottom: 2rem;
-
-  .p-field {
-    margin-bottom: 0;
-    /* il gap gestisce lo spazio */
-  }
-
-  /* 75% = 3 parti su 4 */
-  & .first {
-    flex: 3;
-  }
-
-  /* 25% = 1 parte su 4 */
-  & .second {
-    flex: 1;
-  }
-
-  /* elemento vuoto che non occupa spazio */
-  & .third {
-    flex: 0;
-  }
-
-  /* forza i componenti PrimeNG a riempire il proprio flex-item */
-  & ::ng-deep .p-dropdown {
-    width: 100% !important;
-  }
-
-  // Solo l’input-number: miriamo all’input interno
-  & ::ng-deep .p-inputnumber-input {
-    width: 100% !important;
-    text-align: center;
-  }
-}
-
-/* Media query per mobile: colonna unica al 100% */
-@media (max-width: 768px) {
-  .components-row {
-    flex-direction: column;
-
-    & .first,
-    & .second,
-    & .third {
-      flex: none;
-      width: 100%;
+    &:hover {
+      background-color: #0056b3;
+      border-color: #0056b3;
+      color: #fff;
     }
   }
 }
+
+// Add consistent styling for all form buttons
+::ng-deep .add-product-container {
+  .p-button {
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &.p-button-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+
+      &:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateY(-1px);
+      }
+    }
+
+    &.p-button-outlined {
+      background-color: transparent;
+      border-color: #6c757d;
+      color: #6c757d;
+
+      &:hover {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: #fff;
+      }
+    }
+
+    &.p-button-danger {
+      background-color: #dc3545;
+      border-color: #dc3545;
+
+      &:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+        transform: translateY(-1px);
+      }
+    }
+
+    &.p-button-text {
+      background: none !important;
+      border: none !important;
+      color: #495057;
+      font-size: 1.25rem;
+      padding: 0.25rem 0.4rem;
+      min-width: unset;
+      min-height: unset;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.18s;
+
+      &:hover {
+        color: #007bff;
+      }
+
+      &.p-button-danger {
+        color: #c0392b;
+
+        &:hover {
+          color: #e74c3c;
+        }
+      }
+    }
+
+    &.p-button-sm {
+      padding: 6px 12px;
+      font-size: 0.875rem;
+    }
+  }
+
+  // File upload button styling
+  .p-fileupload-basic .p-button {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+
+    &:hover {
+      background-color: #0056b3;
+      border-color: #0056b3;
+    }
+  }
+
+  // Dialog footer buttons
+  .p-dialog-footer .p-button {
+    margin-left: 8px;
+
+    &.p-button-text {
+      background-color: #6c757d;
+      border-color: #6c757d;
+      color: #fff;
+
+      &:hover {
+        background-color: #545b62;
+        border-color: #545b62;
+      }
+    }
+  }
+}
+
+.gradient-filled {
+  background: linear-gradient(90deg, #2196f3 0%, #42a5f5 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.25);
+  font-weight: 600;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: linear-gradient(90deg, #1976d2 0%, #1e88e5 100%) !important;
+    box-shadow: 0 6px 18px rgba(25, 118, 210, 0.35);
+    transform: translateY(-2px);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.4);
+  }
+}
+
+.variant-add-btn {
+  background-color: transparent;
+  border: 2px solid #007bff;
+  color: #007bff;
+  font-weight: 600;
+  padding: 12px 32px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #007bff;
+    color: #fff;
+    transform: translateY(-1px);
+  }
+}
+
+::ng-deep .variant-add-btn.p-button {
+  background-color: transparent !important;
+  border: 2px solid #007bff !important;
+  color: #007bff !important;
+  font-weight: 600;
+  padding: 12px 32px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+::ng-deep .variant-add-btn.p-button:hover {
+  background-color: #007bff !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+::ng-deep .image-upload-section .transparent-upload-btn.p-button {
+  background-color: transparent !important;
+  border: 2px solid #007bff !important;
+  color: #007bff !important;
+  font-weight: 600;
+  padding: 12px 32px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+::ng-deep .image-upload-section .transparent-upload-btn.p-button:hover {
+  background-color: #007bff !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+::ng-deep .p-steps {
+  .p-steps-item {
+    .p-menuitem-link {
+      .p-steps-number {
+        background-color: #d0e7ff; // blu chiaro per gli step non attivi
+        color: #007bff;
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+      }
+    }
+
+    &.p-highlight .p-menuitem-link .p-steps-number {
+      background-color: #007bff; // blu normale per lo step attivo
+      color: white;
+    }
+
+    &.p-disabled .p-menuitem-link .p-steps-number {
+      background-color: #e0e0e0; // grigio chiaro per step futuri
+      color: #999;
+    }
+  }
+}
+
+
+
+
