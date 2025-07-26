@@ -13,8 +13,7 @@
         <div class="form-group">
           <label for="tessutoName">Nome Tessuto <span class="required-field">*</span></label>
           <input pInputText id="tessutoName" type="text" [(ngModel)]="newTessuto.name" name="name"
-            placeholder="Categoria del tessuto..."
-            [class.ng-invalid]="shouldShowFieldError(newTessuto.name)" />
+            placeholder="Categoria del tessuto..." [class.ng-invalid]="shouldShowFieldError(newTessuto.name)" />
           <small *ngIf="shouldShowFieldError(newTessuto.name)" class="p-error">
             Il nome del tessuto è obbligatorio
           </small>
@@ -76,12 +75,14 @@
           <td>{{ tessuto.mtPrice | currency : "EUR" }}</td>
           <td class="actions-cell">
             <div class="action-buttons">
-              <button pButton type="button" icon="pi pi-pencil"
-                class="p-button-rounded p-button-text p-button-sm action-edit" (click)="editTessuto(tessuto, i)"
-                pTooltip="Modifica"></button>
-              <button pButton type="button" icon="pi pi-trash"
-                class="p-button-rounded p-button-danger p-button-text p-button-sm action-delete"
-                (click)="deleteTessuto(tessuto)" pTooltip="Elimina"></button>
+              <p-button type="button" icon="pi pi-pencil"
+                styleClass="p-button-rounded p-button-text p-button transparent-icon-btn"
+                (click)="editTessuto(tessuto, i)" pTooltip="Modifica">
+              </p-button>
+              <p-button type="button" icon="pi pi-trash"
+                styleClass="p-button-rounded p-button-text p-button transparent-red-icon"
+                (click)="deleteTessuto(tessuto)" pTooltip="Elimina">
+              </p-button>
             </div>
           </td>
         </tr>
@@ -95,5 +96,18 @@
     </p-table>
   </div>
 
-  <p-confirmDialog header="Conferma" [closable]="false"></p-confirmDialog>
+  <p-dialog header="Conferma Eliminazione" [(visible)]="displayConfirmDelete" [modal]="true" [closable]="false"
+    [style]="{ width: '350px' }">
+    <p>Sei sicuro di voler eliminare il tessuto?</p>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="No" icon="pi pi-times" class="btn-dialog-no"
+        (click)="rejectDelete()"></button>
+
+      <button pButton type="button" label="Sì" icon="pi pi-check" class="btn-dialog-yes" (click)="confirmDelete()"
+        autofocus></button>
+    </ng-template>
+  </p-dialog>
+
+
 </div>

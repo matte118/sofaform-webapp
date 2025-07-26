@@ -260,6 +260,11 @@
         button.icon-delete:hover {
           color: #e74c3c;
         }
+
+        // Specific pencil icon styling
+        .pi-pencil {
+          color: #007bff !important;
+        }
       }
 
       .empty-message {
@@ -1156,6 +1161,19 @@
   .add-variant-button {
     border: none !important;
     border-radius: 0 !important;
+  }
+
+  // Ensure all pencil icons have the correct color
+  ::ng-deep .pi-pencil {
+    color: #007bff !important;
+  }
+
+  ::ng-deep .p-button .pi-pencil {
+    color: #007bff !important;
+  }
+
+  ::ng-deep .p-button-text .pi-pencil {
+    color: #007bff !important;
   }
 }
 

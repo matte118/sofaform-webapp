@@ -268,7 +268,6 @@
     object-position: center;
   }
 
-  /* Contenitore e styling dell'immagine */
   .product-image-container {
     width: 100%;
     height: 180px; // Ridotta da 200px
@@ -484,7 +483,6 @@
   }
 }
 
-/* Dialog Styles */
 ::ng-deep .p-dialog {
   .field {
     margin-bottom: 1.5rem;
@@ -497,7 +495,6 @@
     }
   }
 
-  /* Rivestimento dropdown specific styles */
   .p-dropdown {
 
     .selected-rivestimento,
@@ -522,7 +519,6 @@
     }
   }
 
-  /* Ensure dropdown panel can scroll properly */
   .p-dropdown-panel {
     z-index: 9999 !important;
     max-height: 250px !important;
@@ -574,7 +570,6 @@
   }
 }
 
-/* Override PrimeNG dropdown styles globally for better scrolling */
 ::ng-deep {
   .p-dropdown-panel {
     .p-dropdown-items {
@@ -595,7 +590,6 @@
   }
 }
 
-/* Responsive dialog adjustments */
 @media (max-width: 768px) {
   ::ng-deep .p_dialog {
     width: 95vw !important;
@@ -616,7 +610,6 @@
   }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .home {
     .p-grid {
@@ -652,7 +645,6 @@
   }
 }
 
-/* Stili per il dialog di modifica prodotto - Layout migliorato */
 ::ng-deep .edit-product-dialog {
   .p-dialog-header {
     border-bottom: 1px solid #e9ecef;
@@ -780,7 +772,6 @@
         }
       }
 
-      // Variant form styles
       .variant-form {
         background: #f8f9fa;
         border-radius: 6px;
@@ -1062,7 +1053,6 @@
   }
 }
 
-/* Responsive adjustments */
 @media (max-width: 640px) {
   ::ng-deep .edit-product-dialog {
     .p-dialog-content {
@@ -1082,12 +1072,10 @@
   }
 }
 
-/* Make sure dialog overlay appears above everything else */
 ::ng-deep .p-dialog-mask {
   z-index: 1000;
 }
 
-/* Styles for variant components dialog */
 ::ng-deep .variant-components-dialog {
   .p-dialog-content {
     padding: 0;
@@ -1126,7 +1114,6 @@
         }
       }
 
-      /* Grid layout for form fields */
       .p-grid {
         margin: 0;
 
@@ -1150,20 +1137,17 @@
   }
 }
 
-/* Required field indicator */
 .required-field {
   color: #e53e3e;
   font-weight: bold;
   margin-left: 0.25rem;
 }
 
-/* Make dropdown and multiselect panels appear above dialog */
 ::ng-deep .p-dropdown-panel,
 ::ng-deep .p-multiselect-panel {
   z-index: 10001 !important;
 }
 
-/* === DIALOG SELEZIONE RIVESTIMENTI (multi) === */
 ::ng-deep .p-dialog .rivestimento-selection-section {
   margin-bottom: 1.5rem;
 
@@ -1354,7 +1338,6 @@
   }
 }
 
-/* Totale rivestimenti */
 ::ng-deep .p-dialog .rivestimenti-total {
   background: #f7fafc;
   border: 1px solid #e2e8f0;
@@ -1376,7 +1359,6 @@
   }
 }
 
-/* Responsive adjustments for rivestimenti dialog */
 @media (max-width: 768px) {
   ::ng-deep .p-dialog .rivestimento-meters-group {
     .rivestimento-meters-row {
@@ -1398,4 +1380,35 @@
       }
     }
   }
+}
+
+::ng-deep .p-button.p-button-primary {
+  min-width: 6rem;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  background-color: #007bff;
+  border-color: #007bff;
+
+  &:hover {
+    background-color: darken(#007bff, 10%);
+    border-color: darken(#007bff, 10%);
+  }
+}
+
+.home ::ng-deep .card-actions .pi-pencil {
+  color: #007bff !important;
+}
+
+::ng-deep .pi-pencil {
+  color: #007bff !important;
+}
+
+::ng-deep .p-button .pi-pencil {
+  color: #007bff !important;
+}
+
+::ng-deep .p-button-text .pi-pencil {
+  color: #007bff !important;
 }

@@ -61,3 +61,27 @@ body {
   margin-left: 2px;
   font-weight: bold;
 }
+
+/* ------------------------------------------
+   Conferma dialog: spazio tra i due button
+-------------------------------------------*/
+.p-confirm-dialog .p-button {
+  margin: 0 0.5rem;
+}
+
+/* -------------------------------
+   Pulsante “No” (rosso trash-icon)
+--------------------------------*/
+.btn-no.p-button,
+.btn-no.p-button .p-button-icon {
+  color: #c0392b !important;  /* rosso scuro */
+}
+
+/* -------------------------------
+   Pulsante “Sì” (blu pencil-icon)
+--------------------------------*/
+.btn-yes.p-button,
+.btn-yes.p-button .p-button-icon {
+  color: #007bff !important;  /* blu primario */
+}
+

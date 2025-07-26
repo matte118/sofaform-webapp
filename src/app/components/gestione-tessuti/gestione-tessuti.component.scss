@@ -176,7 +176,7 @@
         }
       }
 
-      .p-datatable-thead > tr > th {
+      .p-datatable-thead>tr>th {
         background: #f8f9fa;
         color: #495057;
         font-weight: 600;
@@ -184,14 +184,14 @@
         border-bottom: 2px solid #e9ecef;
       }
 
-      .p-datatable-tbody > tr {
+      .p-datatable-tbody>tr {
         transition: background-color 0.2s ease;
 
         &:hover {
           background-color: #f8f9fa;
         }
 
-        > td {
+        >td {
           padding: 16px 20px;
           border-bottom: 1px solid #f1f3f4;
           vertical-align: middle;
@@ -202,7 +202,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem; /* spazio di 8px tra i bottoni */
+        gap: 0.5rem;
+        /* spazio di 8px tra i bottoni */
 
         button.icon-edit,
         button.icon-delete {
@@ -224,11 +225,18 @@
         button.icon-edit:hover {
           color: #007bff;
         }
+
         button.icon-delete {
           color: #c0392b;
         }
+
         button.icon-delete:hover {
           color: #e74c3c;
+        }
+
+        // Specific pencil icon styling
+        .pi-pencil {
+          color: #007bff !important;
         }
       }
 
@@ -272,7 +280,7 @@
   }
 
   // 1) Centra il testo dell’intestazione "Azioni"
-  ::ng-deep .p-datatable-thead > tr > th {
+  ::ng-deep .p-datatable-thead>tr>th {
     &:last-child {
       text-align: center;
     }
@@ -381,4 +389,68 @@
     color: red;
     margin-left: 2px;
   }
+}
+
+// Buttons styling
+
+:host ::ng-deep .transparent-red-icon {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep button.transparent-red-icon.p-button {
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep button.transparent-red-icon.p-button,
+button.transparent-red-icon.p-button:hover,
+button.transparent-red-icon.p-button:focus,
+button.transparent-red-icon.p-button:active {
+  background-color: transparent !important;
+}
+
+:host ::ng-deep button.transparent-red-icon.p-button .p-button-icon {
+  color: red !important;
+}
+
+:host ::ng-deep button.transparent-icon-btn.p-button {
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep button.transparent-icon-btn.p-button,
+button.transparent-icon-btn.p-button:hover,
+button.transparent-icon-btn.p-button:focus,
+button.transparent-icon-btn.p-button:active {
+  background-color: transparent !important;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button {
+  background-color: #c0392b !important;
+  border-color: #c0392b !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button:hover {
+  background-color: #e74c3c !important;
+  border-color: #e74c3c !important;
+}
+
+:host ::ng-deep .btn-dialog-yes.p-button {
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+:host ::ng-deep .btn-dialog-yes.p-button:hover {
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
 }

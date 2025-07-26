@@ -642,6 +642,19 @@
   }
 }
 
+/* Pencil icon color consistency */
+::ng-deep .pi-pencil {
+  color: #007bff !important;
+}
+
+::ng-deep .p-button .pi-pencil {
+  color: #007bff !important;
+}
+
+::ng-deep .p-button-text .pi-pencil {
+  color: #007bff !important;
+}
+
 
 
 

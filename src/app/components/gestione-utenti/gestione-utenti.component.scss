@@ -117,4 +117,17 @@
   .p-dropdown {
     min-width: 8rem;
   }
+
+  // Pencil icon color
+  .pi-pencil {
+    color: #007bff !important;
+  }
+
+  .p-button .pi-pencil {
+    color: #007bff !important;
+  }
+
+  .p-button-text .pi-pencil {
+    color: #007bff !important;
+  }
 }

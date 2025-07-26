@@ -17,12 +17,12 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Rivestimento } from '../../../models/rivestimento.model';
 import { RivestimentoService } from '../../../services/rivestimento.service';
-import { forkJoin, Observable, of, Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { finalize, catchError } from 'rxjs/operators';
 
 @Component({
@@ -39,7 +39,7 @@ import { finalize, catchError } from 'rxjs/operators';
     FloatLabelModule,
     DividerModule,
     ToastModule,
-    ConfirmDialogModule,
+    DialogModule,
     TooltipModule,
   ],
   providers: [MessageService, ConfirmationService],
@@ -51,40 +51,31 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
 
   tessuti: Rivestimento[] = [];
   newTessuto: Rivestimento = new Rivestimento('', "", 0);
-  editingIndex: number = -1;
-  loading: boolean = true; // Start with loading true
-  dataLoaded: boolean = false; // Track when data is loaded
-  saving: boolean = false;
-
-  // Tracking refresh
-  refreshNeeded: boolean = false;
+  editingIndex = -1;
+  loading = true;
+  dataLoaded = false;
+  saving = false;
+  refreshNeeded = false;
   private refresh$ = new Subject<void>();
+  formSubmitted = false;
+  formValid = true;
 
-  // Add form state tracking
-  formSubmitted: boolean = false;
-  formValid: boolean = true;
+  displayConfirmDelete = false;
+  tessutoToDelete?: Rivestimento;
 
   constructor(
     private rivestimentoService: RivestimentoService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService,
     private cd: ChangeDetectorRef,
     private zone: NgZone
   ) { }
 
   ngOnInit() {
-    this.loading = true;
-    this.dataLoaded = false;
     this.loadAllData();
-
-    // Setup refresh listener
-    this.refresh$.subscribe(() => {
-      this.loadAllData();
-    });
+    this.refresh$.subscribe(() => this.loadAllData());
   }
 
   ngAfterViewInit() {
-    // If we have tessuti but they're not displaying correctly, force a refresh
     setTimeout(() => {
       if (this.tessuti.length > 0 && this.refreshNeeded) {
         this.refreshTable();
@@ -249,45 +240,53 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   }
 
   deleteTessuto(tessuto: Rivestimento) {
-    this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il tessuto?`,
-      header: 'Conferma Eliminazione',
-      acceptButtonStyleClass: 'p-button-primary',
-      rejectButtonStyleClass: 'p-button-danger',
-      accept: () => {
-        this.saving = true;
-        this.rivestimentoService.deleteRivestimento(tessuto.id).subscribe(
-          () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Successo',
-              detail: 'Tessuto eliminato con successo',
-            });
-
-            // Use our refresh subject
-            this.refresh$.next();
-
-            if (
-              this.editingIndex >= 0 &&
-              this.tessuti[this.editingIndex]?.id === tessuto.id
-            ) {
-              this.resetForm();
-            }
-            this.saving = false;
-          },
-          (error) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Errore',
-              detail: "Errore durante l'eliminazione del tessuto",
-            });
-            console.error('Error deleting tessuto:', error);
-            this.saving = false;
-          }
-        );
-      },
-    });
+    this.tessutoToDelete = tessuto;
+    this.displayConfirmDelete = true;
   }
+
+  confirmDelete() {
+    if (!this.tessutoToDelete) {
+      this.displayConfirmDelete = false;
+      return;
+    }
+    this.saving = true;
+    this.rivestimentoService.deleteRivestimento(this.tessutoToDelete.id)
+      .subscribe(
+        () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Successo',
+            detail: 'Tessuto eliminato con successo',
+          });
+          this.refresh$.next();
+          // resetta form se stavi editando proprio quel tessuto
+          if (
+            this.editingIndex >= 0 &&
+            this.tessuti[this.editingIndex]?.id === this.tessutoToDelete?.id
+          ) {
+            this.resetForm();
+          }
+          this.saving = false;
+          this.displayConfirmDelete = false;
+        },
+        (error) => {
+          console.error('Error deleting tessuto:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Errore',
+            detail: "Errore durante l'eliminazione del tessuto",
+          });
+          this.saving = false;
+          this.displayConfirmDelete = false;
+        }
+      );
+  }
+
+  rejectDelete() {
+    this.displayConfirmDelete = false;
+    this.tessutoToDelete = undefined;
+  }
+
 
   resetForm() {
     this.newTessuto = new Rivestimento('', '', 0);
