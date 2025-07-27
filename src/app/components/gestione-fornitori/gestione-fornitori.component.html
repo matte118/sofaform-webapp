@@ -7,22 +7,26 @@
   </div>
 
   <div class="supplier-form-card" [ngClass]="{ 'editing-mode': isEditing }">
-    <h2>{{ formTitle }}</h2>
+    <h2 style="padding-bottom: 20px;">{{ formTitle }}</h2>
     <form class="supplier-form" #supplierForm="ngForm">
       <div class="form-row">
         <div class="form-group">
-          <label for="supplierName">Nome <span class="required-field">*</span></label>
-          <input pInputText id="supplierName" name="name" type="text" placeholder="Nome del fornitore"
-            [(ngModel)]="newSupplier.name" [class.ng-invalid]="shouldShowFieldError(newSupplier.name)" />
+          <p-floatLabel>
+            <input pInputText id="supplierName" name="name" type="text" [(ngModel)]="newSupplier.name"
+              [class.ng-invalid]="shouldShowFieldError(newSupplier.name)" />
+            <label for="supplierName">Nome <span class="required-field">*</span></label>
+          </p-floatLabel>
           <small *ngIf="shouldShowFieldError(newSupplier.name)" class="p-error">
             Il nome del fornitore è obbligatorio
           </small>
         </div>
 
         <div class="form-group">
-          <label for="supplierContact">Contatto (facoltativo)</label>
-          <input pInputText id="supplierContact" name="contact" type="text" placeholder="Email o telefono"
+          <p-floatLabel>
+            <input pInputText id="supplierContact" name="contact" type="text"
             [(ngModel)]="newSupplier.contact" />
+            <label for="supplierContact">Contatto</label>
+          </p-floatLabel>
         </div>
       </div>
 

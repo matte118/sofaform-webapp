@@ -7,27 +7,30 @@
   </div>
 
   <div class="tessuto-form-card" [ngClass]="{ 'editing-mode': isEditing }">
-    <h2>{{ formTitle }}</h2>
+    <h2 style="padding-bottom: 20px;">{{ formTitle }}</h2>
     <form class="tessuto-form" #tessutoForm="ngForm">
       <div class="form-row">
         <div class="form-group">
-          <label for="tessutoName">Nome Tessuto <span class="required-field">*</span></label>
-          <input pInputText id="tessutoName" type="text" [(ngModel)]="newTessuto.name" name="name"
-            placeholder="Categoria del tessuto..." [class.ng-invalid]="shouldShowFieldError(newTessuto.name)" />
+          <p-floatLabel>
+            <input pInputText id="tessutoName" type="text" [(ngModel)]="newTessuto.name" name="name"
+              [class.ng-invalid]="shouldShowFieldError(newTessuto.name)" />
+            <label for="tessutoName">Nome Tessuto <span class="required-field">*</span></label>
+          </p-floatLabel>
           <small *ngIf="shouldShowFieldError(newTessuto.name)" class="p-error">
             Il nome del tessuto è obbligatorio
           </small>
         </div>
 
         <div class="form-group">
-          <label for="tessutoPrice">Prezzo al Metro <span class="required-field">*</span> (€)</label>
-          <p-inputNumber id="tessutoPrice" [(ngModel)]="newTessuto.mtPrice" name="mtPrice" [minFractionDigits]="2"
-            [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT" [class.ng-invalid]="
-              shouldShowFieldError(
-                newTessuto.mtPrice > 0 ? newTessuto.mtPrice : null
-              )
-            ">
-          </p-inputNumber>
+          <p-floatLabel>
+            <p-floatLabel>
+              <p-inputNumber id="tessutoPrice" [(ngModel)]="newTessuto.mtPrice" name="mtPrice" placeholder="0,00"
+                [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="it-IT"
+                [class.ng-invalid]="formSubmitted && (newTessuto.mtPrice === null || newTessuto.mtPrice <= 0)"></p-inputNumber>
+              <label for="tessutoPrice">Prezzo al Metro <span class="required-field">*</span></label>
+            </p-floatLabel>
+          </p-floatLabel>
+
           <small *ngIf="formSubmitted && !formValid && newTessuto.mtPrice <= 0" class="p-error">
             Il prezzo al metro deve essere maggiore di zero
           </small>

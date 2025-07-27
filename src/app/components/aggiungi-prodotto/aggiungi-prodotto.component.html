@@ -1,7 +1,6 @@
 <div class="add-product-container">
   <p-toast></p-toast>
 
-  <!-- Overlay di caricamento durante il salvataggio -->
   <div *ngIf="isSavingProduct" class="saving-overlay">
     <div class="saving-content">
       <p-progressSpinner [style]="{ width: '80px', height: '80px' }" strokeWidth="4" fill="transparent"
@@ -11,7 +10,6 @@
     </div>
   </div>
 
-  <!-- Contenuto principale (disabilitato durante il salvataggio) -->
   <div [class.disabled-content]="isSavingProduct">
     <p-card header="Aggiungi Nuovo Prodotto" class="p-mb-4">
       <p-steps [model]="steps" [(activeIndex)]="currentStep" [readonly]="true" class="p-mb-4"></p-steps>
@@ -20,20 +18,19 @@
       <br />
 
       <form class="p-fluid p-formgrid p-grid">
-        <!-- Step 1: Informazioni Prodotto -->
         <ng-container *ngIf="currentStep === 0">
-          <div class="p-field p-col-12 p-md-6">
-            <label for="productName">Nome Prodotto <span class="required-field">*</span></label>
-            <input id="productName" pInputText [(ngModel)]="newSofaProduct.name" name="nome" required
-              placeholder="Inserisci il nome del prodotto"
-              [class.ng-invalid]="shouldShowProductFieldError(newSofaProduct.name)" />
+          <div class="p-field p-col-12 p-md-6" style="padding-top: 10px;">
+            <p-floatLabel variant="on">
+              <input id="productName" pInputText [(ngModel)]="newSofaProduct.name" name="nome" required
+                [class.ng-invalid]="shouldShowProductFieldError(newSofaProduct.name)" />
+              <label for="on_label">Nome Prodotto</label>
+            </p-floatLabel>
             <small *ngIf="shouldShowProductFieldError(newSofaProduct.name)" class="p-error">
               Campo obbligatorio
             </small>
           </div>
 
           <div class="p-field p-col-12 p-md-6">
-            <label>Immagine Prodotto</label>
             <div class="image-upload-section">
               <p-fileUpload *ngIf="!imagePreview && !isUploading" mode="basic" name="productImage" accept="image/*"
                 [maxFileSize]="5000000" (onSelect)="onFileSelect($event)" chooseLabel="Seleziona Immagine"
@@ -62,14 +59,15 @@
           </div>
 
           <div class="p-field p-col-12">
-            <label for="productDescription">Descrizione</label>
-            <textarea id="productDescription" pInputTextarea [(ngModel)]="newSofaProduct.description" name="descrizione"
-              rows="5" placeholder="Inserisci una descrizione del prodotto"></textarea>
+            <p-floatLabel>
+              <textarea id="productDescription" pInputTextarea [(ngModel)]="newSofaProduct.description"
+                name="descrizione" rows="5"></textarea>
+              <label>Descrizione</label>
+            </p-floatLabel>
           </div>
 
           <!-- Pulsanti per campi opzionali in due colonne -->
           <div class="p-field p-col-12">
-            <label>Scheda Tecnica:</label>
             <div class="optional-fields-grid">
               <!-- Seduta -->
               <div class="optional-field-cell">
@@ -144,8 +142,8 @@
           <div class="p-field p-col-12">
             <h3>Varianti del Prodotto</h3>
 
-            <div class="p-grid p-nogutter p-align-end">
-              <div class="p-field p-col-12 p-md-4">
+            <div class="p-grid p-nogutter p-align-end" style="padding-top: 15px;">
+              <div class="p-field p-col-12 p-md-2">
                 <p-floatLabel>
                   <input id="variantName" pInputText [(ngModel)]="newVariant.longName" name="nomeVariante" required
                     [class.ng-invalid]="shouldShowVariantFieldError(newVariant.longName)" />
@@ -156,14 +154,14 @@
                 </small>
               </div>
 
-              <div class="p-field p-col-12 p-md-2">
+              <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
                 <p-floatLabel>
                   <p-inputNumber id="seatsCount" [(ngModel)]="newVariant.seatsCount" name="postiSeduta"></p-inputNumber>
                   <label>Numero Posti</label>
                 </p-floatLabel>
               </div>
 
-              <div class="p-field p-col-12 p-md-2">
+              <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
                 <p-floatLabel>
                   <p-inputNumber id="mattressWidth" [(ngModel)]="newVariant.mattressWidth"
                     name="larghezzaMaterasso"></p-inputNumber>
@@ -172,8 +170,7 @@
               </div>
 
               <div class="p-field p-col-12 p-md-1">
-                <p-button
-                  [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'" (onClick)="addVariant()"
+                <p-button [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'" (onClick)="addVariant()"
                   [disabled]="!newVariant.longName.trim()"
                   [styleClass]="editingVariantIndex >= 0 ? 'p-button-success' : 'variant-add-btn'">
                 </p-button>
@@ -202,10 +199,14 @@
                     }}
                   </td>
                   <td>
-                    <p-button icon="pi pi-pencil" (onClick)="editVariant(i)"
-                      styleClass="p-button-text p-button-sm"></p-button>
-                    <p-button icon="pi pi-trash" (onClick)="deleteVariant(i)"
-                      styleClass="p-button-danger p-button-text p-button-sm"></p-button>
+                    <p-button type="button" icon="pi pi-pencil"
+                      styleClass="p-button-rounded p-button-text p-button transparent-icon-btn"
+                      (click)="editVariant(i)">
+                    </p-button>
+                    <p-button type="button" icon="pi pi-trash"
+                      styleClass="p-button-rounded p-button-text p-button transparent-red-icon"
+                      (click)="deleteVariant(i)">
+                    </p-button>
                   </td>
                 </tr>
               </ng-template>
@@ -220,20 +221,16 @@
 
             <!-- Variant selection section -->
             <div class="p-field p-mb-4">
-              <label class="p-d-block p-mb-2">Seleziona una variante per configurare i componenti:</label>
               <div class="p-grid">
-                <div class="p-col-12 p-md-6">
-                  <p-dropdown [options]="variants" [(ngModel)]="selectedVariant" optionLabel="longName"
-                    placeholder="Scegli una variante" (onChange)="selectVariantForComponents($event.value)"
-                    [style]="{'width':'100%'}"></p-dropdown>
+                <div class="p-col-12 p-md-6" style="padding-top: 10px;">
+                  <p-floatLabel>
+                    <p-dropdown [options]="variants" [(ngModel)]="selectedVariant" optionLabel="longName"
+                      inputId="variantDropdown" placeholder="Scegli una variante"
+                      (onChange)="selectVariantForComponents($event.value)" [style]="{ width: '100%' }"></p-dropdown>
+                    <label for="variantDropdown">Scegli una variante</label>
+                  </p-floatLabel>
                 </div>
               </div>
-            </div>
-
-            <!-- Message when no variant selected -->
-            <div *ngIf="!selectedVariant" class="p-text-center p-py-5">
-              <i class="pi pi-info-circle" style="font-size: 2rem; color: var(--primary-color);"></i>
-              <p class="p-mt-3">Seleziona una variante per configurare i componenti.</p>
             </div>
 
             <!-- -------------------------
@@ -243,77 +240,14 @@
             <div *ngIf="selectedVariant" class="special-components p-mt-4">
 
               <!-- Fusto -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Fusto <span class="required-field">*</span></label>
-                <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('fusto') || []" [(ngModel)]="selectedFusto"
-                    optionLabel="name" placeholder="Seleziona fusto" [showClear]="true"
-                    [disabled]="(getComponentsByType('fusto') || []).length === 0"
-                    (onChange)="onComponentSelected('fusto', $event.value)" name="fusto" filter="true">
-                    <ng-template let-item pTemplate="item">
-                      {{ formatComponentName(item) }}
-                    </ng-template>
-                    <ng-template let-selectedItem pTemplate="selectedItem">
-                      {{ formatComponentName(selectedItem) }}
-                    </ng-template>
-                  </p-dropdown>
-                  <small *ngIf="(getComponentsByType('fusto') || []).length === 0" class="p-error">
-                    Nessun componente di tipo fusto disponibile
-                  </small>
-                </div>
-              </div>
-
-              <!-- Gomma -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Gomma <span class="required-field">*</span></label>
-                <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('gomma') || []" [(ngModel)]="selectedGomma"
-                    optionLabel="name" placeholder="Seleziona gomma" [showClear]="true"
-                    [disabled]="(getComponentsByType('gomma') || []).length === 0"
-                    (onChange)="onComponentSelected('gomma', $event.value)" name="gomma" filter="true">
-                    <ng-template let-item pTemplate="item">
-                      {{ formatComponentName(item) }}
-                    </ng-template>
-                    <ng-template let-selectedItem pTemplate="selectedItem">
-                      {{ formatComponentName(selectedItem) }}
-                    </ng-template>
-                  </p-dropdown>
-                  <small *ngIf="(getComponentsByType('gomma') || []).length === 0" class="p-error">
-                    Nessun componente di tipo gomma disponibile
-                  </small>
-                </div>
-              </div>
-
-              <!-- Rete -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Rete <span class="required-field">*</span></label>
-                <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('rete') || []" [(ngModel)]="selectedRete"
-                    optionLabel="name" placeholder="Seleziona rete" [showClear]="true"
-                    [disabled]="(getComponentsByType('rete') || []).length === 0"
-                    (onChange)="onComponentSelected('rete', $event.value)" name="rete" filter="true">
-                    <ng-template let-item pTemplate="item">
-                      {{ formatComponentName(item) }}
-                    </ng-template>
-                    <ng-template let-selectedItem pTemplate="selectedItem">
-                      {{ formatComponentName(selectedItem) }}
-                    </ng-template>
-                  </p-dropdown>
-                  <small *ngIf="(getComponentsByType('rete') || []).length === 0" class="p-error">
-                    Nessun componente di tipo rete disponibile
-                  </small>
-                </div>
-              </div>
-
-              <!-- Piedini + Quantità -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Piedini (min 2) <span class="required-field">*</span></label>
-                <div class="p-col-12 p-md-5 p-d-flex p-jc-between">
-                  <div class="p-mr-2" style="width: 70%">
-                    <p-dropdown [options]="getComponentsByType('piedini')" [(ngModel)]="selectedPiedini"
-                      optionLabel="name" placeholder="Scegli piedini" [showClear]="true"
-                      [disabled]="getComponentsByType('piedini').length === 0" [style]="{width: '100%'}"
-                      (onChange)="onComponentSelected('piedini', $event.value)" name="piedini" filter="true">
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6">
+                  <p-floatLabel>
+                    <p-dropdown [options]="getComponentsByType('fusto') || []" [(ngModel)]="selectedFusto"
+                      optionLabel="name" inputId="fustoDropdown" placeholder="Seleziona Fusto" [showClear]="true"
+                      [disabled]="(getComponentsByType('fusto') || []).length === 0"
+                      (onChange)="onComponentSelected('fusto', $event.value)" name="fusto" filter="true"
+                      [ngStyle]="{ 'width': '100%' }">
                       <ng-template let-item pTemplate="item">
                         {{ formatComponentName(item) }}
                       </ng-template>
@@ -321,154 +255,284 @@
                         {{ formatComponentName(selectedItem) }}
                       </ng-template>
                     </p-dropdown>
+                    <label for="fustoDropdown">Fusto <span class="required-field">*</span></label>
+                  </p-floatLabel>
+                  <small *ngIf="(getComponentsByType('fusto') || []).length === 0" class="p-error">
+                    Nessun componente di tipo fusto disponibile
+                  </small>
+                </div>
+
+              </div>
+
+              <!-- Gomma -->
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6">
+                  <p-floatLabel>
+                    <p-dropdown [options]="getComponentsByType('gomma') || []" [(ngModel)]="selectedGomma"
+                      optionLabel="name" inputId="gommaDropdown" placeholder="Seleziona Gomma" [showClear]="true"
+                      [disabled]="(getComponentsByType('gomma') || []).length === 0"
+                      (onChange)="onComponentSelected('gomma', $event.value)" name="gomma" filter="true"
+                      [ngStyle]="{ 'width': '100%' }">
+                      <ng-template let-item pTemplate="item">
+                        {{ formatComponentName(item) }}
+                      </ng-template>
+                      <ng-template let-selectedItem pTemplate="selectedItem">
+                        {{ formatComponentName(selectedItem) }}
+                      </ng-template>
+                    </p-dropdown>
+                    <label for="gommaDropdown">Gomma <span class="required-field">*</span></label>
+                  </p-floatLabel>
+
+                  <small *ngIf="(getComponentsByType('gomma') || []).length === 0" class="p-error">
+                    Nessun componente di tipo gomma disponibile
+                  </small>
+                </div>
+              </div>
+
+
+              <!-- Rete -->
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6">
+                  <p-floatLabel>
+                    <p-dropdown [options]="getComponentsByType('rete') || []" [(ngModel)]="selectedRete"
+                      optionLabel="name" inputId="reteDropdown" placeholder="Seleziona Rete" [showClear]="true"
+                      [disabled]="(getComponentsByType('rete') || []).length === 0"
+                      (onChange)="onComponentSelected('rete', $event.value)" name="rete" filter="true"
+                      [ngStyle]="{ 'width': '100%' }">
+                      <ng-template let-item pTemplate="item">
+                        {{ formatComponentName(item) }}
+                      </ng-template>
+                      <ng-template let-selectedItem pTemplate="selectedItem">
+                        {{ formatComponentName(selectedItem) }}
+                      </ng-template>
+                    </p-dropdown>
+                    <label for="reteDropdown">Rete <span class="required-field">*</span></label>
+                  </p-floatLabel>
+
+                  <small *ngIf="(getComponentsByType('rete') || []).length === 0" class="p-error">
+                    Nessun componente di tipo rete disponibile
+                  </small>
+                </div>
+              </div>
+
+
+              <!-- Piedini + Quantità -->
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6 p-d-flex p-jc-between">
+                  <!-- Selezione Piedini -->
+                  <div class="p-mr-2" style="width: 70%;">
+                    <p-floatLabel>
+                      <p-dropdown [options]="getComponentsByType('piedini')" [(ngModel)]="selectedPiedini"
+                        optionLabel="name" inputId="piediniDropdown" placeholder="Scegli Piedini" [showClear]="true"
+                        [disabled]="getComponentsByType('piedini').length === 0"
+                        (onChange)="onComponentSelected('piedini', $event.value)" name="piedini" filter="true"
+                        [ngStyle]="{ 'width': '100%' }">
+                        <ng-template let-item pTemplate="item">
+                          {{ formatComponentName(item) }}
+                        </ng-template>
+                        <ng-template let-selectedItem pTemplate="selectedItem">
+                          {{ formatComponentName(selectedItem) }}
+                        </ng-template>
+                      </p-dropdown>
+                      <label for="piediniDropdown">
+                        Piedini<span class="required-field">*</span>
+                      </label>
+                    </p-floatLabel>
                     <small *ngIf="getComponentsByType('piedini').length === 0" class="p-error">
                       Nessun componente di tipo piedini disponibile
                     </small>
                   </div>
-                  <div style="width: 28%">
-                    <p-dropdown [options]="piediniQuantityOptions" [(ngModel)]="piediniQty" placeholder="Quantità"
-                      [style]="{width: '100%'}" [disabled]="getComponentsByType('piedini').length === 0"
-                      name="piediniQty"></p-dropdown>
+
+                  <!-- Quantità Piedini -->
+                  <div style="width: 28%; padding-top: 30px;">
+                    <p-floatLabel>
+                      <p-dropdown [options]="piediniQuantityOptions" [(ngModel)]="piediniQty"
+                        inputId="piediniQtyDropdown" placeholder="Quantità" name="piediniQty"
+                        [disabled]="getComponentsByType('piedini').length === 0"
+                        [ngStyle]="{ 'width': '100%' }"></p-dropdown>
+                      <label for="piediniQtyDropdown">Quantità</label>
+                    </p-floatLabel>
                   </div>
                 </div>
               </div>
 
+
               <!-- Materasso -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Materasso <span class="required-field">*</span></label>
-                <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('materasso') || []" [(ngModel)]="selectedMaterasso"
-                    optionLabel="name" placeholder="Seleziona materasso" [showClear]="true"
-                    [disabled]="(getComponentsByType('materasso') || []).length === 0"
-                    (onChange)="onComponentSelected('materasso', $event.value)" name="materasso" filter="true">
-                    <ng-template let-item pTemplate="item">
-                      {{ formatComponentName(item) }}
-                    </ng-template>
-                    <ng-template let-selectedItem pTemplate="selectedItem">
-                      {{ formatComponentName(selectedItem) }}
-                    </ng-template>
-                  </p-dropdown>
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6">
+                  <p-floatLabel>
+                    <p-dropdown [options]="getComponentsByType('materasso') || []" [(ngModel)]="selectedMaterasso"
+                      optionLabel="name" inputId="materassoDropdown" placeholder="Seleziona Materasso"
+                      [showClear]="true" [disabled]="(getComponentsByType('materasso') || []).length === 0"
+                      (onChange)="onComponentSelected('materasso', $event.value)" name="materasso" filter="true"
+                      [ngStyle]="{ 'width': '100%' }">
+                      <ng-template let-item pTemplate="item">
+                        {{ formatComponentName(item) }}
+                      </ng-template>
+                      <ng-template let-selectedItem pTemplate="selectedItem">
+                        {{ formatComponentName(selectedItem) }}
+                      </ng-template>
+                    </p-dropdown>
+                    <label for="materassoDropdown">
+                      Materasso <span class="required-field">*</span>
+                    </label>
+                  </p-floatLabel>
+
                   <small *ngIf="(getComponentsByType('materasso') || []).length === 0" class="p-error">
                     Nessun componente di tipo materasso disponibile
                   </small>
                 </div>
               </div>
 
+
               <!-- Tappezzeria -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Tappezzeria</label>
+              <div class="p-field p-grid" style="padding-top: 10px;">
                 <div class="p-col-12 p-md-6">
-                  <p-multiSelect [options]="getComponentsByType('tappezzeria')" [(ngModel)]="tappezzeriaList"
-                    optionLabel="name" placeholder="Scegli tappezzeria"
-                    [disabled]="getComponentsByType('tappezzeria').length === 0" name="tappezzeriaList" filter="true">
-                    <ng-template let-item pTemplate="item">
-                      {{ formatComponentName(item) }}
-                    </ng-template>
-                    <ng-template let-selectedItem pTemplate="selectedItem">
-                      {{ formatComponentName(selectedItem) }}
-                    </ng-template>
-                  </p-multiSelect>
+                  <p-floatLabel>
+                    <p-multiSelect [options]="getComponentsByType('tappezzeria')" [(ngModel)]="tappezzeriaList"
+                      optionLabel="name" inputId="tappezzeriaSelect" placeholder="Scegli Tappezzeria"
+                      name="tappezzeriaList" filter="true" [disabled]="getComponentsByType('tappezzeria').length === 0"
+                      [ngStyle]="{ 'width': '100%' }">
+                      <ng-template let-item pTemplate="item">
+                        {{ formatComponentName(item) }}
+                      </ng-template>
+                      <ng-template let-selectedItem pTemplate="selectedItem">
+                        {{ formatComponentName(selectedItem) }}
+                      </ng-template>
+                    </p-multiSelect>
+                    <label for="tappezzeriaSelect">Tappezzeria</label>
+                  </p-floatLabel>
                   <small *ngIf="getComponentsByType('tappezzeria').length === 0" class="p-error">
                     Nessun componente di tipo tappezzeria disponibile
                   </small>
                 </div>
               </div>
 
+
               <!-- Ferramenta (multi-select) -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Ferramenta</label>
+              <div class="p-field p-grid" style="padding-top: 10px;">
                 <div class="p-col-12 p-md-6">
-                  <p-multiSelect [options]="getComponentsByType('ferramenta')" [(ngModel)]="ferramentaList"
-                    optionLabel="name" placeholder="Scegli ferramenta"
-                    [disabled]="getComponentsByType('ferramenta').length === 0" name="ferramentaList" filter="true"></p-multiSelect>
+                  <p-floatLabel>
+                    <p-multiSelect [options]="getComponentsByType('ferramenta')" [(ngModel)]="ferramentaList"
+                      optionLabel="name" inputId="ferramentaSelect" placeholder="Scegli Ferramenta"
+                      name="ferramentaList" filter="true" [disabled]="getComponentsByType('ferramenta').length === 0"
+                      [ngStyle]="{ 'width': '100%' }"></p-multiSelect>
+                    <label for="ferramentaSelect">Ferramenta</label>
+                  </p-floatLabel>
                   <small *ngIf="getComponentsByType('ferramenta').length === 0" class="p-error">
                     Nessun componente di tipo ferramenta disponibile
                   </small>
                 </div>
               </div>
 
+
               <!-- Imballo -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Imballo <span class="required-field">*</span></label>
-                <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('imballo')" [(ngModel)]="selectedImballo"
-                    optionLabel="name" placeholder="Seleziona imballo" [showClear]="true"
-                    [disabled]="getComponentsByType('imballo').length === 0"
-                    (onChange)="onComponentSelected('imballo', $event.value)" name="imballo" filter="true"></p-dropdown>
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6">
+                  <p-floatLabel>
+                    <p-dropdown [options]="getComponentsByType('imballo')" [(ngModel)]="selectedImballo"
+                      optionLabel="name" inputId="imballoDropdown" placeholder="Seleziona Imballo" [showClear]="true"
+                      [disabled]="getComponentsByType('imballo').length === 0"
+                      (onChange)="onComponentSelected('imballo', $event.value)" name="imballo" filter="true"
+                      [ngStyle]="{ 'width': '100%' }"></p-dropdown>
+                    <label for="imballoDropdown">
+                      Imballo <span class="required-field">*</span>
+                    </label>
+                  </p-floatLabel>
                   <small *ngIf="getComponentsByType('imballo').length === 0" class="p-error">
                     Nessun componente di tipo imballo disponibile
                   </small>
                 </div>
               </div>
 
+
               <!-- Scatola -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Scatola <span class="required-field">*</span></label>
-                <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('scatola')" [(ngModel)]="selectedScatola"
-                    optionLabel="name" placeholder="Seleziona scatola" [showClear]="true"
-                    [disabled]="getComponentsByType('scatola').length === 0"
-                    (onChange)="onComponentSelected('scatola', $event.value)" name="scatola" filter="true"></p-dropdown>
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6">
+                  <p-floatLabel>
+                    <p-dropdown [options]="getComponentsByType('scatola')" [(ngModel)]="selectedScatola"
+                      optionLabel="name" inputId="scatolaDropdown" placeholder="Seleziona Scatola" [showClear]="true"
+                      [disabled]="getComponentsByType('scatola').length === 0"
+                      (onChange)="onComponentSelected('scatola', $event.value)" name="scatola" filter="true"
+                      [ngStyle]="{ 'width': '100%' }"></p-dropdown>
+                    <label for="scatolaDropdown">
+                      Scatola <span class="required-field">*</span>
+                    </label>
+                  </p-floatLabel>
                   <small *ngIf="getComponentsByType('scatola').length === 0" class="p-error">
                     Nessun componente di tipo scatola disponibile
                   </small>
                 </div>
               </div>
 
+
               <!-- Tela Marchiata -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Tela Marchiata</label>
-                <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('tela_marchiata')" [(ngModel)]="selectedTelaMarchiata"
-                    optionLabel="name" placeholder="Seleziona tela marchiata" [showClear]="true"
-                    [disabled]="getComponentsByType('tela_marchiata').length === 0"
-                    (onChange)="onComponentSelected('tela_marchiata', $event.value)" name="telaMarchiata" filter="true">
-                    <ng-template let-item pTemplate="item">
-                      {{ formatComponentName(item) }}
-                    </ng-template>
-                    <ng-template let-selectedItem pTemplate="selectedItem">
-                      {{ formatComponentName(selectedItem) }}
-                    </ng-template>
-                  </p-dropdown>
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6">
+                  <p-floatLabel>
+                    <p-dropdown [options]="getComponentsByType('tela_marchiata')" [(ngModel)]="selectedTelaMarchiata"
+                      optionLabel="name" inputId="telaMarchiataDropdown" placeholder="Seleziona Tela Marchiata"
+                      [showClear]="true" [disabled]="getComponentsByType('tela_marchiata').length === 0"
+                      (onChange)="onComponentSelected('tela_marchiata', $event.value)" name="telaMarchiata"
+                      filter="true" [ngStyle]="{ 'width': '100%' }">
+                      <ng-template let-item pTemplate="item">
+                        {{ formatComponentName(item) }}
+                      </ng-template>
+                      <ng-template let-selectedItem pTemplate="selectedItem">
+                        {{ formatComponentName(selectedItem) }}
+                      </ng-template>
+                    </p-dropdown>
+                    <label for="telaMarchiataDropdown">Tela Marchiata</label>
+                  </p-floatLabel>
+
                   <small *ngIf="getComponentsByType('tela_marchiata').length === 0" class="p-error">
                     Nessun componente di tipo tela marchiata disponibile
                   </small>
                 </div>
               </div>
 
+
               <!-- Trasporto -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Trasporto</label>
-                <div class="p-col-12 p-md-4">
-                  <p-dropdown [options]="getComponentsByType('trasporto')" [(ngModel)]="selectedTrasporto"
-                    optionLabel="name" placeholder="Seleziona trasporto" [showClear]="true"
-                    [disabled]="getComponentsByType('trasporto').length === 0"
-                    (onChange)="onComponentSelected('trasporto', $event.value)" name="trasporto" filter="true">
-                    <ng-template let-item pTemplate="item">
-                      {{ formatComponentName(item) }}
-                    </ng-template>
-                    <ng-template let-selectedItem pTemplate="selectedItem">
-                      {{ formatComponentName(selectedItem) }}
-                    </ng-template>
-                  </p-dropdown>
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6">
+                  <p-floatLabel>
+                    <p-dropdown [options]="getComponentsByType('trasporto')" [(ngModel)]="selectedTrasporto"
+                      optionLabel="name" inputId="trasportoDropdown" placeholder="Seleziona Trasporto"
+                      [showClear]="true" [disabled]="getComponentsByType('trasporto').length === 0"
+                      (onChange)="onComponentSelected('trasporto', $event.value)" name="trasporto" filter="true"
+                      [ngStyle]="{ 'width': '100%' }">
+                      <ng-template let-item pTemplate="item">
+                        {{ formatComponentName(item) }}
+                      </ng-template>
+                      <ng-template let-selectedItem pTemplate="selectedItem">
+                        {{ formatComponentName(selectedItem) }}
+                      </ng-template>
+                    </p-dropdown>
+                    <label for="trasportoDropdown">Trasporto</label>
+                  </p-floatLabel>
                   <small *ngIf="getComponentsByType('trasporto').length === 0" class="p-error">
                     Nessun componente di tipo trasporto disponibile
                   </small>
                 </div>
               </div>
 
+
               <!-- Varie (opzionale) -->
-              <div class="p-field p-grid">
-                <label class="p-col-12 p-md-2">Varie</label>
+              <div class="p-field p-grid" style="padding-top: 10px;">
                 <div class="p-col-12 p-md-6">
-                  <p-multiSelect [options]="getComponentsByType('varie')" [(ngModel)]="varieList" optionLabel="name"
-                    placeholder="Seleziona eventuali extra" [disabled]="getComponentsByType('varie').length === 0"
-                    name="varieList" filter="true"></p-multiSelect>
+                  <p-floatLabel>
+                    <p-multiSelect [options]="getComponentsByType('varie')" [(ngModel)]="varieList" optionLabel="name"
+                      inputId="varieSelect" placeholder="Seleziona eventuali extra" name="varieList" filter="true"
+                      [disabled]="getComponentsByType('varie').length === 0"
+                      [ngStyle]="{ 'width': '100%' }"></p-multiSelect>
+                    <label for="varieSelect">Varie</label>
+                  </p-floatLabel>
                   <small *ngIf="getComponentsByType('varie').length === 0" class="p-error">
                     Nessun componente di tipo varie disponibile
                   </small>
                 </div>
               </div>
+
 
               <!-- Pulsante di conferma -->
               <div class="p-field p-col-12">
@@ -490,7 +554,7 @@
               <div class="p-field p-col-12" *ngIf="selectedVariant && selectedVariant.components.length > 0">
                 <p-divider></p-divider>
                 <h4>Componenti applicati a "{{ selectedVariant.longName }}"</h4>
-                <p-table [value]="selectedVariant.components" styleClass="p-datatable-sm">
+                <p-table [value]="getGroupedComponents()">
                   <ng-template pTemplate="header">
                     <tr>
                       <th>Nome</th>
@@ -499,12 +563,12 @@
                       <th>Quantità</th>
                     </tr>
                   </ng-template>
-                  <ng-template pTemplate="body" let-component>
+                  <ng-template pTemplate="body" let-row>
                     <tr>
-                      <td>{{ formatComponentName(component) }}</td>
-                      <td>{{ getComponentTypeDisplayName(component.type) || 'N/A' }}</td>
-                      <td>{{ component.price | currency:'EUR' }}</td>
-                      <td>{{ getComponentQuantity(component) }}</td>
+                      <td>{{ formatComponentName(row.item) }}</td>
+                      <td>{{ getComponentTypeDisplayName(row.item.type) }}</td>
+                      <td>{{ row.item.price | currency:'EUR' }}</td>
+                      <td>{{ row.qty }}</td>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="footer">
@@ -514,6 +578,7 @@
                     </tr>
                   </ng-template>
                 </p-table>
+
               </div>
             </div>
           </div>

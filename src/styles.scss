@@ -74,7 +74,8 @@ body {
 --------------------------------*/
 .btn-no.p-button,
 .btn-no.p-button .p-button-icon {
-  color: #c0392b !important;  /* rosso scuro */
+  color: #c0392b !important;
+  /* rosso scuro */
 }
 
 /* -------------------------------
@@ -82,6 +83,32 @@ body {
 --------------------------------*/
 .btn-yes.p-button,
 .btn-yes.p-button .p-button-icon {
-  color: #007bff !important;  /* blu primario */
+  color: #007bff !important;
+  /* blu primario */
 }
 
+/* Override global per tutte le label “floating” di PrimeNG */
+.p-float-label > label {
+  font-weight: 300 !important;  /* thin */
+  font-size: 0.9rem !important;  /* leggermente più piccola */
+  color: #333 !important;
+}
+
+/* Override global per tutte le label nei form-group e nei .p-field */
+.form-group label,
+.p-field > label {
+  font-weight: 300 !important;
+  font-size: 0.9rem !important;
+  color: #333 !important;
+}
+
+.transparent-icon-btn .pi-pencil,
+.transparent-icon-btn .p-button-icon.pi-pencil {
+  color: #007bff !important;
+}
+
+/* stesso livello di specificità per il rosso */
+.transparent-red-icon .pi-trash,
+.transparent-red-icon .p-button-icon.pi-trash {
+  color: #c0392b !important;
+}

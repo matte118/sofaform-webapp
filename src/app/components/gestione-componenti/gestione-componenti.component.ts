@@ -77,7 +77,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   @ViewChild('variantEntriesContainer') variantEntriesContainer?: ElementRef<HTMLDivElement>;
 
   components: ComponentModel[] = [];
-  newComponent: ComponentModel = new ComponentModel('', '', 0);
+  newComponent: ComponentModel = new ComponentModel('', '', null as any);
 
   // Cambiato da supplier: Supplier | null = null; a:
   availableSuppliers: Supplier[] = [];
@@ -107,8 +107,9 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     supplier: null
   };
   bulkVariableData: BulkComponentVariableData[] = [
-    { measure: '', price: 0, name: '' }
+    { measure: '', price: null as any, name: '' }
   ];
+
   bulkFormSubmitted = false;
 
   activeTabIndex = 0;
@@ -651,17 +652,21 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   }
 
   resetBulkForm() {
-    this.bulkFixedData = {
-      name: '',
-      type: ComponentType.FUSTO,
-      supplier: null
-    };
-    this.bulkVariableData = [{
-      measure: '',
-      price: 0,
-      name: ''
-    }];
+    this.bulkFixedData = { name: '', type: ComponentType.FUSTO, supplier: null };
+    this.bulkVariableData = [
+      { measure: '', price: null as any, name: '' }
+    ];
     this.bulkFormSubmitted = false;
+  }
+
+
+  resetForm() {
+    this.newComponent = new ComponentModel('', '', null as any);
+    this.selectedSupplier = null;
+    this.selectedComponentType = null;
+    this.editingIndex = -1;
+    this.formSubmitted = false;
+    this.formValid = true;
   }
 
   private validateBulkForm(): boolean {
@@ -729,15 +734,6 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   get submitButtonLabel(): string {
     return this.isEditing ? 'Aggiorna' : 'Aggiungi';
-  }
-
-  resetForm() {
-    this.newComponent = new ComponentModel('', '', 0);
-    this.selectedSupplier = null;
-    this.selectedComponentType = null;
-    this.editingIndex = -1;
-    this.formSubmitted = false;
-    this.formValid = true;
   }
 
   // Add missing validateForm method
@@ -827,7 +823,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   // Add missing shouldShowPriceError method
   shouldShowPriceError(): boolean {
-    return this.formSubmitted && !this.formValid && this.newComponent.price < 0;
+    return this.formSubmitted && (this.newComponent.price === null || this.newComponent.price < 0);
   }
 
   // Add missing shouldShowComponentTypeError method

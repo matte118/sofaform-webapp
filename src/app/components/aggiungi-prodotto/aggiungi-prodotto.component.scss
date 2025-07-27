@@ -655,6 +655,74 @@
   color: #007bff !important;
 }
 
+.required-field {
+  color: red;
+  margin-left: 2px;
+}
 
+// Stili per il form dei piedini e quantità
+.quantity-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.875rem;
 
+  // Mantieni lo stesso stile delle altre label
+  &::after {
+    content: '';
+  }
+}
 
+// Assicurati che i campi siano allineati correttamente
+.p-field .p-grid {
+  align-items: flex-start;
+
+  .p-col-12 {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  // Allineamento per desktop
+  @media (min-width: 768px) {
+
+    .p-md-8,
+    .p-md-4 {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    .p-md-8:first-child {
+      padding-left: 0;
+    }
+
+    .p-md-4:last-child {
+      padding-right: 0;
+    }
+  }
+}
+
+// Override PrimeNG grid gap per questo specifico caso
+.p-field .p-grid {
+  gap: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+// Stili specifici per il dropdown quantità
+#piediniQtyDropdown {
+  width: 100%;
+}
+
+// Responsive: su mobile i due campi vanno in colonna
+@media (max-width: 767px) {
+  .p-field .p-grid {
+    .p-col-12 {
+      margin-bottom: 1rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}

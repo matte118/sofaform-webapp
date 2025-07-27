@@ -87,7 +87,7 @@ export class AggiungiProdottoComponent implements OnInit {
 
   // 2) Piedini (minimo 2)
   selectedPiedini?: ComponentModel;
-  piediniQty = 2;
+  piediniQty: number | null = null;
   piediniQuantityOptions: number[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16];
 
   // 3) Liste multiple
@@ -486,7 +486,7 @@ export class AggiungiProdottoComponent implements OnInit {
     const missingComponents = [];
     if (!this.selectedFusto && !this.selectedGomma && !this.selectedRete && !this.selectedPiedini
       && !this.selectedMaterasso && !this.selectedImballo &&
-      !this.selectedScatola && this.ferramentaList.length === 0 && this.varieList.length === 0 && 
+      !this.selectedScatola && this.ferramentaList.length === 0 && this.varieList.length === 0 &&
       this.tappezzeriaList.length === 0 && !this.selectedTelaMarchiata && !this.selectedTrasporto) {
       missingComponents.push('almeno un componente');
     }
@@ -506,7 +506,7 @@ export class AggiungiProdottoComponent implements OnInit {
     const comps: ComponentModel[] = [];
     [this.selectedFusto, this.selectedGomma, this.selectedRete, this.selectedMaterasso, this.selectedImballo, this.selectedScatola, this.selectedTelaMarchiata, this.selectedTrasporto]
       .forEach(c => c && comps.push(c));
-    if (this.selectedPiedini) for (let i = 0; i < Math.max(2, this.piediniQty); i++) comps.push(this.selectedPiedini);
+    if (this.selectedPiedini) for (let i = 0; i < Math.max(2, this.piediniQty!); i++) comps.push(this.selectedPiedini);
     this.ferramentaList.forEach(c => comps.push(c));
     this.varieList.forEach(c => comps.push(c));
     this.tappezzeriaList.forEach(c => comps.push(c));
@@ -830,5 +830,18 @@ export class AggiungiProdottoComponent implements OnInit {
       [ComponentType.TRASPORTO]: 'Trasporto'
     };
     return typeNames[type] || 'Sconosciuto';
+  }
+
+  getGroupedComponents() {
+    const map = new Map<string, { item: ComponentModel, qty: number }>();
+    for (const c of this.selectedVariant!.components) {
+      const key = c.id ?? c.name;
+      if (!map.has(key)) {
+        map.set(key, { item: c, qty: 1 });
+      } else {
+        map.get(key)!.qty++;
+      }
+    }
+    return Array.from(map.values());
   }
 }

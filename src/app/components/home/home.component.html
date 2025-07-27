@@ -13,11 +13,15 @@
       <p-card [header]="product.name" styleClass="product-card">
         <!-- Azioni modifica / elimina -->
         <div class="card-actions">
-          <button pButton type="button" class="p-button-rounded p-button-text" icon="pi pi-pencil"
-            (click)="openEditDialog(product, $event)"></button>
+          <p-button type="button" icon="pi pi-pencil"
+            styleClass="p-button-rounded p-button-text p-button transparent-icon-btn"
+            (click)="openEditDialog(product, $event)">
+          </p-button>
 
-          <button pButton type="button" class="p-button-rounded p-button-danger p-button-text" icon="pi pi-trash"
-            (click)="deleteProduct($event, product)"></button>
+          <p-button type="button" icon="pi pi-trash"
+            styleClass="p-button-rounded p-button-text p-button transparent-red-icon"
+            (click)="deleteProduct($event, product)">
+          </p-button>
         </div>
 
         <!-- Header con immagine -->
@@ -89,18 +93,13 @@
                         </span>
                       </div>
                       <div class="component-details">
-                        <div
-                          class="component-detail"
-                          *ngIf="groupedComponent.component.supplier"
-                        >
+                        <div class="component-detail" *ngIf="groupedComponent.component.supplier">
                           <strong>Fornitore:</strong>
                           {{ groupedComponent.component.supplier.name }}
                         </div>
 
-                        <div
-                          class="component-detail"
-                          *ngIf="groupedComponent.component.type !== undefined && groupedComponent.component.type !== null"
-                        >
+                        <div class="component-detail"
+                          *ngIf="groupedComponent.component.type !== undefined && groupedComponent.component.type !== null">
                           <strong>Tipo:</strong>
                           {{ getComponentTypeName(groupedComponent.component.type) }}
                         </div>
@@ -119,7 +118,8 @@
 
         <!-- Footer: genera listino -->
         <ng-template pTemplate="footer">
-          <p-button type="button" label="Genera Listino" (click)="generaListino(product)" styleClass="p-button-primary"></p-button>
+          <p-button type="button" label="Genera Listino" (click)="generaListino(product)"
+            styleClass="p-button-primary"></p-button>
         </ng-template>
       </p-card>
     </div>

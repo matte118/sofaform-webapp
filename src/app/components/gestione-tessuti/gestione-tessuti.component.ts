@@ -50,7 +50,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   @ViewChild('tessutoTable') tessutoTable?: ElementRef;
 
   tessuti: Rivestimento[] = [];
-  newTessuto: Rivestimento = new Rivestimento('', "", 0);
+  newTessuto: Rivestimento = new Rivestimento('', '', null as any);
   editingIndex = -1;
   loading = true;
   dataLoaded = false;
@@ -289,9 +289,8 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
 
 
   resetForm() {
-    this.newTessuto = new Rivestimento('', '', 0);
+    this.newTessuto = new Rivestimento('', '', null as any);
     this.editingIndex = -1;
-    // Reset form state
     this.formSubmitted = false;
     this.formValid = true;
   }
