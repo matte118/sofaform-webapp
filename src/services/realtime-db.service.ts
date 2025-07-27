@@ -16,7 +16,7 @@ import { ComponentType } from '../models/component-type.model';
 
 @Injectable({ providedIn: 'root' })
 export class RealtimeDbService {
-  constructor(private db: Database) {}
+  constructor(private db: Database) { }
 
   private sanitizeData(obj: any): any {
     if (obj === null || obj === undefined) {
@@ -81,9 +81,9 @@ export class RealtimeDbService {
       const raw = snapshot.val();
       const parsed = raw
         ? Object.entries(raw).map(([id, val]) => ({
-            id,
-            data: val as SofaProduct,
-          }))
+          id,
+          data: val as SofaProduct,
+        }))
         : [];
       callback(parsed);
     });
@@ -220,9 +220,9 @@ export class RealtimeDbService {
       const raw = snapshot.val();
       const parsed = raw
         ? Object.entries(raw).map(([id, val]) => ({
-            id,
-            data: val as Supplier,
-          }))
+          id,
+          data: val as Supplier,
+        }))
         : [];
       callback(parsed);
     });
@@ -257,9 +257,9 @@ export class RealtimeDbService {
       const raw = snapshot.val();
       const parsed = raw
         ? Object.entries(raw).map(([id, val]) => ({
-            id,
-            data: val as Rivestimento,
-          }))
+          id,
+          data: val as Rivestimento,
+        }))
         : [];
       callback(parsed);
     });
@@ -284,7 +284,7 @@ export class RealtimeDbService {
 
     console.log('RealtimeDbService: Adding component to DB:', sanitizedComponent);
     console.log('RealtimeDbService: Component type field:', sanitizedComponent.type);
-    
+
     return set(newRef, sanitizedComponent);
   }
 
@@ -295,17 +295,17 @@ export class RealtimeDbService {
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
       console.log('RealtimeDbService: Raw data from DB:', raw);
-      
+
       const parsed = raw
         ? Object.entries(raw).map(([id, val]) => {
-            console.log('RealtimeDbService: Processing component:', id, val);
-            return {
-              id,
-              data: val as any,
-            };
-          })
+          console.log('RealtimeDbService: Processing component:', id, val);
+          return {
+            id,
+            data: val as any,
+          };
+        })
         : [];
-      
+
       console.log('RealtimeDbService: Parsed components:', parsed);
       callback(parsed);
     });
@@ -315,7 +315,7 @@ export class RealtimeDbService {
     const sanitizedComponent = this.sanitizeData(component);
     console.log('RealtimeDbService: Updating component in DB:', sanitizedComponent);
     console.log('RealtimeDbService: Component type field for update:', sanitizedComponent.type);
-    
+
     return set(ref(this.db, `components/${id}`), sanitizedComponent);
   }
 
@@ -382,16 +382,36 @@ export class RealtimeDbService {
     return set(newRef, sanitizedProduct).then(() => newRef.key!);
   }
 
-  createVariant(variant: any): Promise<string> {
-    const refPath = ref(this.db, 'variants');
-    const newRef = push(refPath);
-    const sanitizedVariant = this.sanitizeData(variant);
+  // realtime-db.service.ts
+  createVariant(variant: Variant): Promise<string> {
+    // 1. Genero un nuovo nodo sotto 'variants'
+    const newRef = push(ref(this.db, 'variants'));
 
-    // Assign the generated ID to the variant before saving it
-    sanitizedVariant.id = newRef.key;
+    // 2. Costruisco il payload esplicito con tutti i campi necessari
+    const payload = {
+      id: newRef.key,
+      sofaId: variant.sofaId,
+      longName: variant.longName,
+      price: variant.price,
+      seatsCount: variant.seatsCount ?? null,
+      mattressWidth: variant.mattressWidth ?? null,
+      components: variant.components.map(c => ({
+        id: c.id,
+        name: c.name,
+        price: c.price,
+        measure: c.measure,
+        supplier: c.supplier
+      }))
+    };
 
-    return set(newRef, sanitizedVariant).then(() => newRef.key!);
+    console.log('Saving variant payload:', payload);
+
+    // 3. Uso ref(this.db, `variants/${newRef.key}`) per ottenere il DatabaseReference giusto
+    const variantRef = ref(this.db, `variants/${newRef.key}`);
+    return set(variantRef, payload).then(() => newRef.key!);
   }
+
+
 
   // Method to update product with variant IDs
   updateProductVariants(

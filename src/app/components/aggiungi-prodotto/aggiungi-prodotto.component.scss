@@ -726,3 +726,7 @@
     }
   }
 }
+
+:host ::ng-deep button.transparent-red-icon.p-button .p-button-icon {
+  color: red !important;
+}

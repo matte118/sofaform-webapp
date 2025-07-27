@@ -187,7 +187,7 @@
 
                       .component-quantity {
                         font-size: 0.9rem;
-                        color: #4a5568;
+                        color: #007bff;
                         margin-left: 0.5rem;
                         font-weight: 600;
                         background-color: #e2e8f0;
@@ -198,7 +198,7 @@
 
                     .component-price {
                       font-weight: 600;
-                      color: #38a169;
+                      color: #007bff;
                     }
                   }
 
@@ -1456,3 +1456,37 @@ button.transparent-icon-btn.p-button:active {
   padding-right: 2rem !important;
 }
 
+// home.component.scss
+
+::ng-deep .p-button.primary-button {
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+::ng-deep .p-button.primary-button:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+::ng-deep .component-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+::ng-deep .component-header .component-price {
+  /* evita il wrapping tra simbolo e cifra */
+  white-space: nowrap;
+  /* non lasciare che il flex-shrink lo faccia rientrare */
+  flex-shrink: 0;
+}
+
+.required-field {
+  color: red;
+  margin-left: 2px;
+}

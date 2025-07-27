@@ -14,7 +14,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
-import { Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -31,6 +30,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { TooltipModule } from 'primeng/tooltip';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { FloatLabelModule } from 'primeng/floatlabel';
 
 import { SofaProduct } from '../../../models/sofa-product.model';
 import { SofaProductService } from '../../../services/sofa-product.service';
@@ -38,7 +38,6 @@ import { VariantService } from '../../../services/variant.service';
 import { Variant } from '../../../models/variant.model';
 import { Rivestimento } from '../../../models/rivestimento.model';
 import { RivestimentoService } from '../../../services/rivestimento.service';
-import { ComponentTypeService } from '../../../services/component-type.service';
 import { ComponentType } from '../../../models/component-type.model';
 import { PhotoUploadService } from '../../../services/upload.service';
 import { Component as ComponentModel } from '../../../models/component.model';
@@ -76,6 +75,7 @@ interface EditGroupedComponent {
     InputTextareaModule,
     TooltipModule,
     MultiSelectModule,
+    FloatLabelModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -100,6 +100,9 @@ export class HomeComponent implements OnInit {
   showEditProductDialog = false;
   showAddComponentDialog = false;
   showVariantComponentsDialog = false;
+
+  displayConfirmDelete = false;
+  productToDelete?: SofaProduct;
 
   // Selected data
   selectedProduct?: SofaProduct;
@@ -459,36 +462,44 @@ export class HomeComponent implements OnInit {
     this.newVariant = new Variant('', '', '', 0);
   }
 
-  deleteProduct(event: Event, product: SofaProduct): void {
+  onDeleteClick(product: SofaProduct, event: Event) {
     event.stopPropagation();
-    this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il prodotto "${product.name}"?`,
-      header: 'Conferma eliminazione',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.sofaProductService.deleteSofaProduct(product.id).subscribe({
-          next: () => {
-            this.products = this.products.filter(p => p.id !== product.id);
-            this.productVariants.delete(product.id);
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Prodotto eliminato',
-              detail: `Il prodotto "${product.name}" è stato eliminato`
-            });
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            console.error('Error deleting product:', err);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Errore',
-              detail: 'Errore durante l\'eliminazione del prodotto'
-            });
-          }
+    this.productToDelete = product;
+    this.displayConfirmDelete = true;
+  }
+
+  rejectDelete() {
+    this.displayConfirmDelete = false;
+    this.productToDelete = undefined;
+  }
+
+  confirmDelete() {
+    if (!this.productToDelete) return;
+
+    this.sofaProductService.deleteSofaProduct(this.productToDelete.id).subscribe({
+      next: () => {
+        this.products = this.products.filter(p => p.id !== this.productToDelete!.id);
+        this.productVariants.delete(this.productToDelete!.id);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Prodotto eliminato',
+          detail: `Il prodotto "${this.productToDelete!.name}" è stato eliminato`
+        });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error deleting product:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Errore durante l\'eliminazione del prodotto'
         });
       }
     });
+
+    this.rejectDelete();
   }
+
 
   get editProductDialogTitle(): string {
     return this.editingProduct ? `Modifica Prodotto: ${this.editingProduct.name}` : 'Modifica Prodotto';

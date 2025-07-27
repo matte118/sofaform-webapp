@@ -20,7 +20,7 @@
 
           <p-button type="button" icon="pi pi-trash"
             styleClass="p-button-rounded p-button-text p-button transparent-red-icon"
-            (click)="deleteProduct($event, product)">
+            (click)="onDeleteClick(product, $event)">
           </p-button>
         </div>
 
@@ -119,7 +119,7 @@
         <!-- Footer: genera listino -->
         <ng-template pTemplate="footer">
           <p-button type="button" label="Genera Listino" (click)="generaListino(product)"
-            styleClass="p-button-primary"></p-button>
+            styleClass="primary-button"></p-button>
         </ng-template>
       </p-card>
     </div>
@@ -288,7 +288,7 @@
             <div class="form-section">
               <h3 class="section-title">Informazioni Principali</h3>
               <div class="form-field">
-                <label for="productName">Nome del Prodotto*</label>
+                <label for="productName">Nome del Prodotto <span class="required-field">*</span></label>
                 <input id="productName" name="name" pInputText type="text" [(ngModel)]="editingProduct.name" required
                   class="full-width" />
                 <small *ngIf="productForm.submitted && !editingProduct.name" class="p-error">
@@ -334,24 +334,25 @@
               <div class="variant-form">
                 <div class="p-grid p-align-end">
                   <div class="p-col-12 p-md-4">
-                    <label for="variantName">Nome Variante</label>
+                    <label for="variantName" style="padding-right: 10px;">Nome Variante:</label>
                     <input id="variantName" pInputText [(ngModel)]="newVariant.longName" name="variantName"
-                      placeholder="Nome della variante" class="full-width" />
+                      class="full-width" />
                   </div>
                   <div class="p-col-12 p-md-2">
-                    <label for="variantSeats">Posti</label>
+                    <label for="variantSeats">Posti:</label>
                     <p-inputNumber id="variantSeats" [(ngModel)]="newVariant.seatsCount" name="variantSeats" [min]="1"
-                      [max]="20" class="full-width"></p-inputNumber>
+                      [max]="20" class="full-width" [ngStyle]="{'padding-left': '10px'}"></p-inputNumber>
                   </div>
                   <div class="p-col-12 p-md-3">
-                    <label for="variantWidth">Larghezza (cm)</label>
+                    <label for="variantWidth">Larghezza (cm):</label>
                     <p-inputNumber id="variantWidth" [(ngModel)]="newVariant.mattressWidth" name="variantWidth"
-                      [min]="1" [max]="500" suffix=" cm" class="full-width"></p-inputNumber>
+                      [min]="1" [max]="500" suffix=" cm" class="full-width"
+                      [ngStyle]="{'padding-left': '10px'}"></p-inputNumber>
                   </div>
                   <div class="p-col-12 p-md-3">
                     <p-button [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'"
                       [icon]="editingVariantIndex >= 0 ? 'pi pi-check' : 'pi pi-plus'" (onClick)="addVariantToProduct()"
-                      [disabled]="!newVariant.longName.trim()" class="full-width"></p-button>
+                      [disabled]="!newVariant.longName.trim()" class="full-width" styleClass="btn-dialog-yes"></p-button>
                   </div>
                 </div>
               </div>
@@ -377,18 +378,16 @@
                         <td>{{ variant.mattressWidth ? variant.mattressWidth + ' cm' : '-' }}</td>
                         <td>€{{ variant.price.toFixed(2) }}</td>
                         <td>
-                          <span class="components-count">
-                            {{ variant.components.length || 0 }} componenti
-                          </span>
                           <button pButton type="button" icon="pi pi-plus" class="p-button-sm p-button-text"
-                            (click)="openAddComponentToVariant(variant)" pTooltip="Aggiungi componente"></button>
+                            (click)="openAddComponentToVariant(variant)" pTooltip="Aggiungi componente" style="color: #007bff;"></button>
                         </td>
                         <td>
-                          <button pButton type="button" icon="pi pi-pencil" class="p-button-sm p-button-text"
+                          <button pButton type="button" icon="pi pi-pencil"
+                            class="p-button-rounded p-button-text p-button transparent-icon-btn"
                             (click)="editVariantInProduct(i)" pTooltip="Modifica variante"></button>
                           <button pButton type="button" icon="pi pi-trash"
-                            class="p-button-sm p-button-text p-button-danger" (click)="deleteVariantFromProduct(i)"
-                            pTooltip="Elimina variante"></button>
+                            class="p-button-rounded p-button-text p-button transparent-red-icon"
+                            (click)="deleteVariantFromProduct(i)" pTooltip="Elimina variante"></button>
                         </td>
                       </tr>
                       <tr *ngIf="variant.components && variant.components.length > 0">
@@ -423,8 +422,8 @@
 
     <ng-template pTemplate="footer">
       <div class="dialog-footer">
-        <button pButton type="button" label="Annulla" class="p-button-text" (click)="cancelEditProduct()"></button>
-        <button pButton type="button" label="Salva Modifiche" class="p-button-primary"
+        <button pButton type="button" label="Annulla" class="btn-dialog-no" (click)="cancelEditProduct()"></button>
+        <button pButton type="button" label="Salva Modifiche" class="btn-dialog-yes"
           [disabled]="productForm?.invalid || saving" (click)="saveProductChanges()" [loading]="saving"></button>
       </div>
     </ng-template>
@@ -681,4 +680,19 @@
 
   <p-toast></p-toast>
   <p-confirmDialog [closable]="false"></p-confirmDialog>
+
+  <p-dialog header="Conferma Eliminazione" [(visible)]="displayConfirmDelete" [modal]="true" [closable]="false"
+    [style]="{ width: '40%' }">
+    <p>Sei sicuro di voler eliminare il prodotto "{{ productToDelete?.name }}"?</p>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="No" icon="pi pi-times" class="btn-dialog-no" (click)="rejectDelete()">
+      </button>
+
+      <button pButton type="button" label="Sì" icon="pi pi-check" class="btn-dialog-yes" (click)="confirmDelete()"
+        autofocus>
+      </button>
+    </ng-template>
+  </p-dialog>
+
 </div>
