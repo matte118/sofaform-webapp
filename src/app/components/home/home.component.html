@@ -183,10 +183,13 @@
     </div>
 
     <ng-template pTemplate="footer">
-      <button pButton type="button" label="Annulla" icon="pi pi-times" class="p-button-outlined p-button-secondary"
-        (click)="cancelRivestimento()"></button>
-      <button pButton type="button" label="Continua" icon="pi pi-check" class="p-button-primary"
-        (click)="confirmRivestimentiSelection()" [disabled]="!canProceedRivestimenti()"></button>
+      <button pButton type="button" label="Annulla" icon="pi pi-times" class="btn-dialog-no"
+        (click)="cancelRivestimento()">
+      </button>
+
+      <button pButton type="button" label="Continua" icon="pi pi-check" class="btn-dialog-yes"
+        (click)="confirmRivestimentiSelection()" [disabled]="!canProceedRivestimenti()">
+      </button>
     </ng-template>
   </p-dialog>
 
@@ -233,8 +236,8 @@
     </div>
 
     <ng-template pTemplate="footer">
-      <button pButton type="button" label="Annulla" class="p-button-danger" (click)="cancelMarkup()"></button>
-      <button pButton type="button" label="Genera PDF" (click)="generateWithMarkup()"></button>
+      <p-button type="button" label="Annulla" styleClass="btn-dialog-no" (click)="cancelMarkup()"></p-button>
+      <p-button type="button" label="Genera PDF" styleClass="btn-dialog-yes" (click)="generateWithMarkup()"></p-button>
     </ng-template>
   </p-dialog>
 
@@ -352,7 +355,8 @@
                   <div class="p-col-12 p-md-3">
                     <p-button [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'"
                       [icon]="editingVariantIndex >= 0 ? 'pi pi-check' : 'pi pi-plus'" (onClick)="addVariantToProduct()"
-                      [disabled]="!newVariant.longName.trim()" class="full-width" styleClass="btn-dialog-yes"></p-button>
+                      [disabled]="!newVariant.longName.trim()" class="full-width"
+                      styleClass="btn-dialog-yes"></p-button>
                   </div>
                 </div>
               </div>
@@ -379,7 +383,8 @@
                         <td>€{{ variant.price.toFixed(2) }}</td>
                         <td>
                           <button pButton type="button" icon="pi pi-plus" class="p-button-sm p-button-text"
-                            (click)="openAddComponentToVariant(variant)" pTooltip="Aggiungi componente" style="color: #007bff;"></button>
+                            (click)="openAddComponentToVariant(variant)" pTooltip="Aggiungi componente"
+                            style="color: #007bff;"></button>
                         </td>
                         <td>
                           <button pButton type="button" icon="pi pi-pencil"
@@ -456,9 +461,9 @@
 
     <ng-template pTemplate="footer">
       <button pButton type="button" icon="pi pi-times" label="Annulla" (click)="cancelAddComponent()"
-        class="p-button-text"></button>
+        class="btn-dialog-no"></button>
       <button pButton type="button" icon="pi pi-check" label="Aggiungi" (click)="addComponentToVariant()"
-        [disabled]="!selectedComponentForVariant"></button>
+        [disabled]="!selectedComponentForVariant" class="btn-dialog-yes"></button>
     </ng-template>
   </p-dialog>
 
@@ -670,9 +675,9 @@
 
     <ng-template pTemplate="footer">
       <div class="dialog-footer">
-        <button pButton type="button" label="Annulla" class="p-button-text"
+        <button pButton type="button" label="Annulla" class="btn-dialog-no"
           (click)="cancelVariantComponentsDialog()"></button>
-        <button pButton type="button" label="Aggiungi Variante" class="p-button-primary"
+        <button pButton type="button" label="Aggiungi Variante" class="btn-dialog-yes"
           (click)="applyComponentsToNewVariant()"></button>
       </div>
     </ng-template>

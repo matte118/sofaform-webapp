@@ -1444,18 +1444,6 @@ button.transparent-icon-btn.p-button:active {
   border-color: #0056b3 !important;
 }
 
-:host ::ng-deep .p-dialog .p-dialog-footer {
-  display: flex !important;
-  justify-content: center !important;
-  gap: 1rem;
-}
-
-:host ::ng-deep .btn-dialog-no.p-button,
-:host ::ng-deep .btn-dialog-yes.p-button {
-  padding-left: 2rem !important;
-  padding-right: 2rem !important;
-}
-
 // home.component.scss
 
 ::ng-deep .p-button.primary-button {
@@ -1489,4 +1477,43 @@ button.transparent-icon-btn.p-button:active {
 .required-field {
   color: red;
   margin-left: 2px;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-footer {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 1rem !important;
+  padding: 1.25rem 1.5rem !important;
+  border-top: 1px solid #e9ecef !important;
+  background: #f8f9fa !important;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button,
+:host ::ng-deep .btn-dialog-yes.p-button {
+  padding: 12px 32px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button {
+  background-color: #c0392b !important;
+  border-color: #c0392b !important;
+  color: #fff !important;
+}
+
+:host ::ng-deep .btn-dialog-no.p-button:hover {
+  background-color: #e74c3c !important;
+  border-color: #e74c3c !important;
+}
+
+:host ::ng-deep .btn-dialog-yes.p-button {
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+  color: #fff !important;
+}
+
+:host ::ng-deep .btn-dialog-yes.p-button:hover {
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
 }
