@@ -57,7 +57,9 @@ export class SofaProductService {
             p.data.seduta || '',
             p.data.schienale || '',
             p.data.meccanica || '',
-            p.data.materasso || ''
+            p.data.materasso || '',
+            p.data.materassiExtra || [],
+            p.data.deliveryPrice ?? 0
           );
           console.log('Mapped SofaProduct:', sofaProduct);
           return sofaProduct;

@@ -715,7 +715,7 @@
           (click)="extraMattresses.splice(i,1)"></button>
       </div>
       <button pButton type="button" label="Aggiungi Materasso" icon="pi pi-plus" class="p-button-text"
-        (click)="extraMattresses.push(new ExtraMattress('',0))"></button>
+        (click)="addNewExtraMattress()"></button>
     </div>
     <ng-template pTemplate="footer">
       <button pButton type="button" label="Chiudi" class="btn-dialog-yes"

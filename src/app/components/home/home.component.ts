@@ -840,6 +840,12 @@ export class HomeComponent implements OnInit {
     this.componentQuantityForVariant = 1;
   }
 
+  // === Extra Mattress Management ===
+  addNewExtraMattress(): void {
+    this.extraMattresses.push(new ExtraMattress('', 0));
+    this.cdr.detectChanges();
+  }
+
   // === Save Operations ===
   saveProductChanges() {
     if (!this.editingProduct) return;

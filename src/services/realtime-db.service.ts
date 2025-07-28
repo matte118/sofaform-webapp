@@ -64,7 +64,12 @@ export class RealtimeDbService {
     // Use 'products' path to match the database structure
     const refPath = ref(this.db, 'products');
     const newRef = push(refPath);
-    const sanitizedProduct = this.sanitizeData(product);
+
+    const sanitizedProduct = this.sanitizeData({
+      ...product,
+      materassiExtra: product.materassiExtra ?? null,
+      deliveryPrice: product.deliveryPrice ?? null,
+    });
 
     // Assign the generated ID to the product before saving it
     sanitizedProduct.id = newRef.key;
@@ -91,7 +96,11 @@ export class RealtimeDbService {
 
   updateSofaProduct(id: string, product: SofaProduct): Promise<void> {
     // Use 'products' path to match the database structure
-    const sanitizedProduct = this.sanitizeData(product);
+    const sanitizedProduct = this.sanitizeData({
+      ...product,
+      materassiExtra: product.materassiExtra ?? null,
+      deliveryPrice: product.deliveryPrice ?? null,
+    });
     return set(ref(this.db, `products/${id}`), sanitizedProduct);
   }
 
@@ -111,7 +120,12 @@ export class RealtimeDbService {
         (snapshot) => {
           const data = snapshot.val();
           if (data) {
-            resolve({ id, data: data as SofaProduct });
+            const sanitizedData = this.sanitizeData({
+              ...data,
+              materassiExtra: data.materassiExtra ?? null,
+              deliveryPrice: data.deliveryPrice ?? null,
+            });
+            resolve({ id, data: sanitizedData as SofaProduct });
           } else {
             resolve(null);
           }
@@ -374,7 +388,11 @@ export class RealtimeDbService {
   createProduct(product: any): Promise<string> {
     const refPath = ref(this.db, 'products');
     const newRef = push(refPath);
-    const sanitizedProduct = this.sanitizeData(product);
+    const sanitizedProduct = this.sanitizeData({
+      ...product,
+      materassiExtra: product.materassiExtra ?? null,
+      deliveryPrice: product.deliveryPrice ?? null,
+    });
 
     // Assign the generated ID to the product before saving it
     sanitizedProduct.id = newRef.key;
