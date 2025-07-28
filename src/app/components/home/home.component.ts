@@ -103,6 +103,7 @@ export class HomeComponent implements OnInit {
   showVariantComponentsDialog = false;
   showExtraMattressDialog = false;
   showDeliveryPriceDialog = false;
+  showListinoExtraMattressDialog = false;
 
   displayConfirmDelete = false;
   productToDelete?: SofaProduct;
@@ -129,6 +130,7 @@ export class HomeComponent implements OnInit {
 
   // Extra options
   extraMattresses: ExtraMattress[] = [];
+  extraMattressesForListino: ExtraMattress[] = [];
   deliveryPrice?: number;
 
   // Image handling
@@ -277,6 +279,7 @@ export class HomeComponent implements OnInit {
   // === Rivestimenti Management ===
   generaListino(product: SofaProduct) {
     this.selectedProduct = product;
+    this.extraMattressesForListino = (product.materassiExtra as any as ExtraMattress[]) || [];
     this.tempRivestimentiSelection = [];
     this.metersPerRivestimento = {};
     this.selectedRivestimentiForListino = [];
@@ -354,7 +357,7 @@ export class HomeComponent implements OnInit {
     }
 
     this.showRivestimentoDialog = false;
-    this.showMarkupDialog = true;
+    this.showListinoExtraMattressDialog = true;
     this.cdr.detectChanges();
   }
 
@@ -363,6 +366,7 @@ export class HomeComponent implements OnInit {
     this.tempRivestimentiSelection = [];
     this.metersPerRivestimento = {};
     this.selectedRivestimentiForListino = [];
+    this.extraMattressesForListino = [];
     this.cdr.detectChanges();
   }
 
@@ -844,6 +848,58 @@ export class HomeComponent implements OnInit {
   addNewExtraMattress(): void {
     this.extraMattresses.push(new ExtraMattress('', 0));
     this.cdr.detectChanges();
+  }
+
+  addNewExtraMattressForListino(): void {
+    this.extraMattressesForListino.push(new ExtraMattress('', 0));
+    this.cdr.detectChanges();
+  }
+
+  cancelExtraMattressListino(): void {
+    this.showListinoExtraMattressDialog = false;
+    this.cdr.detectChanges();
+  }
+
+  proceedExtraMattressListino(): void {
+    if (!this.selectedProduct) {
+      this.showListinoExtraMattressDialog = false;
+      return;
+    }
+
+    const updated = new SofaProduct(
+      this.selectedProduct.id,
+      this.selectedProduct.name,
+      this.selectedProduct.description,
+      [...this.selectedProduct.variants],
+      this.selectedProduct.photoUrl,
+      this.selectedProduct.seduta,
+      this.selectedProduct.schienale,
+      this.selectedProduct.meccanica,
+      this.selectedProduct.materasso,
+      [...this.extraMattressesForListino],
+      this.selectedProduct.deliveryPrice,
+      this.selectedProduct.rivestimenti,
+      this.selectedProduct.ricarico
+    );
+
+    this.sofaProductService
+      .updateSofaProduct(this.selectedProduct.id, updated)
+      .subscribe({
+        next: () => {
+          this.selectedProduct!.materassiExtra = [...this.extraMattressesForListino];
+          this.showListinoExtraMattressDialog = false;
+          this.showMarkupDialog = true;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error saving extra mattresses:', err);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Errore',
+            detail: 'Impossibile salvare i materassi extra'
+          });
+        }
+      });
   }
 
   // === Save Operations ===

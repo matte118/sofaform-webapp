@@ -570,6 +570,69 @@
   }
 }
 
+// Extra Mattress Dialog Styling
+::ng-deep .p-dialog {
+  .extra-mattress-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .mattress-name-field {
+      flex: 2;
+      min-width: 200px;
+
+      input {
+        width: 100% !important;
+        min-width: 200px;
+      }
+    }
+
+    .mattress-price-field {
+      flex: 1;
+      min-width: 120px;
+
+      ::ng-deep .p-inputnumber {
+        width: 100% !important;
+
+        .p-inputnumber-input {
+          width: 100% !important;
+        }
+      }
+    }
+
+    .mattress-actions {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: center;
+
+      button {
+        width: 2.5rem;
+        height: 2.5rem;
+      }
+    }
+  }
+
+  // Responsive adjustments for mobile
+  @media (max-width: 768px) {
+    .extra-mattress-row {
+      flex-direction: column;
+      align-items: stretch;
+
+      .mattress-name-field,
+      .mattress-price-field {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .mattress-actions {
+        align-self: center;
+        margin-top: 0.5rem;
+      }
+    }
+  }
+}
+
 ::ng-deep {
   .p-dropdown-panel {
     .p-dropdown-items {

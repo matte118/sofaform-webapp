@@ -151,6 +151,7 @@
               </span>
             </ng-template>
           </p-multiSelect>
+          <br />
           <small class="p-text-secondary">
             <i class="pi pi-info-circle"></i>
             Puoi selezionare più rivestimenti. I prezzi sono per metro.
@@ -201,6 +202,38 @@
       <button pButton type="button" label="Continua" icon="pi pi-check" class="btn-dialog-yes"
         (click)="confirmRivestimentiSelection()" [disabled]="!canProceedRivestimenti()">
       </button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Dialog Materassi Extra (Listino) -->
+  <p-dialog [(visible)]="showListinoExtraMattressDialog" header="Materassi Extra" [modal]="true"
+    [style]="{ width: '600px' }">
+    <div class="p-fluid">
+      <div class="p-field p-grid" *ngFor="let m of extraMattressesForListino; let i = index"
+        style="margin-bottom: 1rem; margin-top: 1rem; align-items: center;">
+        <div class="p-col-12 p-md-6">
+          <input pInputText [(ngModel)]="m.name" placeholder="Nome materasso" class="p-inputtext-sm"
+            style="width: 100%;" />
+        </div>
+        <div class="p-col-12 p-md-4">
+          <p-inputNumber [(ngModel)]="m.price" mode="currency" currency="EUR" locale="it-IT" placeholder="Prezzo"
+            [style]="{ width: '100%' }"></p-inputNumber>
+        </div>
+        <div class="p-col-12 p-md-2">
+          <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-text"
+            (click)="extraMattressesForListino.splice(i,1)" pTooltip="Rimuovi materasso"></button>
+        </div>
+      </div>
+      <div class="p-text-center p-mt-3">
+        <button pButton type="button" label="Aggiungi Materasso" icon="pi pi-plus" class="p-button-outlined"
+          (click)="addNewExtraMattressForListino()"></button>
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Annulla" class="btn-dialog-no"
+        (click)="cancelExtraMattressListino()"></button>
+      <button pButton type="button" label="Continua" class="btn-dialog-yes"
+        (click)="proceedExtraMattressListino()"></button>
     </ng-template>
   </p-dialog>
 
