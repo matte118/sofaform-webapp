@@ -447,18 +447,25 @@ export class AggiungiProdottoComponent implements OnInit {
   }
 
   /**
-   * Verifica se sono stati selezionati tutti i componenti obbligatori
-   * @returns true se tutti i componenti obbligatori sono selezionati
+   * Verifica se è stato selezionato almeno un componente
+   * @returns true se è presente almeno un componente selezionato
    */
   hasSelectedComponents(): boolean {
     // Verifica che tutti i componenti obbligatori siano selezionati
-    return !!(this.selectedFusto &&
-      this.selectedGomma &&
-      this.selectedRete &&
-      this.selectedPiedini &&
-      this.selectedMaterasso &&
-      this.selectedImballo &&
-      this.selectedScatola);
+        return !!(
+      this.selectedFusto ||
+      this.selectedGomma ||
+      this.selectedRete ||
+      this.selectedPiedini ||
+      this.selectedMaterasso ||
+      this.selectedImballo ||
+      this.selectedScatola ||
+      this.selectedTelaMarchiata ||
+      this.selectedTrasporto ||
+      this.ferramentaList.length > 0 ||
+      this.varieList.length > 0 ||
+      this.tappezzeriaList.length > 0
+    );
 
     // I campi opzionali (ferramentaList, varieList, tappezzeriaList, selectedTelaMarchiata, selectedTrasporto) non influiscono sulla validazione
   }
@@ -466,17 +473,10 @@ export class AggiungiProdottoComponent implements OnInit {
   /**
    * Verifica se ci sono errori sui campi obbligatori dei componenti
    * @returns un array con i nomi dei campi mancanti
+   * Ritorna un array con i campi mancanti se non è stato selezionato alcun componente
    */
   getMissingRequiredComponents(): string[] {
-    const missingComponents = [];
-    if (!this.selectedFusto) missingComponents.push('Fusto');
-    if (!this.selectedGomma) missingComponents.push('Gomma');
-    if (!this.selectedRete) missingComponents.push('Rete');
-    if (!this.selectedPiedini) missingComponents.push('Piedini');
-    if (!this.selectedMaterasso) missingComponents.push('Materasso');
-    if (!this.selectedImballo) missingComponents.push('Imballo');
-    if (!this.selectedScatola) missingComponents.push('Scatola');
-    return missingComponents;
+    return this.hasSelectedComponents() ? [] : ['almeno un componente'];
   }
 
   // Aggiorniamo anche la funzione applySpecialComponents per usare la nuova funzione di validazione

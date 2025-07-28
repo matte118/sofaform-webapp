@@ -255,7 +255,7 @@
                         {{ formatComponentName(selectedItem) }}
                       </ng-template>
                     </p-dropdown>
-                    <label for="fustoDropdown">Fusto <span class="required-field">*</span></label>
+                    <label for="fustoDropdown">Fusto <span class="required-field"></span></label>
                   </p-floatLabel>
                   <small *ngIf="(getComponentsByType('fusto') || []).length === 0" class="p-error">
                     Nessun componente di tipo fusto disponibile
@@ -280,7 +280,7 @@
                         {{ formatComponentName(selectedItem) }}
                       </ng-template>
                     </p-dropdown>
-                    <label for="gommaDropdown">Gomma <span class="required-field">*</span></label>
+                    <label for="gommaDropdown">Gomma <span class="required-field"></span></label>
                   </p-floatLabel>
 
                   <small *ngIf="(getComponentsByType('gomma') || []).length === 0" class="p-error">
@@ -306,7 +306,7 @@
                         {{ formatComponentName(selectedItem) }}
                       </ng-template>
                     </p-dropdown>
-                    <label for="reteDropdown">Rete <span class="required-field">*</span></label>
+                    <label for="reteDropdown">Rete <span class="required-field"></span></label>
                   </p-floatLabel>
 
                   <small *ngIf="(getComponentsByType('rete') || []).length === 0" class="p-error">
@@ -335,7 +335,7 @@
                         </ng-template>
                       </p-dropdown>
                       <label for="piediniDropdown">
-                        Piedini<span class="required-field">*</span>
+                        Piedini<span class="required-field"></span>
                       </label>
                     </p-floatLabel>
                     <small *ngIf="getComponentsByType('piedini').length === 0" class="p-error">
@@ -374,7 +374,7 @@
                       </ng-template>
                     </p-dropdown>
                     <label for="materassoDropdown">
-                      Materasso <span class="required-field">*</span>
+                      Materasso <span class="required-field"></span>
                     </label>
                   </p-floatLabel>
 
@@ -436,7 +436,7 @@
                       (onChange)="onComponentSelected('imballo', $event.value)" name="imballo" filter="true"
                       [ngStyle]="{ 'width': '100%' }"></p-dropdown>
                     <label for="imballoDropdown">
-                      Imballo <span class="required-field">*</span>
+                      Imballo <span class="required-field"></span>
                     </label>
                   </p-floatLabel>
                   <small *ngIf="getComponentsByType('imballo').length === 0" class="p-error">
@@ -456,7 +456,7 @@
                       (onChange)="onComponentSelected('scatola', $event.value)" name="scatola" filter="true"
                       [ngStyle]="{ 'width': '100%' }"></p-dropdown>
                     <label for="scatolaDropdown">
-                      Scatola <span class="required-field">*</span>
+                      Scatola <span class="required-field"></span>
                     </label>
                   </p-floatLabel>
                   <small *ngIf="getComponentsByType('scatola').length === 0" class="p-error">

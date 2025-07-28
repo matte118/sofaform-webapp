@@ -275,6 +275,17 @@ export class HomeComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  selectAllRivestimenti(): void {
+    this.tempRivestimentiSelection = [...this.availableRivestimenti];
+    this.tempRivestimentiSelection.forEach(r => {
+      if (!this.metersPerRivestimento[r.id]) {
+        this.metersPerRivestimento[r.id] = 0.1;
+      }
+    });
+    this.cdr.detectChanges();
+  }
+
+
   onRivestimentiChange(): void {
     const selectedIds = new Set(this.tempRivestimentiSelection.map(r => r.id));
     Object.keys(this.metersPerRivestimento).forEach(id => {

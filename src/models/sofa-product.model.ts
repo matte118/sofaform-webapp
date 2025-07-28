@@ -1,3 +1,5 @@
+import { Rivestimento } from "./rivestimento.model";
+
 export class SofaProduct {
   constructor(
     public id: string,
@@ -8,6 +10,12 @@ export class SofaProduct {
     public seduta?: string,
     public schienale?: string,
     public meccanica?: string,
-    public materasso?: string
+    public materasso?: string,
+
+    // Optional fields
+    public materassiExtra?: string[],
+    public deliveryPrice?: number,
+    public rivestimenti?: Rivestimento[],
+    public ricarico?: number,
   ) {}
 }
