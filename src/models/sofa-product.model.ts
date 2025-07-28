@@ -1,3 +1,4 @@
+import { ExtraMattress } from "./extra-mattress.model";
 import { Rivestimento } from "./rivestimento.model";
 
 export class SofaProduct {
@@ -13,7 +14,7 @@ export class SofaProduct {
     public materasso?: string,
 
     // Optional fields
-    public materassiExtra?: string[],
+    public materassiExtra?: ExtraMattress[],
     public deliveryPrice?: number,
     public rivestimenti?: Rivestimento[],
     public ricarico?: number,

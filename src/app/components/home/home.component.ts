@@ -42,6 +42,7 @@ import { ComponentType } from '../../../models/component-type.model';
 import { PhotoUploadService } from '../../../services/upload.service';
 import { Component as ComponentModel } from '../../../models/component.model';
 import { ComponentService } from '../../../services/component.service';
+import { ExtraMattress } from '../../../models/extra-mattress.model';
 
 interface GroupedComponent {
   component: ComponentModel;
@@ -100,6 +101,8 @@ export class HomeComponent implements OnInit {
   showEditProductDialog = false;
   showAddComponentDialog = false;
   showVariantComponentsDialog = false;
+  showExtraMattressDialog = false;
+  showDeliveryPriceDialog = false;
 
   displayConfirmDelete = false;
   productToDelete?: SofaProduct;
@@ -116,11 +119,17 @@ export class HomeComponent implements OnInit {
   selectedRivestimentiForVariant: Rivestimento[] = [];
   rivestimentiList: Rivestimento[] = [];
 
+  uniformCoverMeters = 0;
+
   // Product editing
   editingProduct?: SofaProduct;
   editingVariants: Variant[] = [];
   editingVariantIndex = -1;
   newVariant: Variant = new Variant('', '', '', 0);
+
+  // Extra options
+  extraMattresses: ExtraMattress[] = [];
+  deliveryPrice?: number;
 
   // Image handling
   tempImageFile?: File;
@@ -301,6 +310,13 @@ export class HomeComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  applyUniformMetersToAll(): void {
+    this.tempRivestimentiSelection.forEach(r => {
+      this.metersPerRivestimento[r.id] = this.uniformCoverMeters;
+    });
+    this.cdr.detectChanges();
+  }
+
   validateMeters(r: Rivestimento) {
     const v = this.metersPerRivestimento[r.id];
     if (v !== undefined && v <= 0) {
@@ -449,8 +465,15 @@ export class HomeComponent implements OnInit {
       product.seduta,
       product.schienale,
       product.meccanica,
-      product.materasso
+      product.materasso,
+      (product.materassiExtra as any) || [],
+      product.deliveryPrice,
+      product.rivestimenti,
+      product.ricarico
     );
+
+    this.extraMattresses = (product.materassiExtra as any as ExtraMattress[]) || [];
+    this.deliveryPrice = product.deliveryPrice;
 
     this.variantService.getVariantsBySofaId(product.id).subscribe(variants => {
       this.editingProduct!.variants = variants.map(v => v.id);
@@ -821,6 +844,9 @@ export class HomeComponent implements OnInit {
   saveProductChanges() {
     if (!this.editingProduct) return;
     this.saving = true;
+
+    this.editingProduct.materassiExtra = this.extraMattresses as any;
+    this.editingProduct.deliveryPrice = this.deliveryPrice;
 
     const saveVariants = () => {
       if (!this.editingVariants.length) {
