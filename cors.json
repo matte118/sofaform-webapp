@@ -1,0 +1,16 @@
+[
+    {
+        "origin": [
+            "http://localhost:4200",
+            "https://www.tuo-dominio-prod.it"
+        ],
+        "method": [
+            "GET",
+            "HEAD"
+        ],
+        "responseHeader": [
+            "Content-Type"
+        ],
+        "maxAgeSeconds": 3600
+    }
+]

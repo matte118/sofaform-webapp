@@ -201,35 +201,6 @@ export class HomeComponent implements OnInit {
       this.loadComponentTypes();
       this.loadAvailableComponents();
       this.loadRivestimentiList();
-
-      // Debug PDF generation in development
-      setTimeout(() => this.debugGenerateFakeData(), 2000);
-    }
-  }
-
-  // TEMPORARY DEBUG FUNCTION - Remove after testing
-  private debugGenerateFakeData() {
-    if (!environment.production && this.products.length > 0 && this.availableRivestimenti.length > 0) {
-      console.log('🧪 Debug: Generating fake PDF data...');
-
-      this.selectedProduct = this.products[0];
-      this.selectedRivestimentiForListino = Array.from({ length: Math.min(3, this.availableRivestimenti.length) })
-        .map((_, i) => ({
-          rivestimento: this.availableRivestimenti[i],
-          metri: 1 + (i * 0.5) // Varying meters for testing
-        }));
-      this.extraMattressesForListino = [
-        { name: 'Materasso Extra Comfort', price: 150 },
-        { name: 'Materasso Premium', price: 250 }
-      ];
-      this.deliveryPriceListino = 45;
-      this.markupPercentage = 30;
-
-      console.log('🧪 Debug: Selected product:', this.selectedProduct.name);
-      console.log('🧪 Debug: Rivestimenti count:', this.selectedRivestimentiForListino.length);
-
-      // Uncomment to test PDF generation automatically
-      // setTimeout(() => this.generateWithMarkup(), 1000);
     }
   }
 
@@ -466,7 +437,9 @@ export class HomeComponent implements OnInit {
       // 2. Generate PDF
       this.showPdfTemplate = true;
       this.cdr.detectChanges();
+
       await new Promise(resolve => setTimeout(resolve));
+
       this.pdfService.generateListinoPdf(updatedProduct.name);
       this.showPdfTemplate = false;
       this.cdr.detectChanges();
