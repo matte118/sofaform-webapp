@@ -2,11 +2,11 @@
   <div class="login-card-wrapper">
     <p-card styleClass="login-card">
       <div class="logo-container">
-        <img src="logo-sofaform.png" alt="Sofaform Logo" class="logo" style="scale: 3.5;" />
+        <img src="logo_sofaform.png" alt="Sofaform Logo" class="logo" style="scale: 3.5;" />
       </div>
 
       <h2>Accesso al Gestionale</h2>
-      
+
       <p-toast position="top-center"></p-toast>
 
       <div class="error-message" *ngIf="errorMessage">
@@ -18,17 +18,8 @@
           <label for="email" class="form-label">Email</label>
           <div class="p-input-icon-left">
             <i class="pi pi-user"></i>
-            <input
-              id="email"
-              type="email"
-              pInputText
-              [(ngModel)]="email"
-              name="email"
-              placeholder="Inserisci email"
-              required
-              autocomplete="username"
-              [disabled]="isLoggingIn"
-            />
+            <input id="email" type="email" pInputText [(ngModel)]="email" name="email" placeholder="Inserisci email"
+              required autocomplete="username" [disabled]="isLoggingIn" />
           </div>
         </div>
 
@@ -36,34 +27,16 @@
           <label for="password" class="form-label">Password</label>
           <div class="p-input-icon-left">
             <i class="pi pi-lock"></i>
-            <p-password
-              id="password"
-              [(ngModel)]="password"
-              name="password"
-              placeholder="Inserisci password"
-              [feedback]="false"
-              [toggleMask]="true"
-              required
-              autocomplete="current-password"
-              [disabled]="isLoggingIn"
-              styleClass="w-100"
-              inputStyleClass="w-100"
-            >
+            <p-password id="password" [(ngModel)]="password" name="password" placeholder="Inserisci password"
+              [feedback]="false" [toggleMask]="true" required autocomplete="current-password" [disabled]="isLoggingIn"
+              styleClass="w-100" inputStyleClass="w-100">
             </p-password>
           </div>
         </div>
 
         <div class="form-actions">
-          <button
-            pButton
-            pRipple
-            type="submit"
-            label="Accedi"
-            icon="pi pi-sign-in"
-            [loading]="isLoggingIn"
-            [disabled]="loginForm.invalid || isLoggingIn"
-            class="p-button-raised"
-          ></button>
+          <button pButton pRipple type="submit" label="Accedi" icon="pi pi-sign-in" [loading]="isLoggingIn"
+            [disabled]="loginForm.invalid || isLoggingIn" class="p-button-raised"></button>
         </div>
       </form>
     </p-card>

@@ -9,6 +9,7 @@ import {
   Inject,
   ViewChild,
   ElementRef,
+  NgZone,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
@@ -28,9 +29,10 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
-import { TooltipModule } from 'primeng/tooltip';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { FloatLabelModule } from 'primeng/floatlabel';
+import { TooltipModule } from 'primeng/tooltip';
+
 
 import { SofaProduct } from '../../../models/sofa-product.model';
 import { SofaProductService } from '../../../services/sofa-product.service';
@@ -76,7 +78,8 @@ interface EditGroupedComponent {
     InputTextareaModule,
     TooltipModule,
     MultiSelectModule,
-    FloatLabelModule
+    FloatLabelModule,
+    InputNumberModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -132,6 +135,7 @@ export class HomeComponent implements OnInit {
   extraMattresses: ExtraMattress[] = [];
   extraMattressesForListino: ExtraMattress[] = [];
   deliveryPrice?: number;
+  deliveryPriceListino?: number = 0;   // Local state for listino flow
 
   // Image handling
   tempImageFile?: File;
@@ -179,7 +183,8 @@ export class HomeComponent implements OnInit {
     private messageService: MessageService,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) platformId: Object,
-    private componentService: ComponentService
+    private componentService: ComponentService,
+    private zone: NgZone
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
@@ -278,8 +283,25 @@ export class HomeComponent implements OnInit {
 
   // === Rivestimenti Management ===
   generaListino(product: SofaProduct) {
-    this.selectedProduct = product;
-    this.extraMattressesForListino = (product.materassiExtra as any as ExtraMattress[]) || [];
+    // Create a deep clone to work with a copy, not the original reference
+    this.selectedProduct = new SofaProduct(
+      product.id,
+      product.name,
+      product.description,
+      [...product.variants],
+      product.photoUrl,
+      product.seduta,
+      product.schienale,
+      product.meccanica,
+      product.materasso,
+      [...(product.materassiExtra || [])], // Deep clone of materassiExtra
+      product.deliveryPrice,
+      product.rivestimenti ? [...product.rivestimenti] : undefined,
+      product.ricarico
+    );
+
+    this.extraMattressesForListino = [...(product.materassiExtra as any as ExtraMattress[]) || []];
+    this.deliveryPriceListino = product.deliveryPrice ?? 0;
     this.tempRivestimentiSelection = [];
     this.metersPerRivestimento = {};
     this.selectedRivestimentiForListino = [];
@@ -356,9 +378,19 @@ export class HomeComponent implements OnInit {
       return;
     }
 
+    // Close rivestimenti dialog and let onHide handle the next step
     this.showRivestimentoDialog = false;
-    this.showListinoExtraMattressDialog = true;
     this.cdr.detectChanges();
+  }
+
+  onRivestimentoHide(): void {
+    // Only proceed to next dialog if we have confirmed rivestimenti selection
+    if (this.selectedRivestimentiForListino.length > 0) {
+      this.zone.run(() => {
+        this.showListinoExtraMattressDialog = true;
+        this.cdr.detectChanges();
+      });
+    }
   }
 
   cancelRivestimento() {
@@ -374,6 +406,23 @@ export class HomeComponent implements OnInit {
   generateWithMarkup() {
     if (this.selectedProduct) {
       const variants = this.getProductVariants(this.selectedProduct.id);
+
+      // Optional: Save to database here if you want persistence before PDF generation
+      // this.sofaProductService.updateSofaProduct(this.selectedProduct.id, this.selectedProduct).subscribe({
+      //   next: () => {
+      //     this.exportPdf(this.selectedProduct!, variants, this.markupPercentage);
+      //   },
+      //   error: (err) => {
+      //     console.error('Error saving product:', err);
+      //     this.messageService.add({
+      //       severity: 'error',
+      //       summary: 'Errore',
+      //       detail: 'Errore durante il salvataggio'
+      //     });
+      //   }
+      // });
+
+      // For now, just generate PDF without saving to database
       this.exportPdf(this.selectedProduct, variants, this.markupPercentage);
     }
     this.showMarkupDialog = false;
@@ -387,7 +436,9 @@ export class HomeComponent implements OnInit {
 
   getVariantFinalPrice(variant: Variant): number {
     const markupFactor = (100 - this.markupPercentage) / 100;
-    const base = variant.price + this.overallRivestimentiCost();
+    const base = variant.price +
+      this.overallRivestimentiCost() +
+      (this.deliveryPriceListino || 0);
     return markupFactor > 0 ? base / markupFactor : base;
   }
 
@@ -434,7 +485,17 @@ export class HomeComponent implements OnInit {
         });
       }
 
-      const baseTotal = variant.price + rivestimentiTotale;
+      // Add delivery cost if greater than 0
+      if (this.deliveryPriceListino && this.deliveryPriceListino > 0) {
+        rows.push([
+          'Costo consegna',
+          '1',
+          this.deliveryPriceListino.toFixed(2),
+          this.deliveryPriceListino.toFixed(2)
+        ]);
+      }
+
+      const baseTotal = variant.price + rivestimentiTotale + (this.deliveryPriceListino || 0);
       const markupFactor = (100 - markupPerc) / 100;
       const finalTotal = markupFactor > 0 ? baseTotal / markupFactor : baseTotal;
       rows.push(['Totale variante (con ricarico)', '', '', finalTotal.toFixed(2)]);
@@ -863,43 +924,18 @@ export class HomeComponent implements OnInit {
   proceedExtraMattressListino(): void {
     if (!this.selectedProduct) {
       this.showListinoExtraMattressDialog = false;
+      this.cdr.detectChanges();
       return;
     }
 
-    const updated = new SofaProduct(
-      this.selectedProduct.id,
-      this.selectedProduct.name,
-      this.selectedProduct.description,
-      [...this.selectedProduct.variants],
-      this.selectedProduct.photoUrl,
-      this.selectedProduct.seduta,
-      this.selectedProduct.schienale,
-      this.selectedProduct.meccanica,
-      this.selectedProduct.materasso,
-      [...this.extraMattressesForListino],
-      this.selectedProduct.deliveryPrice,
-      this.selectedProduct.rivestimenti,
-      this.selectedProduct.ricarico
-    );
+    // Update only the in-memory copy, don't save to database yet
+    this.selectedProduct.materassiExtra = [...this.extraMattressesForListino];
+    // Delivery price remains in deliveryPriceListino local state
 
-    this.sofaProductService
-      .updateSofaProduct(this.selectedProduct.id, updated)
-      .subscribe({
-        next: () => {
-          this.selectedProduct!.materassiExtra = [...this.extraMattressesForListino];
-          this.showListinoExtraMattressDialog = false;
-          this.showMarkupDialog = true;
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('Error saving extra mattresses:', err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: 'Impossibile salvare i materassi extra'
-          });
-        }
-      });
+    // Close extra mattress dialog and open markup dialog
+    this.showListinoExtraMattressDialog = false;
+    this.showMarkupDialog = true;
+    this.cdr.detectChanges();
   }
 
   // === Save Operations ===

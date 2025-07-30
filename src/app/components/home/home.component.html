@@ -127,7 +127,7 @@
 
   <p-dialog appendTo="body" [(visible)]="showRivestimentoDialog" header="Seleziona Rivestimenti" [modal]="true"
     [closable]="false" [baseZIndex]="10000" [style]="{ width: '800px', maxHeight: '90vh' }" [draggable]="false"
-    [resizable]="false" (onHide)="cancelRivestimento()">
+    [resizable]="false" (onHide)="onRivestimentoHide()">
 
     <div class="p-fluid">
       <div class="rivestimento-selection-section">
@@ -166,13 +166,14 @@
       <div class="field rivestimento-meters-group"
         *ngIf="tempRivestimentiSelection && tempRivestimentiSelection.length">
         <h5>Specifica i metri per ciascun rivestimento</h5>
-        <div class="uniform-meters-row">
-          <p-inputNumber [(ngModel)]="uniformCoverMeters" mode="decimal" [min]="0" [step]="0.1" suffix=" mt"
-            placeholder="Metri" [style]="{ width: '140px' }">
-          </p-inputNumber>
+        <div class="uniform-meters-row p-inputgroup" style="max-width: 320px;">
+          <p-inputNumber [(ngModel)]="uniformCoverMeters" mode="decimal" [min]="0.1" [step]="0.1"
+            [minFractionDigits]="1" [maxFractionDigits]="2" suffix=" mt" placeholder="Metri"
+            [style]="{ width: '140px' }"></p-inputNumber>
           <button pButton type="button" label="Applica a tutti" class="p-button-text p-button-sm"
             (click)="applyUniformMetersToAll()"></button>
         </div>
+        <br />
         <div class="rivestimento-meters-row" *ngFor="let r of tempRivestimentiSelection">
           <div class="meters-label">
             <span class="rivestimento-name">{{ r.name }}</span>
@@ -248,34 +249,10 @@
           placeholder="Inserisci la percentuale"></p-inputNumber>
       </div>
 
-      <div class="field" *ngIf="selectedProduct">
-        <h4>Anteprima prezzi ({{ selectedProduct.name }}):</h4>
-
-        <div *ngIf="selectedRivestimentiForListino?.length" class="rivestimenti-preview mb-2">
-          <div *ngFor="let r of selectedRivestimentiForListino">
-            Rivestimento {{ r.rivestimento.name }} ({{ r.metri }} mt):
-            € {{ (r.rivestimento.mtPrice * r.metri).toFixed(2) }}
-          </div>
-          <div><strong>Totale rivestimenti: € {{ overallRivestimentiCost().toFixed(2) }}</strong></div>
-        </div>
-
-        <div *ngFor="let variant of getProductVariants(selectedProduct.id)" class="variant-preview">
-          <div class="variant-preview-header">
-            <strong>{{ variant.longName }}</strong>
-          </div>
-          <div class="price-breakdown">
-            <div>Prezzo base: €{{ variant.price.toFixed(2) }}</div>
-            <div *ngIf="!selectedRivestimentiForListino?.length">
-              Rivestimenti: €0.00
-            </div>
-            <div class="total-price">
-              <strong>
-                Totale con ricarico ({{ markupPercentage }}%):
-                € {{ getVariantFinalPrice(variant).toFixed(2) }}
-              </strong>
-            </div>
-          </div>
-        </div>
+      <div class="field">
+        <label for="deliveryPrice">Prezzo di consegna:</label>
+        <p-inputNumber id="deliveryPrice" [(ngModel)]="deliveryPriceListino" mode="currency" currency="EUR"
+          locale="it-IT" placeholder="€0,00"></p-inputNumber>
       </div>
     </div>
 
