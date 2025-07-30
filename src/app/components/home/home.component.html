@@ -766,4 +766,12 @@
     </ng-template>
   </p-dialog>
 
+  <div *ngIf="showPdfTemplate" style="position: absolute; left: -9999px;">
+    <app-listino-pdf-template [product]="selectedProduct!" [variants]="getProductVariants(selectedProduct!.id)"
+      [rivestimenti]="selectedRivestimentiForListino" [extraMattresses]="extraMattressesForListino"
+      [markupPercentage]="markupPercentage" [deliveryPrice]="deliveryPriceListino">
+    </app-listino-pdf-template>
+  </div>
+
+
 </div>

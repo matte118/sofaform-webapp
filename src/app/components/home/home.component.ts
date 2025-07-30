@@ -43,10 +43,9 @@ import { Component as ComponentModel } from '../../../models/component.model';
 import { ComponentService } from '../../../services/component.service';
 import { ExtraMattress } from '../../../models/extra-mattress.model';
 import { PdfGenerationService } from '../../../services/pdf-generation.service';
-import { ListinoPdfData } from '../../../models/listino-pdf-data.model';
-import { saveAs } from 'file-saver';
 import { environment } from '../../../environments/environments';
 import { firstValueFrom } from 'rxjs';
+import { ListinoPdfTemplateComponent } from '../../templates/pdf-templates/listino-pdf-template/listino-pdf-template.component';
 
 interface GroupedComponent {
   component: ComponentModel;
@@ -81,7 +80,8 @@ interface EditGroupedComponent {
     TooltipModule,
     MultiSelectModule,
     FloatLabelModule,
-    InputNumberModule
+    InputNumberModule,
+    ListinoPdfTemplateComponent
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -147,6 +147,8 @@ export class HomeComponent implements OnInit {
   uploadingNewImage = false;
   uploadProgress = 0;
   saving = false;
+
+  showPdfTemplate = false;
 
   // Component management
   availableComponents: ComponentModel[] = [];
@@ -461,26 +463,15 @@ export class HomeComponent implements OnInit {
 
       await firstValueFrom(this.sofaProductService.updateSofaProduct(updatedProduct.id, updatedProduct));
 
-      // // 2. Generate PDF data
-      // const pdfData: ListinoPdfData = {
-      //   product: updatedProduct,
-      //   variants,
-      //   rivestimenti: this.selectedRivestimentiForListino,
-      //   extraMattresses: this.extraMattressesForListino,
-      //   markupPercentage: this.markupPercentage,
-      //   deliveryPrice: this.deliveryPriceListino
-      // };
-
-      // 3. Generate PDF
+      // 2. Generate PDF
+      this.showPdfTemplate = true;
+      this.cdr.detectChanges();
+      await new Promise(resolve => setTimeout(resolve));
       this.pdfService.generateListinoPdf(updatedProduct.name);
+      this.showPdfTemplate = false;
+      this.cdr.detectChanges();
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'PDF Generato',
-        detail: 'Il listino è stato generato e scaricato con successo'
-      });
-
-      // 5. Update local product copy
+      // 3. Update local product copy
       const productIndex = this.products.findIndex(p => p.id === updatedProduct.id);
       if (productIndex !== -1) {
         this.products[productIndex] = { ...updatedProduct };
