@@ -437,10 +437,8 @@ export class HomeComponent implements OnInit {
       // 2. Generate PDF
       this.showPdfTemplate = true;
       this.cdr.detectChanges();
-
-      await new Promise(resolve => setTimeout(resolve));
-
-      this.pdfService.generateListinoPdf(updatedProduct.name);
+      await new Promise(res => setTimeout(res, 100));
+      await this.pdfService.generateListinoPdf(updatedProduct.name);
       this.showPdfTemplate = false;
       this.cdr.detectChanges();
 
