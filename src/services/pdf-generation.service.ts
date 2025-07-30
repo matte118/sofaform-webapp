@@ -41,7 +41,7 @@ export class PdfGenerationService {
             const doc = new jsPDF('p', 'mm', 'a4');
             //Add image Url to PDF
             doc.addImage(dataUrl, 'PNG', 0, 0, 210, 340);
-            doc.save('pdfDocument.pdf');
+            doc.save(`pdfDocument_${productName}.pdf`);
         });
     }
 

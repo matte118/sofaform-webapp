@@ -11,30 +11,34 @@
     </header>
 
     <!-- Technical Sheet -->
-    <table class="tech-sheet">
-        <caption>SCHEDA TECNICA</caption>
-        <tr>
-            <th>Seduta</th>
-            <td>{{ product.seduta || '-' }}</td>
-        </tr>
-        <tr>
-            <th>Schienale</th>
-            <td>{{ product.schienale || '-' }}</td>
-        </tr>
-        <tr>
-            <th>Meccanica</th>
-            <td>{{ product.meccanica || '-' }}</td>
-        </tr>
-        <tr>
-            <th>Materasso</th>
-            <td>{{ product.materasso || '-' }}</td>
-        </tr>
-    </table>
+    <div class="tech-sheet">
+        <h3 class="tech-sheet-caption">SCHEDA TECNICA</h3>
 
-    <!-- Product Photos -->
+        <div class="tech-row">
+            <span class="tech-label">Seduta</span>
+            <span class="tech-value">{{ product.seduta || '-' }}</span>
+        </div>
+
+        <div class="tech-row">
+            <span class="tech-label">Schienale</span>
+            <span class="tech-value">{{ product.schienale || '-' }}</span>
+        </div>
+
+        <div class="tech-row">
+            <span class="tech-label">Meccanica</span>
+            <span class="tech-value">{{ product.meccanica || '-' }}</span>
+        </div>
+
+        <div class="tech-row">
+            <span class="tech-label">Materasso</span>
+            <span class="tech-value">{{ product.materasso || '-' }}</span>
+        </div>
+    </div>
+
+    <!-- Product Photos
     <div class="photo-row" *ngIf="product.photoUrl">
         <img [src]="product.photoUrl" class="sofa-photo" />
-    </div>
+    </div> -->
 
     <!-- Variants and Pricing -->
     <div class="variants-section" *ngFor="let variant of variants; let variantIndex = index">
@@ -49,44 +53,43 @@
             </div>
         </div>
 
-        <!-- Components Table -->
+        <!-- Components -->
         <div class="components-table">
             <h4>Componenti</h4>
-            <table class="price-table">
-                <thead>
-                    <tr>
-                        <th class="component-name">Componente</th>
-                        <th class="quantity">Qtà</th>
-                        <th class="unit-price">Prezzo Unitario</th>
-                        <th class="total-price">Totale</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Variant Components -->
-                    <tr *ngFor="let component of variant.components">
-                        <td class="component-name">{{ component.name }}</td>
-                        <td class="quantity">1</td>
-                        <td class="unit-price">€ {{ formatPrice(component.price) }}</td>
-                        <td class="total-price">€ {{ formatPrice(component.price) }}</td>
-                    </tr>
 
-                    <!-- Rivestimenti -->
-                    <tr *ngFor="let r of rivestimenti" class="rivestimento-row">
-                        <td class="component-name">Rivestimento: {{ r.rivestimento.name }}</td>
-                        <td class="quantity">{{ r.metri }} mt</td>
-                        <td class="unit-price">€ {{ formatPrice(r.rivestimento.mtPrice) }}/mt</td>
-                        <td class="total-price">€ {{ formatPrice(r.rivestimento.mtPrice * r.metri) }}</td>
-                    </tr>
+            <div class="price-table">
+                <!-- Header Row -->
+                <div class="price-row price-header">
+                    <span class="component-name">Componente</span>
+                    <span class="quantity">Qtà</span>
+                    <span class="unit-price">Prezzo Unitario</span>
+                    <span class="total-price">Totale</span>
+                </div>
 
-                    <!-- Delivery Cost -->
-                    <tr *ngIf="deliveryPrice > 0" class="delivery-row">
-                        <td class="component-name">Costo Consegna</td>
-                        <td class="quantity">1</td>
-                        <td class="unit-price">€ {{ formatPrice(deliveryPrice) }}</td>
-                        <td class="total-price">€ {{ formatPrice(deliveryPrice) }}</td>
-                    </tr>
-                </tbody>
-            </table>
+                <!-- Variant Components -->
+                <div class="price-row" *ngFor="let component of variant.components">
+                    <span class="component-name">{{ component.name }}</span>
+                    <span class="quantity">1</span>
+                    <span class="unit-price">€ {{ formatPrice(component.price) }}</span>
+                    <span class="total-price">€ {{ formatPrice(component.price) }}</span>
+                </div>
+
+                <!-- Rivestimenti -->
+                <div class="price-row rivestimento-row" *ngFor="let r of rivestimenti">
+                    <span class="component-name">Rivestimento: {{ r.rivestimento.name }}</span>
+                    <span class="quantity">{{ r.metri }} mt</span>
+                    <span class="unit-price">€ {{ formatPrice(r.rivestimento.mtPrice) }}/mt</span>
+                    <span class="total-price">€ {{ formatPrice(r.rivestimento.mtPrice * r.metri) }}</span>
+                </div>
+
+                <!-- Delivery Cost -->
+                <div class="price-row delivery-row" *ngIf="deliveryPrice > 0">
+                    <span class="component-name">Costo Consegna</span>
+                    <span class="quantity">1</span>
+                    <span class="unit-price">€ {{ formatPrice(deliveryPrice) }}</span>
+                    <span class="total-price">€ {{ formatPrice(deliveryPrice) }}</span>
+                </div>
+            </div>
         </div>
 
         <!-- Pricing Summary -->
