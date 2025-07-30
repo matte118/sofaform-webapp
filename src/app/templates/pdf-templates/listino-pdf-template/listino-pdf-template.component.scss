@@ -1,0 +1,280 @@
+.listino-container {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    padding: 20mm;
+    font-family: 'Arial', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #333;
+    background: white;
+    box-sizing: border-box;
+
+    .header {
+        margin-bottom: 30px;
+        border-bottom: 2px solid #2c5aa0;
+        padding-bottom: 20px;
+        text-align: center;
+
+        .logo {
+            width: 60mm;
+            height: auto;
+            margin-bottom: 6mm;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c5aa0;
+            margin: 0 0 10px 0;
+        }
+
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 2mm 0;
+        }
+
+        .description {
+            font-size: 12px;
+            margin: 1mm 0 2mm 0;
+            color: #666;
+        }
+
+        .date {
+            font-size: 11px;
+            color: #666;
+        }
+    }
+
+    .tech-sheet {
+        width: 100%;
+        margin: 8mm 0;
+        border-left: 4px solid #2c5aa0;
+        border-collapse: collapse;
+        font-size: 12px;
+
+        caption {
+            caption-side: top;
+            font-weight: 600;
+            margin-bottom: 2mm;
+            text-align: left;
+            color: #2c5aa0;
+        }
+
+        th {
+            width: 40%;
+            text-align: left;
+            padding: 2mm;
+            background: #f8f9fa;
+            font-weight: 600;
+            border: 1px solid #ddd;
+        }
+
+        td {
+            width: 60%;
+            padding: 2mm;
+            border: 1px solid #ddd;
+        }
+    }
+
+    .photo-row {
+        display: flex;
+        gap: 5mm;
+        margin: 10mm 0;
+        justify-content: center;
+
+        .sofa-photo {
+            width: 45%;
+            border-radius: 4px;
+            object-fit: cover;
+            max-height: 60mm;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .variants-section {
+        margin-bottom: 40px;
+
+        .variant-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+
+            h3 {
+                font-size: 16px;
+                font-weight: 600;
+                color: #2c5aa0;
+                margin: 0 0 5px 0;
+            }
+
+            .variant-meta {
+                font-size: 11px;
+                color: #666;
+            }
+        }
+
+        .components-table {
+            margin-bottom: 20px;
+
+            h4 {
+                font-size: 13px;
+                font-weight: 600;
+                margin: 0 0 10px 0;
+                color: #333;
+            }
+
+            .price-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 11px;
+
+                th {
+                    background-color: #f1f3f4;
+                    padding: 8px;
+                    text-align: left;
+                    font-weight: 600;
+                    border: 1px solid #ddd;
+                    color: #333;
+
+                    &.component-name {
+                        width: 50%;
+                    }
+
+                    &.quantity {
+                        width: 15%;
+                        text-align: center;
+                    }
+
+                    &.unit-price,
+                    &.total-price {
+                        width: 17.5%;
+                        text-align: right;
+                    }
+                }
+
+                td {
+                    padding: 6px 8px;
+                    border: 1px solid #ddd;
+
+                    &.component-name {
+                        font-weight: 500;
+                    }
+
+                    &.quantity {
+                        text-align: center;
+                    }
+
+                    &.unit-price,
+                    &.total-price {
+                        text-align: right;
+                        font-weight: 500;
+                    }
+                }
+
+                .rivestimento-row {
+                    background-color: #fff3cd;
+                }
+
+                .delivery-row {
+                    background-color: #d4edda;
+                }
+
+                .extra-mattress-row {
+                    background-color: #e2e3e5;
+                }
+            }
+        }
+
+        .pricing-summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #2c5aa0;
+
+            .summary-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                font-size: 12px;
+
+                &.markup-row {
+                    color: #856404;
+                    font-weight: 500;
+                }
+
+                &.total-row {
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #2c5aa0;
+                    border-top: 1px solid #ddd;
+                    padding-top: 8px;
+                    margin-top: 10px;
+                }
+
+                .label {
+                    font-weight: 500;
+                }
+
+                .value {
+                    font-weight: 600;
+                }
+            }
+        }
+    }
+
+    .extra-mattress-grid {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(auto-fill, minmax(60mm, 1fr));
+        margin: 8mm 0;
+
+        .mattress-card {
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .15);
+        }
+    }
+
+    .delivery-box {
+        margin-top: 6mm;
+        font-size: 13px;
+        padding: 4mm;
+        background: #d4edda;
+        border-left: 4px solid #2c5aa0;
+    }
+
+    .footer {
+        position: fixed;
+        bottom: 20mm;
+        left: 20mm;
+        right: 20mm;
+        border-top: 1px solid #ddd;
+        padding-top: 15px;
+
+        .footer-info {
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+
+            p {
+                margin: 0 0 5px 0;
+            }
+        }
+    }
+
+    .page-break {
+        page-break-before: always;
+    }
+}
+
+// Print-specific styles
+@media print {
+    .listino-container {
+        width: 100%;
+        margin: 0;
+        padding: 15mm;
+        font-size: 11px;
+    }
+}

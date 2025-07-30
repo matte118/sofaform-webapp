@@ -1,5 +1,4 @@
 import { ApplicationRef } from '@angular/core';
-import { first } from 'rxjs';
 import {
   Component,
   OnInit,
@@ -18,8 +17,6 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { FormsModule, NgForm } from '@angular/forms';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DropdownModule } from 'primeng/dropdown';
@@ -45,6 +42,11 @@ import { PhotoUploadService } from '../../../services/upload.service';
 import { Component as ComponentModel } from '../../../models/component.model';
 import { ComponentService } from '../../../services/component.service';
 import { ExtraMattress } from '../../../models/extra-mattress.model';
+import { PdfGenerationService } from '../../../services/pdf-generation.service';
+import { ListinoPdfData } from '../../../models/listino-pdf-data.model';
+import { saveAs } from 'file-saver';
+import { environment } from '../../../environments/environments';
+import { firstValueFrom } from 'rxjs';
 
 interface GroupedComponent {
   component: ComponentModel;
@@ -135,7 +137,7 @@ export class HomeComponent implements OnInit {
   extraMattresses: ExtraMattress[] = [];
   extraMattressesForListino: ExtraMattress[] = [];
   deliveryPrice?: number;
-  deliveryPriceListino?: number = 0;   // Local state for listino flow
+  deliveryPriceListino: number = 0;   // Local state for listino flow
 
   // Image handling
   tempImageFile?: File;
@@ -184,7 +186,8 @@ export class HomeComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) platformId: Object,
     private componentService: ComponentService,
-    private zone: NgZone
+    private zone: NgZone,
+    private pdfService: PdfGenerationService
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
@@ -196,6 +199,35 @@ export class HomeComponent implements OnInit {
       this.loadComponentTypes();
       this.loadAvailableComponents();
       this.loadRivestimentiList();
+
+      // Debug PDF generation in development
+      setTimeout(() => this.debugGenerateFakeData(), 2000);
+    }
+  }
+
+  // TEMPORARY DEBUG FUNCTION - Remove after testing
+  private debugGenerateFakeData() {
+    if (!environment.production && this.products.length > 0 && this.availableRivestimenti.length > 0) {
+      console.log('🧪 Debug: Generating fake PDF data...');
+
+      this.selectedProduct = this.products[0];
+      this.selectedRivestimentiForListino = Array.from({ length: Math.min(3, this.availableRivestimenti.length) })
+        .map((_, i) => ({
+          rivestimento: this.availableRivestimenti[i],
+          metri: 1 + (i * 0.5) // Varying meters for testing
+        }));
+      this.extraMattressesForListino = [
+        { name: 'Materasso Extra Comfort', price: 150 },
+        { name: 'Materasso Premium', price: 250 }
+      ];
+      this.deliveryPriceListino = 45;
+      this.markupPercentage = 30;
+
+      console.log('🧪 Debug: Selected product:', this.selectedProduct.name);
+      console.log('🧪 Debug: Rivestimenti count:', this.selectedRivestimentiForListino.length);
+
+      // Uncomment to test PDF generation automatically
+      // setTimeout(() => this.generateWithMarkup(), 1000);
     }
   }
 
@@ -294,7 +326,7 @@ export class HomeComponent implements OnInit {
       product.schienale,
       product.meccanica,
       product.materasso,
-      [...(product.materassiExtra || [])], // Deep clone of materassiExtra
+      [...(product.materassiExtra || [])],
       product.deliveryPrice,
       product.rivestimenti ? [...product.rivestimenti] : undefined,
       product.ricarico
@@ -302,6 +334,7 @@ export class HomeComponent implements OnInit {
 
     this.extraMattressesForListino = [...(product.materassiExtra as any as ExtraMattress[]) || []];
     this.deliveryPriceListino = product.deliveryPrice ?? 0;
+    this.markupPercentage = product.ricarico ?? 30;
     this.tempRivestimentiSelection = [];
     this.metersPerRivestimento = {};
     this.selectedRivestimentiForListino = [];
@@ -395,42 +428,92 @@ export class HomeComponent implements OnInit {
 
   cancelRivestimento() {
     this.showRivestimentoDialog = false;
-    this.tempRivestimentiSelection = [];
-    this.metersPerRivestimento = {};
-    this.selectedRivestimentiForListino = [];
-    this.extraMattressesForListino = [];
+    this.resetListinoWizard();
     this.cdr.detectChanges();
   }
 
   // === Markup and PDF Generation ===
-  generateWithMarkup() {
-    if (this.selectedProduct) {
-      const variants = this.getProductVariants(this.selectedProduct.id);
-
-      // Optional: Save to database here if you want persistence before PDF generation
-      // this.sofaProductService.updateSofaProduct(this.selectedProduct.id, this.selectedProduct).subscribe({
-      //   next: () => {
-      //     this.exportPdf(this.selectedProduct!, variants, this.markupPercentage);
-      //   },
-      //   error: (err) => {
-      //     console.error('Error saving product:', err);
-      //     this.messageService.add({
-      //       severity: 'error',
-      //       summary: 'Errore',
-      //       detail: 'Errore durante il salvataggio'
-      //     });
-      //   }
-      // });
-
-      // For now, just generate PDF without saving to database
-      this.exportPdf(this.selectedProduct, variants, this.markupPercentage);
+  async generateWithMarkup() {
+    if (!this.selectedProduct) {
+      this.showMarkupDialog = false;
+      this.cdr.detectChanges();
+      return;
     }
+
+    const variants = this.getProductVariants(this.selectedProduct.id);
+
+    try {
+      // Show loading state
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Generazione PDF',
+        detail: 'Generazione del listino in corso...'
+      });
+
+      // 1. Persist changes to database
+      const updatedProduct: SofaProduct = {
+        ...this.selectedProduct,
+        materassiExtra: [...this.extraMattressesForListino],
+        deliveryPrice: this.deliveryPriceListino,
+        rivestimenti: this.selectedRivestimentiForListino.map(r => r.rivestimento),
+        ricarico: this.markupPercentage
+      };
+
+      await firstValueFrom(this.sofaProductService.updateSofaProduct(updatedProduct.id, updatedProduct));
+
+      // // 2. Generate PDF data
+      // const pdfData: ListinoPdfData = {
+      //   product: updatedProduct,
+      //   variants,
+      //   rivestimenti: this.selectedRivestimentiForListino,
+      //   extraMattresses: this.extraMattressesForListino,
+      //   markupPercentage: this.markupPercentage,
+      //   deliveryPrice: this.deliveryPriceListino
+      // };
+
+      // 3. Generate PDF
+      this.pdfService.generateListinoPdf(updatedProduct.name);
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'PDF Generato',
+        detail: 'Il listino è stato generato e scaricato con successo'
+      });
+
+      // 5. Update local product copy
+      const productIndex = this.products.findIndex(p => p.id === updatedProduct.id);
+      if (productIndex !== -1) {
+        this.products[productIndex] = { ...updatedProduct };
+      }
+
+      this.resetListinoWizard();
+
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'Errore durante la generazione del PDF'
+      });
+    }
+
     this.showMarkupDialog = false;
     this.cdr.detectChanges();
   }
 
+  private resetListinoWizard(): void {
+    this.selectedProduct = undefined;
+    this.selectedRivestimentiForListino = [];
+    this.extraMattressesForListino = [];
+    this.deliveryPriceListino = 0;
+    this.markupPercentage = 30;
+    this.tempRivestimentiSelection = [];
+    this.metersPerRivestimento = {};
+  }
+
   cancelMarkup() {
     this.showMarkupDialog = false;
+    this.resetListinoWizard();
     this.cdr.detectChanges();
   }
 
@@ -440,77 +523,6 @@ export class HomeComponent implements OnInit {
       this.overallRivestimentiCost() +
       (this.deliveryPriceListino || 0);
     return markupFactor > 0 ? base / markupFactor : base;
-  }
-
-  private exportPdf(product: SofaProduct, variants: Variant[], markupPerc: number) {
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-    doc.setFontSize(18);
-    doc.text(`Listino: ${product.name}`, 40, 20);
-
-    let y = 40;
-    doc.setFontSize(12);
-
-    if (product.seduta) { doc.text(`Seduta: ${product.seduta}`, 40, y); y += 16; }
-    if (product.schienale) { doc.text(`Schienale: ${product.schienale}`, 40, y); y += 16; }
-    if (product.meccanica) { doc.text(`Meccanica: ${product.meccanica}`, 40, y); y += 16; }
-    if (product.materasso) { doc.text(`Materasso: ${product.materasso}`, 40, y); y += 16; }
-
-    doc.setFontSize(14);
-
-    const rows: string[][] = [];
-
-    variants.forEach(variant => {
-      rows.push([`Variante: ${variant.longName}`, '', '', '']);
-
-      variant.components.forEach(component => {
-        rows.push([
-          component.name,
-          '1',
-          component.price.toFixed(2),
-          component.price.toFixed(2)
-        ]);
-      });
-
-      let rivestimentiTotale = 0;
-      if (this.selectedRivestimentiForListino.length) {
-        this.selectedRivestimentiForListino.forEach(rSel => {
-          const sub = rSel.rivestimento.mtPrice * rSel.metri;
-          rivestimentiTotale += sub;
-          rows.push([
-            `Rivestimento: ${rSel.rivestimento.name}`,
-            `${rSel.metri} mt`,
-            rSel.rivestimento.mtPrice.toFixed(2),
-            sub.toFixed(2)
-          ]);
-        });
-      }
-
-      // Add delivery cost if greater than 0
-      if (this.deliveryPriceListino && this.deliveryPriceListino > 0) {
-        rows.push([
-          'Costo consegna',
-          '1',
-          this.deliveryPriceListino.toFixed(2),
-          this.deliveryPriceListino.toFixed(2)
-        ]);
-      }
-
-      const baseTotal = variant.price + rivestimentiTotale + (this.deliveryPriceListino || 0);
-      const markupFactor = (100 - markupPerc) / 100;
-      const finalTotal = markupFactor > 0 ? baseTotal / markupFactor : baseTotal;
-      rows.push(['Totale variante (con ricarico)', '', '', finalTotal.toFixed(2)]);
-      rows.push(['', '', '', '']);
-    });
-
-    autoTable(doc, {
-      head: [['Componente', 'Quantità', 'Prezzo cad.', 'Subtotale']],
-      body: rows,
-      startY: y + 10,
-      theme: 'striped',
-      margin: { left: 40, right: 40 },
-    });
-
-    doc.save(`Listino_${product.name.replace(/\s+/g, '_')}.pdf`);
   }
 
   // === Product Editing ===
@@ -918,6 +930,7 @@ export class HomeComponent implements OnInit {
 
   cancelExtraMattressListino(): void {
     this.showListinoExtraMattressDialog = false;
+    this.resetListinoWizard();
     this.cdr.detectChanges();
   }
 

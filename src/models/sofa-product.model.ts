@@ -18,5 +18,5 @@ export class SofaProduct {
     public deliveryPrice?: number,
     public rivestimenti?: Rivestimento[],
     public ricarico?: number,
-  ) {}
+  ) { }
 }

@@ -10,9 +10,7 @@ import {
 import { SofaProduct } from '../models/sofa-product.model';
 import { Variant } from '../models/variant.model';
 import { Supplier } from '../models/supplier.model';
-import { Component } from '../models/component.model';
 import { Rivestimento } from '../models/rivestimento.model';
-import { ComponentType } from '../models/component-type.model';
 
 @Injectable({ providedIn: 'root' })
 export class RealtimeDbService {
@@ -69,6 +67,8 @@ export class RealtimeDbService {
       ...product,
       materassiExtra: product.materassiExtra ?? null,
       deliveryPrice: product.deliveryPrice ?? null,
+      rivestimenti: product.rivestimenti ?? null,
+      ricarico: product.ricarico ?? null,
     });
 
     // Assign the generated ID to the product before saving it
@@ -100,6 +100,8 @@ export class RealtimeDbService {
       ...product,
       materassiExtra: product.materassiExtra ?? null,
       deliveryPrice: product.deliveryPrice ?? null,
+      rivestimenti: product.rivestimenti ?? null,
+      ricarico: product.ricarico ?? null,
     });
     return set(ref(this.db, `products/${id}`), sanitizedProduct);
   }
@@ -124,6 +126,8 @@ export class RealtimeDbService {
               ...data,
               materassiExtra: data.materassiExtra ?? null,
               deliveryPrice: data.deliveryPrice ?? null,
+              rivestimenti: data.rivestimenti ?? null,
+              ricarico: data.ricarico ?? null,
             });
             resolve({ id, data: sanitizedData as SofaProduct });
           } else {
@@ -392,6 +396,8 @@ export class RealtimeDbService {
       ...product,
       materassiExtra: product.materassiExtra ?? null,
       deliveryPrice: product.deliveryPrice ?? null,
+      rivestimenti: product.rivestimenti ?? null,
+      ricarico: product.ricarico ?? null,
     });
 
     // Assign the generated ID to the product before saving it

@@ -1,0 +1,131 @@
+<div class="listino-container" id="listino-pdf-template">
+    <!-- Header -->
+    <header class="header">
+        <img src="assets/branding/logo.svg" alt="Logo" class="logo" />
+        <h1 class="title">Listino Prezzi</h1>
+        <h2 class="product-name">{{ product.name }}</h2>
+        <p class="description" *ngIf="product.description">
+            {{ product.description }}
+        </p>
+        <span class="date">Data: {{ getCurrentDate() }}</span>
+    </header>
+
+    <!-- Technical Sheet -->
+    <table class="tech-sheet">
+        <caption>SCHEDA TECNICA</caption>
+        <tr>
+            <th>Seduta</th>
+            <td>{{ product.seduta || '-' }}</td>
+        </tr>
+        <tr>
+            <th>Schienale</th>
+            <td>{{ product.schienale || '-' }}</td>
+        </tr>
+        <tr>
+            <th>Meccanica</th>
+            <td>{{ product.meccanica || '-' }}</td>
+        </tr>
+        <tr>
+            <th>Materasso</th>
+            <td>{{ product.materasso || '-' }}</td>
+        </tr>
+    </table>
+
+    <!-- Product Photos -->
+    <div class="photo-row" *ngIf="product.photoUrl">
+        <img [src]="product.photoUrl" class="sofa-photo" />
+    </div>
+
+    <!-- Variants and Pricing -->
+    <div class="variants-section" *ngFor="let variant of variants; let variantIndex = index">
+        <!-- Page break before each variant (except first) -->
+        <div [class.page-break]="variantIndex > 0"></div>
+
+        <div class="variant-header">
+            <h3>Variante: {{ variant.longName }}</h3>
+            <div class="variant-meta" *ngIf="variant.seatsCount || variant.mattressWidth">
+                <span *ngIf="variant.seatsCount">{{ variant.seatsCount }} posti</span>
+                <span *ngIf="variant.mattressWidth"> - Larghezza: {{ variant.mattressWidth }} cm</span>
+            </div>
+        </div>
+
+        <!-- Components Table -->
+        <div class="components-table">
+            <h4>Componenti</h4>
+            <table class="price-table">
+                <thead>
+                    <tr>
+                        <th class="component-name">Componente</th>
+                        <th class="quantity">Qtà</th>
+                        <th class="unit-price">Prezzo Unitario</th>
+                        <th class="total-price">Totale</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Variant Components -->
+                    <tr *ngFor="let component of variant.components">
+                        <td class="component-name">{{ component.name }}</td>
+                        <td class="quantity">1</td>
+                        <td class="unit-price">€ {{ formatPrice(component.price) }}</td>
+                        <td class="total-price">€ {{ formatPrice(component.price) }}</td>
+                    </tr>
+
+                    <!-- Rivestimenti -->
+                    <tr *ngFor="let r of rivestimenti" class="rivestimento-row">
+                        <td class="component-name">Rivestimento: {{ r.rivestimento.name }}</td>
+                        <td class="quantity">{{ r.metri }} mt</td>
+                        <td class="unit-price">€ {{ formatPrice(r.rivestimento.mtPrice) }}/mt</td>
+                        <td class="total-price">€ {{ formatPrice(r.rivestimento.mtPrice * r.metri) }}</td>
+                    </tr>
+
+                    <!-- Delivery Cost -->
+                    <tr *ngIf="deliveryPrice > 0" class="delivery-row">
+                        <td class="component-name">Costo Consegna</td>
+                        <td class="quantity">1</td>
+                        <td class="unit-price">€ {{ formatPrice(deliveryPrice) }}</td>
+                        <td class="total-price">€ {{ formatPrice(deliveryPrice) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pricing Summary -->
+        <div class="pricing-summary">
+            <div class="summary-row">
+                <span class="label">Subtotale:</span>
+                <span class="value">€ {{ formatPrice(getVariantBaseTotal(variant)) }}</span>
+            </div>
+            <div class="summary-row markup-row">
+                <span class="label">Ricarico ({{ markupPercentage }}%):</span>
+                <span class="value">€ {{ formatPrice(getVariantTotalWithMarkup(variant) - getVariantBaseTotal(variant))
+                    }}</span>
+            </div>
+            <div class="summary-row total-row">
+                <span class="label">Totale Finale:</span>
+                <span class="value">€ {{ formatPrice(getVariantTotalWithMarkup(variant)) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extra Mattresses Grid -->
+    <div class="extra-mattress-grid" *ngIf="extraMattresses?.length">
+        <p-card *ngFor="let m of extraMattresses" class="mattress-card">
+            <ng-template pTemplate="header">{{ m.name }}</ng-template>
+            <p>Prezzo extra: € {{ formatPrice(m.price || 0) }}</p>
+        </p-card>
+    </div>
+
+    <!-- Delivery Cost Box -->
+    <div class="delivery-box" *ngIf="deliveryPrice > 0">
+        <strong>Costo consegna:</strong>
+        € {{ formatPrice(deliveryPrice) }}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-info">
+            <p>Listino generato automaticamente - {{ getCurrentDate() }}</p>
+            <p>I prezzi sono da considerarsi IVA esclusa</p>
+        </div>
+    </div>
+</div>

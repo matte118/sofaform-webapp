@@ -1,6 +1,5 @@
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { Observable, from, of } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { RealtimeDbService } from './realtime-db.service';
 import { Variant } from '../models/variant.model';
