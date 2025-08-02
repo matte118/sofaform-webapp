@@ -43,7 +43,6 @@ import { Component as ComponentModel } from '../../../models/component.model';
 import { ComponentService } from '../../../services/component.service';
 import { ExtraMattress } from '../../../models/extra-mattress.model';
 import { PdfGenerationService } from '../../../services/pdf-generation.service';
-import { environment } from '../../../environments/environments';
 import { firstValueFrom } from 'rxjs';
 import { ListinoPdfTemplateComponent } from '../../templates/pdf-templates/listino-pdf-template/listino-pdf-template.component';
 
@@ -438,6 +437,14 @@ export class HomeComponent implements OnInit {
       this.showPdfTemplate = true;
       this.cdr.detectChanges();
       await new Promise(res => setTimeout(res, 100));
+      this.pdfService.setListinoData(
+        updatedProduct,
+        this.getProductVariants(updatedProduct.id),
+        this.selectedRivestimentiForListino,
+        this.extraMattressesForListino,
+        this.markupPercentage,
+        this.deliveryPriceListino
+      );
       await this.pdfService.generateListinoPdf(updatedProduct.name);
       this.showPdfTemplate = false;
       this.cdr.detectChanges();
