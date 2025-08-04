@@ -30,13 +30,17 @@ export class RivestimentoService {
     }
 
     return new Observable((observer) => {
-      this.dbService.getRivestimenti((rivestimenti) => {
-        const mappedRivestimenti = rivestimenti.map(
-          (r) =>
-            new Rivestimento(r.id, r.data.name, r.data.mtPrice)
-        );
-        observer.next(mappedRivestimenti);
-      });
+      try {
+        this.dbService.getRivestimenti((rivestimenti) => {
+          const mappedRivestimenti = rivestimenti.map(
+            (r) => new Rivestimento(r.id, r.data.name, r.data.mtPrice || 0)
+          );
+          observer.next(mappedRivestimenti);
+        });
+      } catch (error) {
+        console.error('Error in getRivestimenti:', error);
+        observer.error(error);
+      }
     });
   }
 

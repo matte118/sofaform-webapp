@@ -50,7 +50,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   @ViewChild('tessutoTable') tessutoTable?: ElementRef;
 
   tessuti: Rivestimento[] = [];
-  newTessuto: Rivestimento = new Rivestimento('', '', null as any);
+  newTessuto: Rivestimento = new Rivestimento('', '', 0);
   editingIndex = -1;
   loading = true;
   dataLoaded = false;
@@ -71,8 +71,9 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit() {
-    this.loadAllData();
-    this.refresh$.subscribe(() => this.loadAllData());
+    console.log('GestioneTessuti: Component initialized');
+    this.loadTessuti();
+    this.refresh$.subscribe(() => this.loadTessuti());
   }
 
   ngAfterViewInit() {
@@ -83,57 +84,40 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
     }, 500);
   }
 
-  // New method to load all data at once with proper error handling
-  loadAllData() {
+  loadTessuti() {
+    console.log('GestioneTessuti: Starting to load tessuti');
     this.loading = true;
+    this.dataLoaded = false;
 
-    // Create observable for tessuti
-    const tessuti$ = this.rivestimentoService
-      .getRivestimenti()
-      .pipe(
-        catchError((error) => {
-          console.error('Error loading tessuti:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: 'Errore caricamento tessuti',
-          });
-          return of([]);
-        })
-      );
-
-    // Load tessuti
-    tessuti$
-      .pipe(
-        finalize(() => {
-          this.loading = false;
-          this.dataLoaded = true;
-
-          // Force detection in the Angular zone
-          this.zone.run(() => {
-            this.cd.detectChanges();
-
-            // Schedule another change detection after a small delay to ensure icons are rendered
-            setTimeout(() => {
-              this.cd.detectChanges();
-              this.refreshNeeded = false;
-            }, 100);
-          });
-        })
-      )
-      .subscribe((tessuti) => {
+    this.rivestimentoService.getRivestimenti().subscribe({
+      next: (tessuti) => {
+        console.log('GestioneTessuti: Received tessuti:', tessuti);
         this.tessuti = tessuti;
-        console.log(`Loaded ${this.tessuti.length} tessuti`);
+        this.loading = false;
+        this.dataLoaded = true;
         this.refreshNeeded = true;
-      });
+        this.cd.detectChanges();
+        console.log('GestioneTessuti: Loading completed, tessuti count:', this.tessuti.length);
+      },
+      error: (error) => {
+        console.error('GestioneTessuti: Error loading tessuti:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Errore caricamento tessuti',
+        });
+        this.loading = false;
+        this.dataLoaded = true;
+        this.cd.detectChanges();
+      }
+    });
   }
 
-  // Utility method to force table refresh
+  // Remove the complex loadAllData method and use the simpler loadTessuti
   refreshTable() {
     if (this.tessutoTable) {
       const tableElement = this.tessutoTable.nativeElement;
       if (tableElement) {
-        // Toggle a class to force repaint
         tableElement.classList.add('refreshing');
         setTimeout(() => {
           tableElement.classList.remove('refreshing');
@@ -141,26 +125,6 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
         }, 50);
       }
     }
-  }
-
-  // Existing method for backward compatibility
-  loadTessuti() {
-    this.rivestimentoService.getRivestimenti().subscribe(
-      (tessuti) => {
-        this.tessuti = tessuti;
-        this.cd.detectChanges();
-        this.loading = false;
-      },
-      (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: 'Errore caricamento tessuti',
-        });
-        console.error('Error loading tessuti:', error);
-        this.loading = false;
-      }
-    );
   }
 
   addTessuto() {
@@ -171,19 +135,19 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
     }
     this.formValid = true;
     this.saving = true;
+    
     const tessuto = new Rivestimento(
       this.isEditing ? this.tessuti[this.editingIndex].id : '',
       this.newTessuto.name.trim(),
       this.newTessuto.mtPrice
     );
-    console.log('Payload update:', tessuto);
 
     const operation = this.isEditing
       ? this.rivestimentoService.updateRivestimento(tessuto.id, tessuto)
       : this.rivestimentoService.addRivestimento(tessuto);
 
-    operation.subscribe(
-      () => {
+    operation.subscribe({
+      next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Successo',
@@ -191,13 +155,12 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
             ? 'Tessuto aggiornato con successo'
             : 'Tessuto creato con successo',
         });
-
-        // Use our refresh subject instead of direct calls
         this.refresh$.next();
         this.resetForm();
         this.saving = false;
       },
-      (error) => {
+      error: (error) => {
+        console.error('Error saving tessuto:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
@@ -205,35 +168,29 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
             ? "Errore durante l'aggiornamento del tessuto"
             : 'Errore durante la creazione del tessuto',
         });
-        console.error('Error saving tessuto:', error);
         this.saving = false;
       }
-    );
+    });
   }
 
   editTessuto(tessuto: Rivestimento, index: number) {
     console.log('Editing tessuto:', tessuto);
-
-    // Deep copy to avoid reference issues
     this.newTessuto = new Rivestimento(
       tessuto.id,
       tessuto.name,
       tessuto.mtPrice,
     );
-
     this.editingIndex = index;
 
-    // Scroll to the top of the form
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     });
 
-    // Focus the first input field after scrolling
     setTimeout(() => {
-      const typeInput = document.getElementById('tessutoType');
-      if (typeInput) {
-        typeInput.focus();
+      const nameInput = document.getElementById('tessutoName');
+      if (nameInput) {
+        nameInput.focus();
       }
       this.cd.detectChanges();
     }, 500);
@@ -249,17 +206,18 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
       this.displayConfirmDelete = false;
       return;
     }
+    
     this.saving = true;
     this.rivestimentoService.deleteRivestimento(this.tessutoToDelete.id)
-      .subscribe(
-        () => {
+      .subscribe({
+        next: () => {
           this.messageService.add({
             severity: 'success',
             summary: 'Successo',
             detail: 'Tessuto eliminato con successo',
           });
           this.refresh$.next();
-          // resetta form se stavi editando proprio quel tessuto
+          
           if (
             this.editingIndex >= 0 &&
             this.tessuti[this.editingIndex]?.id === this.tessutoToDelete?.id
@@ -269,7 +227,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
           this.saving = false;
           this.displayConfirmDelete = false;
         },
-        (error) => {
+        error: (error) => {
           console.error('Error deleting tessuto:', error);
           this.messageService.add({
             severity: 'error',
@@ -279,7 +237,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
           this.saving = false;
           this.displayConfirmDelete = false;
         }
-      );
+      });
   }
 
   rejectDelete() {
@@ -287,15 +245,13 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
     this.tessutoToDelete = undefined;
   }
 
-
   resetForm() {
-    this.newTessuto = new Rivestimento('', '', null as any);
+    this.newTessuto = new Rivestimento('', '', 0);
     this.editingIndex = -1;
     this.formSubmitted = false;
     this.formValid = true;
   }
 
-  // Add method to check if field should show error
   shouldShowFieldError(fieldValue: any): boolean {
     return this.formSubmitted && !this.formValid && !fieldValue;
   }
@@ -318,7 +274,16 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   }
 
   private validateForm(): boolean {
-    if (this.newTessuto.mtPrice <= 0) {
+    if (!this.newTessuto.name || !this.newTessuto.name.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore di Validazione',
+        detail: 'Il nome del tessuto è obbligatorio',
+      });
+      return false;
+    }
+
+    if (!this.newTessuto.mtPrice || this.newTessuto.mtPrice <= 0) {
       this.messageService.add({
         severity: 'error',
         summary: 'Errore di Validazione',
@@ -338,7 +303,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Errore di Validazione',
-        detail: 'Esiste già un tessuto con questo codice',
+        detail: 'Esiste già un tessuto con questo nome',
       });
       return false;
     }
