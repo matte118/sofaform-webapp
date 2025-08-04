@@ -124,6 +124,9 @@ export class HomeComponent implements OnInit {
   // New properties for per-variant rivestimenti selection
   variantRivestimentiSelections: { [variantId: string]: Rivestimento[] } = {};
   variantRivestimentiMeters: { [variantId: string]: { [rivestimentoId: string]: number } } = {};
+  
+  // New property for uniform meters application
+  uniformMetersForVariant: { [variantId: string]: number } = {};
 
   uniformCoverMeters = 0;
 
@@ -519,6 +522,42 @@ export class HomeComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  // Set uniform meters for all rivestimenti in a variant
+  applyUniformMetersToVariant(variantId: string): void {
+    if (!variantId || !this.uniformMetersForVariant[variantId]) return;
+    
+    const uniformMeters = Math.max(0.1, this.uniformMetersForVariant[variantId] || 0.1);
+    const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
+    
+    if (!this.variantRivestimentiMeters[variantId]) {
+      this.variantRivestimentiMeters[variantId] = {};
+    }
+    
+    // Apply uniform meters to all rivestimenti in this variant
+    rivestimenti.forEach(r => {
+      this.variantRivestimentiMeters[variantId][r.id] = uniformMeters;
+    });
+    
+    this.cdr.detectChanges();
+    
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Metri applicati',
+      detail: `${uniformMeters} metri applicati a tutti i rivestimenti`
+    });
+  }
+
+  // Get uniform meters value for variant
+  getUniformMetersForVariant(variantId: string): number {
+    return this.uniformMetersForVariant[variantId] || 1;
+  }
+
+  // Set uniform meters value for variant
+  setUniformMetersForVariant(variantId: string, meters: number): void {
+    if (!variantId) return;
+    this.uniformMetersForVariant[variantId] = Math.max(0.1, meters || 0.1);
+  }
+
   private resetListinoWizard(): void {
     this.selectedProduct = undefined;
     this.selectedRivestimentiForListino = [];
@@ -527,6 +566,7 @@ export class HomeComponent implements OnInit {
     this.markupPercentage = 30;
     this.variantRivestimentiSelections = {};
     this.variantRivestimentiMeters = {};
+    this.uniformMetersForVariant = {};
   }
 
   cancelMarkup() {

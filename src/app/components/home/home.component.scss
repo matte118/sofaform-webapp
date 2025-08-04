@@ -1477,3 +1477,121 @@
   gap: 1rem;
   padding: 1.25rem 1.5rem;
 }
+
+.selected-rivestimenti {
+  margin-top: 1rem;
+
+  .uniform-meters-section {
+    background: #e8f4fd;
+    border: 1px solid #b3d9ff;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+
+    h6 {
+      margin: 0 0 0.75rem 0;
+      color: #1976d2;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:before {
+        content: "⚡";
+        font-size: 1rem;
+      }
+    }
+
+    .uniform-meters-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+
+      ::ng-deep .p-inputnumber {
+        flex-shrink: 0;
+      }
+
+      ::ng-deep .p-button {
+        white-space: nowrap;
+        flex-shrink: 0;
+        
+        &:not(:disabled) {
+          background-color: #1976d2;
+          border-color: #1976d2;
+          color: white;
+
+          &:hover {
+            background-color: #1565c0;
+            border-color: #1565c0;
+          }
+        }
+      }
+
+      @media (max-width: 640px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+
+        ::ng-deep .p-inputnumber,
+        ::ng-deep .p-button {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  h6 {
+    margin: 0 0 0.75rem 0;
+    color: #4a5568;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .rivestimento-meters-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+
+    .meters-label {
+      flex: 2;
+      min-width: 200px;
+
+      .rivestimento-name {
+        display: block;
+        font-weight: 600;
+        color: #2d3748;
+      }
+
+      .rivestimento-unit-price {
+        font-size: 0.8rem;
+        color: #718096;
+      }
+    }
+
+    .subtotal {
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: #e6f4ff;
+      color: #1976d2;
+      padding: 0.375rem 0.75rem;
+      border-radius: 16px;
+      min-width: 80px;
+      text-align: center;
+    }
+  }
+
+  .variant-total {
+    text-align: right;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+    color: #2d3748;
+  }
+}
