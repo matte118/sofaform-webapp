@@ -181,5 +181,63 @@ export class VariantService {
       return () => unsubscribe();
     });
   }
-}
+
+  // Save rivestimenti selections for variant
+  async saveVariantRivestimenti(variantId: string, rivestimenti: { rivestimento: Rivestimento; metri: number }[]): Promise<void> {
+    try {
+      const variantRef = ref(this.db, `variants/${variantId}`);
+      const snapshot = await get(variantRef);
+      
+      if (snapshot.exists()) {
+        const variantData = snapshot.val();
         
+        // Save rivestimenti with meters information
+        const rivestimentiData = rivestimenti.map(item => ({
+          rivestimento: item.rivestimento,
+          metri: item.metri
+        }));
+        
+        const updatedData = {
+          ...variantData,
+          rivestimenti: rivestimentiData
+        };
+        
+        const sanitizedData = this.dbService.sanitizeData(updatedData);
+        await update(variantRef, sanitizedData);
+      }
+    } catch (error) {
+      console.error('Error saving variant rivestimenti:', error);
+      throw error;
+    }
+  }
+
+  // Load rivestimenti selections for variant
+  async loadVariantRivestimenti(variantId: string): Promise<{ rivestimento: Rivestimento; metri: number }[]> {
+    try {
+      const variantRef = ref(this.db, `variants/${variantId}`);
+      const snapshot = await get(variantRef);
+      
+      if (snapshot.exists()) {
+        const variantData = snapshot.val();
+        return variantData.rivestimenti || [];
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('Error loading variant rivestimenti:', error);
+      return [];
+    }
+  }
+
+  // Update variant with rivestimenti
+  async updateVariantRivestimenti(variantId: string, rivestimenti: { rivestimento: Rivestimento; metri: number }[]): Promise<void> {
+    try {
+      const variantRef = ref(this.db, `variants/${variantId}/rivestimenti`);
+      const sanitizedData = this.dbService.sanitizeData(rivestimenti);
+      await update(ref(this.db, `variants/${variantId}`), { rivestimenti: sanitizedData });
+    } catch (error) {
+      console.error('Error updating variant rivestimenti:', error);
+      throw error;
+    }
+  }
+}

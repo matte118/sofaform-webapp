@@ -123,6 +123,11 @@ export class HomeComponent implements OnInit {
   selectedRivestimentiForListino: { rivestimento: Rivestimento; metri: number }[] = [];
   selectedRivestimentiForVariant: Rivestimento[] = [];
   rivestimentiList: Rivestimento[] = [];
+  selectedVariantForRivestimento?: Variant;
+
+  // New properties for per-variant rivestimenti selection
+  variantRivestimentiSelections: { [variantId: string]: Rivestimento[] } = {};
+  variantRivestimentiMeters: { [variantId: string]: { [rivestimentoId: string]: number } } = {};
 
   uniformCoverMeters = 0;
 
@@ -286,7 +291,7 @@ export class HomeComponent implements OnInit {
   }
 
   // === Rivestimenti Management ===
-  generaListino(product: SofaProduct) {
+  async generaListino(product: SofaProduct) {
     // Create a deep clone to work with a copy, not the original reference
     this.selectedProduct = new SofaProduct(
       product.id,
@@ -306,101 +311,133 @@ export class HomeComponent implements OnInit {
     this.extraMattressesForListino = [...(product.materassiExtra as any as ExtraMattress[]) || []];
     this.deliveryPriceListino = product.deliveryPrice ?? 0;
     this.markupPercentage = product.ricarico ?? 30;
-    this.tempRivestimentiSelection = [];
-    this.metersPerRivestimento = {};
+
+    // Reset rivestimenti selections
+    this.variantRivestimentiSelections = {};
+    this.variantRivestimentiMeters = {};
     this.selectedRivestimentiForListino = [];
+
+    // Initialize and load existing rivestimenti for each variant
+    const variants = this.getProductVariants(product.id);
+
+    try {
+      for (const variant of variants) {
+        // Initialize empty arrays
+        this.variantRivestimentiSelections[variant.id] = [];
+        this.variantRivestimentiMeters[variant.id] = {};
+
+        // Load existing rivestimenti from database
+        const existingRivestimenti = await this.variantService.loadVariantRivestimenti(variant.id);
+
+        if (existingRivestimenti && existingRivestimenti.length > 0) {
+          // Populate selections and meters from database
+          this.variantRivestimentiSelections[variant.id] = existingRivestimenti.map(item => item.rivestimento);
+
+          existingRivestimenti.forEach(item => {
+            this.variantRivestimentiMeters[variant.id][item.rivestimento.id] = item.metri;
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading existing rivestimenti:', error);
+      // Initialize with empty arrays if loading fails
+      variants.forEach(variant => {
+        this.variantRivestimentiSelections[variant.id] = [];
+        this.variantRivestimentiMeters[variant.id] = {};
+      });
+    }
+
     this.showRivestimentoDialog = true;
     this.cdr.detectChanges();
   }
 
-  selectAllRivestimenti(): void {
-    this.tempRivestimentiSelection = [...this.availableRivestimenti];
-    this.tempRivestimentiSelection.forEach(r => {
-      if (!this.metersPerRivestimento[r.id]) {
-        this.metersPerRivestimento[r.id] = 0.1;
-      }
-    });
-    this.cdr.detectChanges();
-  }
+  // Add multiple rivestimenti to variant
+  onVariantRivestimentiChange(variantId: string, selectedRivestimenti: Rivestimento[]): void {
+    if (!variantId) return;
 
+    // Update the selections
+    this.variantRivestimentiSelections[variantId] = [...selectedRivestimenti];
 
-  onRivestimentiChange(): void {
-    const selectedIds = new Set(this.tempRivestimentiSelection.map(r => r.id));
-    Object.keys(this.metersPerRivestimento).forEach(id => {
-      if (!selectedIds.has(id)) delete this.metersPerRivestimento[id];
-    });
+    // Initialize meters for new rivestimenti
+    if (!this.variantRivestimentiMeters[variantId]) {
+      this.variantRivestimentiMeters[variantId] = {};
+    }
 
-    this.tempRivestimentiSelection.forEach(r => {
-      if (!this.metersPerRivestimento[r.id]) {
-        this.metersPerRivestimento[r.id] = 0.1;
+    // Add meters for newly selected rivestimenti (preserve existing meters)
+    selectedRivestimenti.forEach(r => {
+      if (!this.variantRivestimentiMeters[variantId][r.id]) {
+        this.variantRivestimentiMeters[variantId][r.id] = 0.1;
       }
     });
 
-    this.cdr.detectChanges();
-  }
-
-  applyUniformMetersToAll(): void {
-    this.tempRivestimentiSelection.forEach(r => {
-      this.metersPerRivestimento[r.id] = this.uniformCoverMeters;
+    // Remove meters for deselected rivestimenti
+    const selectedIds = new Set(selectedRivestimenti.map(r => r.id));
+    Object.keys(this.variantRivestimentiMeters[variantId]).forEach(rivestimentoId => {
+      if (!selectedIds.has(rivestimentoId)) {
+        delete this.variantRivestimentiMeters[variantId][rivestimentoId];
+      }
     });
+
     this.cdr.detectChanges();
   }
 
-  validateMeters(r: Rivestimento) {
-    const v = this.metersPerRivestimento[r.id];
-    if (v !== undefined && v <= 0) {
-      this.metersPerRivestimento[r.id] = 0.1;
-    }
-    this.cdr.detectChanges();
-  }
+  async confirmRivestimentiSelection(): Promise<void> {
+    // Convert variant selections to the expected format and save to database
+    this.selectedRivestimentiForListino = [];
 
-  canProceedRivestimenti(): boolean {
-    return this.tempRivestimentiSelection?.some(r => (this.metersPerRivestimento[r.id] || 0) > 0) ?? false;
-  }
+    try {
+      // Save rivestimenti for each variant to database
+      for (const variantId of Object.keys(this.variantRivestimentiSelections)) {
+        const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
+        const variantRivestimentiData: { rivestimento: Rivestimento; metri: number }[] = [];
 
-  overallRivestimentiCost(): number {
-    if (this.showRivestimentoDialog) {
-      return this.tempRivestimentiSelection.reduce((sum, r) => {
-        const m = this.metersPerRivestimento[r.id] || 0;
-        return sum + (m > 0 ? r.mtPrice * m : 0);
-      }, 0);
-    }
-    return this.selectedRivestimentiForListino.reduce((sum, r) => sum + r.rivestimento.mtPrice * r.metri, 0);
-  }
+        rivestimenti.forEach(r => {
+          const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
+          if (meters > 0) {
+            variantRivestimentiData.push({ rivestimento: r, metri: meters });
 
-  confirmRivestimentiSelection(): void {
-    this.selectedRivestimentiForListino = this.tempRivestimentiSelection
-      .filter(r => (this.metersPerRivestimento[r.id] || 0) > 0)
-      .map(r => ({ rivestimento: r, metri: this.metersPerRivestimento[r.id] }));
+            // Add to listino data
+            const existing = this.selectedRivestimentiForListino.find(item => item.rivestimento.id === r.id);
+            if (existing) {
+              existing.metri += meters;
+            } else {
+              this.selectedRivestimentiForListino.push({ rivestimento: r, metri: meters });
+            }
+          }
+        });
 
-    if (!this.selectedRivestimentiForListino.length) {
+        // Save to database
+        if (variantRivestimentiData.length > 0) {
+          await this.variantService.saveVariantRivestimenti(variantId, variantRivestimentiData);
+        }
+      }
+
+      if (!this.selectedRivestimentiForListino.length) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Specifica i metri per almeno un rivestimento'
+        });
+        return;
+      }
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Successo',
+        detail: 'Rivestimenti salvati per le varianti'
+      });
+
+      this.showRivestimentoDialog = false;
+      this.cdr.detectChanges();
+
+    } catch (error) {
+      console.error('Error saving rivestimenti:', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Errore',
-        detail: 'Specifica i metri per almeno un rivestimento'
-      });
-      return;
-    }
-
-    // Close rivestimenti dialog and let onHide handle the next step
-    this.showRivestimentoDialog = false;
-    this.cdr.detectChanges();
-  }
-
-  onRivestimentoHide(): void {
-    // Only proceed to next dialog if we have confirmed rivestimenti selection
-    if (this.selectedRivestimentiForListino.length > 0) {
-      this.zone.run(() => {
-        this.showListinoExtraMattressDialog = true;
-        this.cdr.detectChanges();
+        detail: 'Errore durante il salvataggio dei rivestimenti'
       });
     }
-  }
-
-  cancelRivestimento() {
-    this.showRivestimentoDialog = false;
-    this.resetListinoWizard();
-    this.cdr.detectChanges();
   }
 
   // === Markup and PDF Generation ===
@@ -474,8 +511,8 @@ export class HomeComponent implements OnInit {
     this.extraMattressesForListino = [];
     this.deliveryPriceListino = 0;
     this.markupPercentage = 30;
-    this.tempRivestimentiSelection = [];
-    this.metersPerRivestimento = {};
+    this.variantRivestimentiSelections = {};
+    this.variantRivestimentiMeters = {};
   }
 
   cancelMarkup() {
@@ -495,6 +532,14 @@ export class HomeComponent implements OnInit {
   // === Product Editing ===
   editProduct(product: SofaProduct) {
     this.openEditDialog(product);
+  }
+
+  isContinueDisabled(): boolean {
+    if (!this.selectedProduct) {
+      return true;
+    }
+    const variants = this.getProductVariants(this.selectedProduct.id);
+    return variants.some(v => !(this.variantRivestimentiSelections[v.id]?.length > 0));
   }
 
   openEditDialog(product: SofaProduct, event?: Event) {
@@ -1023,6 +1068,21 @@ export class HomeComponent implements OnInit {
   // === Display Utilities ===
   onVariantComponentSelected(type: string, component: any): void { }
 
+  onRivestimentoHide(): void {
+    // Se abbiamo almeno un rivestimento con metri > 0, procediamo al dialog successivo
+    if (this.canProceedRivestimenti()) {
+      // NgZone per evitare errori di ChangeDetection fuori dal contesto Angular
+      this.zone.run(() => {
+        this.showListinoExtraMattressDialog = true;
+        this.cdr.detectChanges();
+      });
+    } else {
+      // Altrimenti resettiamo lo wizard
+      this.resetListinoWizard();
+    }
+  }
+
+
   formatComponentName(component: ComponentModel): string {
     if (!component) return '';
     const hasMeasure = !!component.measure?.trim();
@@ -1135,5 +1195,109 @@ export class HomeComponent implements OnInit {
   private getSupplierName(c: ComponentModel): string | undefined {
     if (!c?.supplier) return undefined;
     return c.supplier.name;
+  }
+
+  cancelRivestimento() {
+    this.showRivestimentoDialog = false;
+    this.resetListinoWizard();
+    this.cdr.detectChanges();
+  }
+
+  overallRivestimentiCost(): number {
+    return this.getTotalRivestimentiCost();
+  }
+
+  // Add rivestimento to variant - kept for compatibility but updated
+  addRivestimentoToVariant(variantId: string, rivestimento: Rivestimento): void {
+    if (!rivestimento || !variantId) return;
+
+    if (!this.variantRivestimentiSelections[variantId]) {
+      this.variantRivestimentiSelections[variantId] = [];
+    }
+
+    // Check if rivestimento already exists
+    const exists = this.variantRivestimentiSelections[variantId].some(r => r.id === rivestimento.id);
+    if (!exists) {
+      this.variantRivestimentiSelections[variantId].push(rivestimento);
+
+      // Initialize meters if not exists
+      if (!this.variantRivestimentiMeters[variantId]) {
+        this.variantRivestimentiMeters[variantId] = {};
+      }
+      this.variantRivestimentiMeters[variantId][rivestimento.id] = 0.1;
+
+      this.cdr.detectChanges();
+    }
+  }
+
+  // Remove rivestimento from variant
+  removeRivestimentoFromVariant(variantId: string, rivestimentoId: string): void {
+    if (this.variantRivestimentiSelections[variantId]) {
+      this.variantRivestimentiSelections[variantId] = this.variantRivestimentiSelections[variantId]
+        .filter(r => r.id !== rivestimentoId);
+
+      if (this.variantRivestimentiMeters[variantId]) {
+        delete this.variantRivestimentiMeters[variantId][rivestimentoId];
+      }
+
+      this.cdr.detectChanges();
+    }
+  }
+
+  // Get rivestimenti for specific variant
+  getVariantRivestimenti(variantId: string): Rivestimento[] {
+    if (!variantId) return [];
+    return this.variantRivestimentiSelections[variantId] || [];
+  }
+
+  // Get meters for variant rivestimento
+  getVariantRivestimentoMeters(variantId: string, rivestimentoId: string): number {
+    if (!variantId || !rivestimentoId) return 0.1;
+    return this.variantRivestimentiMeters[variantId]?.[rivestimentoId] || 0.1;
+  }
+
+  // Set meters for variant rivestimento
+  setVariantRivestimentoMeters(variantId: string, rivestimentoId: string, meters: number): void {
+    if (!variantId || !rivestimentoId) return;
+
+    if (!this.variantRivestimentiMeters[variantId]) {
+      this.variantRivestimentiMeters[variantId] = {};
+    }
+    this.variantRivestimentiMeters[variantId][rivestimentoId] = Math.max(0.1, meters || 0.1);
+    this.cdr.detectChanges();
+  }
+
+  // Calculate total rivestimenti cost for all variants
+  getTotalRivestimentiCost(): number {
+    let total = 0;
+    Object.keys(this.variantRivestimentiSelections).forEach(variantId => {
+      const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
+      rivestimenti.forEach(r => {
+        const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
+        total += r.mtPrice * meters;
+      });
+    });
+    return total;
+  }
+
+  // Calculate rivestimenti cost for specific variant
+  getVariantRivestimentiCost(variantId: string): number {
+    if (!variantId) return 0;
+
+    const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
+    return rivestimenti.reduce((sum, r) => {
+      const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
+      return sum + (r.mtPrice * meters);
+    }, 0);
+  }
+
+  canProceedRivestimenti(): boolean {
+    return Object.keys(this.variantRivestimentiSelections).some(variantId => {
+      const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
+      return rivestimenti.some(r => {
+        const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
+        return meters > 0;
+      });
+    });
   }
 }

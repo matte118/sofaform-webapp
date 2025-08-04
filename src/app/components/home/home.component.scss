@@ -1021,65 +1021,164 @@
       gap: 1rem;
     }
   }
-}
 
-::ng-deep .variant-components-dialog {
-  .p-dialog-content {
-    padding: 0;
-    max-height: 70vh;
-    overflow-y: auto;
+  .variant-rivestimenti-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
 
-    .variant-components-container {
-      padding: 1.5rem;
+    .variant-title {
+      margin: 0 0 1rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2d3748;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #3498db;
+    }
 
-      .p-field {
-        margin-bottom: 1.5rem;
-        align-items: center;
+    .field {
+      margin-bottom: 1.5rem;
 
-        label {
-          font-weight: 500;
-          color: #4a5568;
+      label {
+        font-weight: 500;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+
+      .p-multiselect {
+        width: 100%;
+        min-height: 2.5rem;
+
+        .p-multiselect-label {
+          padding: 0.75rem;
+          min-height: 2.5rem;
           display: flex;
           align-items: center;
+          flex-wrap: wrap;
+          gap: 0.5rem;
 
-          .required-field {
-            color: #e53e3e;
-            margin-left: 0.25rem;
+          &.p-placeholder {
+            color: #6c757d;
+            font-style: italic;
           }
         }
 
-        .p-dropdown,
-        .p-multiselect {
-          width: 100%;
-        }
+        .p-multiselect-token {
+          background: #e3f2fd;
+          border: 1px solid #90caf9;
+          border-radius: 16px;
+          color: #1976d2;
+          padding: 0.25rem 0.75rem;
+          margin: 0.125rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          max-width: 200px;
 
-        small.p-error {
-          color: #e53e3e;
-          font-size: 0.75rem;
-          margin-top: 0.25rem;
-          display: block;
-        }
-      }
+          .p-multiselect-token-label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+          }
 
-      .p-grid {
-        margin: 0;
+          .p-multiselect-token-icon {
+            cursor: pointer;
+            color: #1976d2;
+            font-weight: bold;
+            padding: 0.125rem;
+            border-radius: 50%;
+            transition: background-color 0.2s;
 
-        .p-col-12 {
-          padding: 0.5rem;
+            &:hover {
+              background-color: rgba(25, 118, 210, 0.1);
+            }
+          }
         }
       }
     }
+
+    .selected-rivestimenti {
+      margin-top: 1rem;
+
+      h6 {
+        margin: 0 0 0.75rem 0;
+        color: #4a5568;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .rivestimento-meters-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+
+        .meters-label {
+          flex: 2;
+          min-width: 200px;
+
+          .rivestimento-name {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+          }
+
+          .rivestimento-unit-price {
+            font-size: 0.8rem;
+            color: #718096;
+          }
+        }
+
+        .subtotal {
+          font-size: 0.9rem;
+          font-weight: 600;
+          background: #e6f4ff;
+          color: #1976d2;
+          padding: 0.375rem 0.75rem;
+          border-radius: 16px;
+          min-width: 80px;
+          text-align: center;
+        }
+      }
+
+      .variant-total {
+        text-align: right;
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e2e8f0;
+        color: #2d3748;
+      }
+    }
+
+    .no-rivestimenti {
+      text-align: center;
+      padding: 1rem;
+      color: #718096;
+      font-style: italic;
+    }
   }
 
-  .p-dialog-footer {
-    border-top: 1px solid #e9ecef;
-    background: #f8f9fa;
-    padding: 1rem 1.5rem;
+  .total-cost-summary {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #e6f4ff;
+    border-radius: 8px;
+    text-align: center;
 
-    .dialog-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
+    h4 {
+      margin: 0;
+      color: #1976d2;
+      font-size: 1.2rem;
     }
   }
 }
@@ -1308,4 +1407,73 @@
 .select-all-rivestimenti {
   text-align: right;
   margin-top: 0.5rem;
+}
+
+/* Aggiungiamo styling e spaziature al dialog dei rivestimenti */
+
+::ng-deep .p-dialog .rivestimento-selection-section {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background-color: #fdfdfd;
+  border-radius: 8px;
+}
+
+/* Miglioriamo la disposizione dei dropdown e dei gruppi di metri */
+::ng-deep .p-dialog .rivestimento-selection-section .p-field {
+  margin-bottom: 1rem;
+}
+
+::ng-deep .p-dialog .rivestimento-selection-section h4,
+::ng-deep .p-dialog .rivestimento-selection-section h5,
+::ng-deep .p-dialog .rivestimento-selection-section h6 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+/* Lista multiselect con spaziatura interna */
+::ng-deep .p-dialog .p-multiselect {
+  width: 100%;
+}
+::ng-deep .p-dialog .p-multiselect .p-multiselect-label {
+  padding: 0.75rem;
+}
+
+/* Raggruppiamo metri e subtotali in grid */
+::ng-deep .p-dialog .rivestimento-meters-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: #fff;
+  border-radius: 6px;
+}
+
+::ng-deep .p-dialog .rivestimento-meters-row .meters-label {
+  display: flex;
+  flex-direction: column;
+}
+
+::ng-deep .p-dialog .rivestimento-meters-row p-inputNumber {
+  justify-self: center;
+}
+
+::ng-deep .p-dialog .rivestimento-meters-row .subtotal {
+  justify-self: end;
+}
+
+/* Spazio tra riepilogo e bottoni */
+::ng-deep .p-dialog .total-cost-summary {
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+/* Footer dialog con gap tra i pulsanti */
+::ng-deep .p-dialog .p-dialog-footer {
+  display: flex !important;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
 }
