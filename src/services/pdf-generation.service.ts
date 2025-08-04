@@ -227,20 +227,23 @@ export class PdfGenerationService {
         style: 'variantHeader'
       });
 
-      // Tabella rivestimenti (solo prezzi finali)
+      // Tabella rivestimenti (prezzo variante + rivestimento per ogni riga)
       const rivestimentiBody: any[] = [
         [
           { text: 'Rivestimento', style: 'tableHeader' },
-          { text: 'Prezzo', style: 'tableHeader', alignment: 'right' }
+          { text: 'Prezzo Totale', style: 'tableHeader', alignment: 'right' }
         ]
       ];
 
       this.rivestimentiData.forEach(r => {
-        const totalPrice = r.rivestimento.mtPrice * r.metri;
+        // Calcola: prezzo base variante + costo rivestimento per questa riga
+        const rivestimentoCost = r.rivestimento.mtPrice * r.metri;
+        const variantTotalPrice = variant.price + rivestimentoCost;
+
         rivestimentiBody.push([
           { text: r.rivestimento.name, style: 'tableCell' },
           {
-            text: `€ ${totalPrice.toFixed(2)}`,
+            text: `€ ${variantTotalPrice.toFixed(2)}`,
             style: 'tableCell',
             alignment: 'right',
             bold: true
@@ -263,27 +266,29 @@ export class PdfGenerationService {
         margin: [0, 0, 0, 20]
       });
 
-      // Box prezzi (senza consegna)
-      const baseTotal = variant.price + this.sumRivestimenti();
-      const totalWithMarkup = this.applyMarkup(baseTotal, this.markupPerc);
-      const markupAmount = totalWithMarkup - baseTotal;
+      // Box prezzi (aggiornato per mostrare il range di prezzi)
+      const minPrice = Math.min(...this.rivestimentiData.map(r => variant.price + (r.rivestimento.mtPrice * r.metri)));
+      const maxPrice = Math.max(...this.rivestimentiData.map(r => variant.price + (r.rivestimento.mtPrice * r.metri)));
+
+      const minPriceWithMarkup = this.applyMarkup(minPrice, this.markupPerc);
+      const maxPriceWithMarkup = this.applyMarkup(maxPrice, this.markupPerc);
+
+      const priceDisplay = minPrice === maxPrice
+        ? `€ ${minPriceWithMarkup.toFixed(2)}`
+        : `€ ${minPriceWithMarkup.toFixed(2)} - ${maxPriceWithMarkup.toFixed(2)}`;
 
       docDefinition.content.push({
         table: {
           widths: ['60%', '40%'],
           body: [
             [
-              { text: 'Subtotale variante:', style: 'tableCell' },
-              { text: `€ ${baseTotal.toFixed(2)}`, style: 'tableCell', alignment: 'right' }
-            ],
-            [
-              { text: `Ricarico (${this.markupPerc}%):`, style: 'tableCell' },
-              { text: `€ ${markupAmount.toFixed(2)}`, style: 'tableCell', alignment: 'right' }
+              { text: 'Range prezzi variante:', style: 'tableCell' },
+              { text: priceDisplay, style: 'tableCell', alignment: 'right' }
             ],
             [
               { text: 'TOTALE VARIANTE:', style: 'tableCell', bold: true, color: '#2c5aa0' },
               {
-                text: `€ ${totalWithMarkup.toFixed(2)}`,
+                text: priceDisplay,
                 style: ['tableCell', 'totalPrice'],
                 alignment: 'right'
               }
@@ -292,7 +297,7 @@ export class PdfGenerationService {
         },
         style: 'priceBox',
         layout: {
-          fillColor: (rowIndex: number) => rowIndex === 2 ? '#e8f5e8' : '#f5f5f5',
+          fillColor: (rowIndex: number) => rowIndex === 1 ? '#e8f5e8' : '#f5f5f5',
           hLineWidth: () => 0.5,
           vLineWidth: () => 0.5,
           hLineColor: () => '#e0e0e0',

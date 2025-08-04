@@ -44,7 +44,6 @@ import { ComponentService } from '../../../services/component.service';
 import { ExtraMattress } from '../../../models/extra-mattress.model';
 import { PdfGenerationService } from '../../../services/pdf-generation.service';
 import { firstValueFrom } from 'rxjs';
-import { ListinoPdfTemplateComponent } from '../../templates/pdf-templates/listino-pdf-template/listino-pdf-template.component';
 
 interface GroupedComponent {
   component: ComponentModel;
@@ -80,7 +79,6 @@ interface EditGroupedComponent {
     MultiSelectModule,
     FloatLabelModule,
     InputNumberModule,
-    ListinoPdfTemplateComponent
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -393,6 +391,7 @@ export class HomeComponent implements OnInit {
 
         rivestimenti.forEach(r => {
           const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
+
           if (meters > 0) {
             variantRivestimentiData.push({ rivestimento: r, metri: meters });
 
@@ -405,11 +404,6 @@ export class HomeComponent implements OnInit {
             }
           }
         });
-
-        // Save to database
-        if (variantRivestimentiData.length > 0) {
-          await this.variantService.saveVariantRivestimenti(variantId, variantRivestimentiData);
-        }
       }
 
       if (!this.selectedRivestimentiForListino.length) {
@@ -420,12 +414,6 @@ export class HomeComponent implements OnInit {
         });
         return;
       }
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Successo',
-        detail: 'Rivestimenti salvati per le varianti'
-      });
 
       this.showRivestimentoDialog = false;
       this.cdr.detectChanges();
@@ -458,7 +446,27 @@ export class HomeComponent implements OnInit {
         detail: 'Generazione del listino in corso...'
       });
 
-      // 1. Persist changes to database
+      // 1. ✅ ADESSO salviamo tutto nel database
+
+      // Salva i rivestimenti per ogni variante
+      for (const variantId of Object.keys(this.variantRivestimentiSelections)) {
+        const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
+        const variantRivestimentiData: { rivestimento: Rivestimento; metri: number }[] = [];
+
+        rivestimenti.forEach(r => {
+          const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
+          if (meters > 0) {
+            variantRivestimentiData.push({ rivestimento: r, metri: meters });
+          }
+        });
+
+        // Salva nel database solo ora
+        if (variantRivestimentiData.length > 0) {
+          await this.variantService.saveVariantRivestimenti(variantId, variantRivestimentiData);
+        }
+      }
+
+      // Salva il prodotto aggiornato
       const updatedProduct: SofaProduct = {
         ...this.selectedProduct,
         materassiExtra: [...this.extraMattressesForListino],
@@ -472,6 +480,7 @@ export class HomeComponent implements OnInit {
       this.showPdfTemplate = true;
       this.cdr.detectChanges();
       await new Promise(res => setTimeout(res, 100));
+
       this.pdfService.setListinoData(
         updatedProduct,
         this.getProductVariants(updatedProduct.id),
@@ -480,6 +489,7 @@ export class HomeComponent implements OnInit {
         this.markupPercentage,
         this.deliveryPriceListino
       );
+
       await this.pdfService.generateListinoPdf(updatedProduct.name);
       this.showPdfTemplate = false;
       this.cdr.detectChanges();
@@ -491,6 +501,12 @@ export class HomeComponent implements OnInit {
       }
 
       this.resetListinoWizard();
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'PDF Generato',
+        detail: 'Listino generato e dati salvati con successo'
+      });
 
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -1299,5 +1315,31 @@ export class HomeComponent implements OnInit {
         return meters > 0;
       });
     });
+  }
+
+  getVariantTotalWithMarkup(variant: Variant): number {
+    const baseTotal = this.getVariantBaseTotal(variant);
+    const markupFactor = (100 - this.markupPercentage) / 100;
+    return markupFactor > 0 ? baseTotal / markupFactor : baseTotal;
+  }
+
+  getVariantBaseTotal(variant: Variant): number {
+    return variant.price + this.getRivestimentiTotal() + this.deliveryPriceListino;
+  }
+
+  getRivestimentiTotal(): number {
+    return this.selectedRivestimentiForListino.reduce((sum, r) => sum + r.rivestimento.mtPrice * r.metri, 0);
+  }
+
+  getExtraMattressesTotal(): number {
+    return this.extraMattressesForListino.reduce((sum, m) => sum + (m.price || 0), 0);
+  }
+
+  formatPrice(price: number): string {
+    return price.toFixed(2);
+  }
+
+  getCurrentDate(): string {
+    return new Date().toLocaleDateString('it-IT');
   }
 }

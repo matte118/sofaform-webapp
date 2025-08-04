@@ -72,7 +72,7 @@
                   <strong>Posti:</strong> {{ variant.seatsCount }}
                 </div>
                 <div class="variant-detail-row" *ngIf="variant.mattressWidth">
-                  <strong>Larghezza materasso:</strong>
+                  <strong>Larghezza:</strong>
                   {{ variant.mattressWidth }} cm
                 </div>
 
@@ -126,101 +126,84 @@
   </div>
 
   <!-- Template modificato: Dialog Configura Rivestimenti con Dropdown per ogni variante -->
-<!-- Template modificato: Dialog Configura Rivestimenti con Dropdown per ogni variante -->
-<!-- Template modificato: Dialog Configura Rivestimenti con Dropdown per ogni variante -->
-<p-dialog appendTo="body" [(visible)]="showRivestimentoDialog" header="Configura Rivestimenti per Varianti"
-          [modal]="true" [closable]="false" [baseZIndex]="10000" [style]="{ width: '900px', maxHeight: '90vh' }"
-          [draggable]="false" [resizable]="false" (onHide)="onRivestimentoHide()">
+  <!-- Template modificato: Dialog Configura Rivestimenti con Dropdown per ogni variante -->
+  <!-- Template modificato: Dialog Configura Rivestimenti con Dropdown per ogni variante -->
+  <p-dialog appendTo="body" [(visible)]="showRivestimentoDialog" header="Configura Rivestimenti per Varianti"
+    [modal]="true" [closable]="false" [baseZIndex]="10000" [style]="{ width: '900px', maxHeight: '90vh' }"
+    [draggable]="false" [resizable]="false" (onHide)="onRivestimentoHide()">
 
-  <div class="p-fluid" *ngIf="selectedProduct">
-    <div class="rivestimento-selection-section">
-      <h4>Seleziona rivestimenti per ogni variante</h4>
+    <div class="p-fluid" *ngIf="selectedProduct">
+      <div class="rivestimento-selection-section">
+        <h4>Seleziona rivestimenti per ogni variante</h4>
 
-      <!-- Dropdown per selezionare la variante corrente -->
-      <div class="p-field" style="margin-bottom:1rem;">
-        <p-dropdown id="variantSelect"
-                    [options]="getProductVariants(selectedProduct.id)"
-                    [(ngModel)]="selectedVariantForRivestimento"
-                    optionLabel="longName"
-                    placeholder="Scegli variante"
-                    [showClear]="true"
-                    [style]="{ width: '100%' }"></p-dropdown>
-      </div>
-
-      <!-- Sezione per la variante selezionata -->
-      <ng-container *ngIf="selectedVariantForRivestimento">
-        <h5 class="variant-title">{{ selectedVariantForRivestimento.longName }}</h5>
-
-        <!-- Multi-select rivestimenti -->
-        <div class="field">
-          <label>Seleziona rivestimenti:</label>
-          <p-multiSelect
-            [options]="availableRivestimenti"
-            [(ngModel)]="variantRivestimentiSelections[selectedVariantForRivestimento.id]"
-            optionLabel="name"
-            placeholder="Seleziona uno o più rivestimenti"
-            [showClear]="true"
-            [filter]="true"
-            filterBy="name,code"
-            display="chip"
-            (onChange)="onVariantRivestimentiChange(selectedVariantForRivestimento.id, $event.value)"
-            [style]="{ width: '100%' }">
-            <ng-template let-r pTemplate="item">
-              <div class="rivestimento-item">
-                <span class="rivestimento-name">{{ r.name }}</span>
-                <span class="rivestimento-price">€{{ r.mtPrice | number:'1.2-2' }}/mt</span>
-              </div>
-            </ng-template>
-            <ng-template let-r pTemplate="selectedItem">
-              <span class="rivestimento-chip-token">{{ r.name }}</span>
-            </ng-template>
-          </p-multiSelect>
+        <!-- Dropdown per selezionare la variante corrente -->
+        <div class="p-field" style="margin-bottom:1rem;">
+          <p-dropdown id="variantSelect" [options]="getProductVariants(selectedProduct.id)"
+            [(ngModel)]="selectedVariantForRivestimento" optionLabel="longName" placeholder="Scegli variante"
+            [showClear]="true" [style]="{ width: '100%' }"></p-dropdown>
         </div>
 
-        <!-- Metratura e subtotali -->
-        <div class="selected-rivestimenti" *ngIf="getVariantRivestimenti(selectedVariantForRivestimento.id).length">
-          <h6>Specifica i metri per ogni rivestimento:</h6>
-          <div class="rivestimento-meters-row"
-               *ngFor="let r of getVariantRivestimenti(selectedVariantForRivestimento.id)" style="padding-top: 15px;">
-            <div class="meters-label">
-              <span class="rivestimento-name"><b>{{ r.name }}</b></span>
-              <span class="rivestimento-unit-price"><i>{{ r.mtPrice | number:'1.2-2' }} €/mt</i></span>
-            </div>
-            <p-inputNumber
-              [ngModel]="getVariantRivestimentoMeters(selectedVariantForRivestimento.id, r.id)"
-              (ngModelChange)="setVariantRivestimentoMeters(selectedVariantForRivestimento.id, r.id, $event)"
-              [min]="0.1"
-              [step]="0.1"
-              mode="decimal"
-              [minFractionDigits]="1"
-              [maxFractionDigits]="2"
-              suffix=" mt"
-              placeholder="0.0"
-              [style]="{ width: '140px' }"></p-inputNumber>
-            <div class="subtotal">
-              € {{ (r.mtPrice * getVariantRivestimentoMeters(selectedVariantForRivestimento.id, r.id)) | number:'1.2-2' }}
+        <!-- Sezione per la variante selezionata -->
+        <ng-container *ngIf="selectedVariantForRivestimento">
+          <h5 class="variant-title">{{ selectedVariantForRivestimento.longName }}</h5>
+
+          <!-- Multi-select rivestimenti -->
+          <div class="field">
+            <label>Seleziona rivestimenti:</label>
+            <p-multiSelect [options]="availableRivestimenti"
+              [(ngModel)]="variantRivestimentiSelections[selectedVariantForRivestimento.id]" optionLabel="name"
+              placeholder="Seleziona uno o più rivestimenti" [showClear]="true" [filter]="true" filterBy="name,code"
+              display="chip" (onChange)="onVariantRivestimentiChange(selectedVariantForRivestimento.id, $event.value)"
+              [style]="{ width: '100%' }">
+              <ng-template let-r pTemplate="item">
+                <div class="rivestimento-item">
+                  <span class="rivestimento-name">{{ r.name }}</span>
+                  <span class="rivestimento-price">€{{ r.mtPrice | number:'1.2-2' }}/mt</span>
+                </div>
+              </ng-template>
+              <ng-template let-r pTemplate="selectedItem">
+                <span class="rivestimento-chip-token">{{ r.name }}</span>
+              </ng-template>
+            </p-multiSelect>
+          </div>
+
+          <!-- Metratura e subtotali -->
+          <div class="selected-rivestimenti" *ngIf="getVariantRivestimenti(selectedVariantForRivestimento.id).length">
+            <h6>Specifica i metri per ogni rivestimento:</h6>
+            <div class="rivestimento-meters-row"
+              *ngFor="let r of getVariantRivestimenti(selectedVariantForRivestimento.id)" style="padding-top: 15px;">
+              <div class="meters-label">
+                <span class="rivestimento-name"><b>{{ r.name }}</b></span>
+                <span class="rivestimento-unit-price"><i>{{ r.mtPrice | number:'1.2-2' }} €/mt</i></span>
+              </div>
+              <p-inputNumber [ngModel]="getVariantRivestimentoMeters(selectedVariantForRivestimento.id, r.id)"
+                (ngModelChange)="setVariantRivestimentoMeters(selectedVariantForRivestimento.id, r.id, $event)"
+                [min]="0.1" [step]="0.1" mode="decimal" [minFractionDigits]="1" [maxFractionDigits]="2" suffix=" mt"
+                placeholder="0.0" [style]="{ width: '140px' }"></p-inputNumber>
+              <div class="subtotal">
+                € {{ (r.mtPrice * getVariantRivestimentoMeters(selectedVariantForRivestimento.id, r.id)) |
+                number:'1.2-2' }}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="no-rivestimenti" *ngIf="!getVariantRivestimenti(selectedVariantForRivestimento.id).length">
-          <small class="p-text-secondary">Nessun rivestimento selezionato per questa variante</small>
-        </div>
-      </ng-container>
+          <div class="no-rivestimenti" *ngIf="!getVariantRivestimenti(selectedVariantForRivestimento.id).length">
+            <small class="p-text-secondary">Nessun rivestimento selezionato per questa variante</small>
+          </div>
+        </ng-container>
+      </div>
     </div>
-  </div>
 
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Annulla" icon="pi pi-times" class="btn-dialog-no"
-            (click)="cancelRivestimento()"></button>
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Annulla" icon="pi pi-times" class="btn-dialog-no"
+        (click)="cancelRivestimento()"></button>
 
-    <!-- Continua disabilitato finché non tutti le varianti hanno almeno un rivestimento -->
-    <button pButton type="button" label="Continua" icon="pi pi-check" class="btn-dialog-yes"
-            (click)="confirmRivestimentiSelection()"
-            [disabled]="isContinueDisabled()">
-    </button>
-  </ng-template>
-</p-dialog>
+      <!-- Continua disabilitato finché non tutti le varianti hanno almeno un rivestimento -->
+      <button pButton type="button" label="Continua" icon="pi pi-check" class="btn-dialog-yes"
+        (click)="confirmRivestimentiSelection()" [disabled]="isContinueDisabled()">
+      </button>
+    </ng-template>
+  </p-dialog>
 
 
   <!-- Dialog Materassi Extra (Listino) -->
@@ -257,8 +240,8 @@
 
   <!-- Dialog Configura Ricarico -->
   <p-dialog appendTo="body" [(visible)]="showMarkupDialog" header="Configura Ricarico" [modal]="true" [closable]="false"
-    [baseZIndex]="10000" [draggable]="false" [style]="{ width: '800px', maxHeight: '90vh' }" [resizable]="false" (onHide)="cancelMarkup()"
-    [dismissableMask]="false" [closeOnEscape]="false">
+    [baseZIndex]="10000" [draggable]="false" [style]="{ width: '800px', maxHeight: '90vh' }" [resizable]="false"
+    (onHide)="cancelMarkup()" [dismissableMask]="false" [closeOnEscape]="false">
     <div class="p-fluid">
       <div class="field">
         <label for="markup">Percentuale di ricarico:</label>
@@ -782,13 +765,4 @@
       </button>
     </ng-template>
   </p-dialog>
-
-  <div *ngIf="showPdfTemplate" style="position: absolute; left: -9999px;">
-    <app-listino-pdf-template [product]="selectedProduct!" [variants]="getProductVariants(selectedProduct!.id)"
-      [rivestimenti]="selectedRivestimentiForListino" [extraMattresses]="extraMattressesForListino"
-      [markupPercentage]="markupPercentage" [deliveryPrice]="deliveryPriceListino">
-    </app-listino-pdf-template>
-  </div>
-
-
 </div>
