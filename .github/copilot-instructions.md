@@ -18,6 +18,7 @@ SofaForm is an Angular 18 application for managing sofa manufacturing components
 - Timer-based guard initialization (300ms delay) to ensure Firebase auth state is ready
 - Authentication state managed via `AuthService` with Firebase Auth
 - Routes protected using functional guards: `canActivate: [() => AuthGuard(), () => ManagerGuard()]`
+- Access denied component for unauthorized access attempts
 
 ### Data Layer Architecture
 - **Models**: Located in `src/models/` - use class-based models with constructors
@@ -31,6 +32,59 @@ SofaForm is an Angular 18 application for managing sofa manufacturing components
 - **PrimeNG Integration**: Import specific modules per component needs
 - **State Management**: Use RxJS observables and Angular signals for reactive updates
 - **Bulk Operations**: Support for creating multiple components at once (see `gestione-componenti`)
+
+## Core Services
+
+### Authentication Services
+- **AuthService**: User authentication, role management, user CRUD operations
+- **Guards**: Functional guards for route protection (`AuthGuard`, `ManagerGuard`, `FounderGuard`, `LoginGuard`)
+
+### Data Services
+- **RealtimeDbService**: Core Firebase database operations with data sanitization
+- **ComponentService**: Component CRUD, bulk operations, dependency checking
+- **SupplierService**: Supplier management with relationship validation
+- **VariantService**: Product variant management and component associations
+- **SofaProductService**: Product lifecycle management
+- **RivestimentoService**: Fabric/covering material management
+- **ComponentTypeService**: Component type definitions and management
+
+### Utility Services
+- **PdfGenerationService**: PDF creation for price lists using pdfMake
+- **UploadService**: File upload to Firebase Storage with progress tracking
+
+## Data Models
+
+### Core Models
+- **User**: User accounts with roles and metadata
+- **UserRole**: Enum for FOUNDER, MANAGER, OPERATOR permissions
+- **Supplier**: Supplier information with contact details
+- **Component**: Product components with type, supplier, price, measure
+- **ComponentType**: Enum for component categories (FUSTO, GOMMA, RETE, etc.)
+- **SofaProduct**: Main product entity with variants and metadata
+- **Variant**: Product variations with component lists and pricing
+- **Rivestimento**: Fabric materials with pricing per meter
+- **ExtraMattress**: Additional mattress options
+
+### Specialized Models
+- **BulkComponent**: For bulk component creation operations
+- **ListinoPdfData**: Data structure for PDF price list generation
+
+## UI Components
+
+### Management Interfaces
+- **GestioneUtenti**: User management (manager+ only) with role assignment
+- **GestioneComponenti**: Component management with single/bulk creation modes
+- **GestioneFornitori**: Supplier management with dependency checking
+- **GestioneTessuti**: Fabric/rivestimento management
+- **AggiungiProdotto**: Multi-step product creation wizard
+
+### Core Components
+- **Home**: Main dashboard
+- **Login**: Authentication interface
+- **AccessDenied**: Unauthorized access handling
+
+### PDF Templates
+- **ListinoPdfTemplate**: Template component for price list PDF generation
 
 ## Development Workflows
 
@@ -52,6 +106,12 @@ npm run seed           # Populate Firebase with test data
 2. Use `PdfGenerationService.setListinoData()` to configure data
 3. Call `generateListinoPdf()` to create and download price list PDF
 4. Template rendering happens via `ListinoPdfTemplateComponent` for consistent styling
+
+### File Upload Workflow
+1. Use `UploadService.uploadProductImage()` for product images
+2. Firebase Storage integration with progress tracking
+3. Automatic URL generation and metadata handling
+4. Image preview and removal functionality
 
 ### Component Generation
 Follow Angular CLI patterns but ensure:
@@ -89,6 +149,19 @@ export class YourService {
 })
 ```
 
+### Form Validation Patterns
+- Use `formSubmitted` and `formValid` flags for validation state
+- Implement `shouldShowFieldError()` methods for error display
+- Use PrimeNG FloatLabel for consistent form styling
+- Required field indicators with red asterisks
+
+### Table Management Patterns
+- Implement refresh mechanisms with Subject observables
+- Use loading states and data caching
+- Provide search/filter functionality
+- Include bulk selection where appropriate
+- Implement proper pagination for large datasets
+
 ### Firebase Integration
 - Use `ref()`, `set()`, `push()`, `onValue()` from '@angular/fire/database'
 - Always sanitize data before writing to prevent undefined values
@@ -98,6 +171,12 @@ export class YourService {
 - Use PrimeNG `MessageService` for user-facing messages
 - Implement proper loading states in components
 - Log errors to console with descriptive context
+
+### Dependency Management
+- Check component dependencies before deletion
+- Display usage warnings in confirmation dialogs
+- Implement cascade deletion where appropriate
+- Provide dependency resolution suggestions
 
 ## Key Files Reference
 
@@ -110,19 +189,64 @@ export class YourService {
 - `src/services/auth.service.ts`: Authentication and user management
 - `src/services/realtime-db.service.ts`: Firebase database operations
 - `src/services/component.service.ts`: Component CRUD operations
+- `src/services/supplier.service.ts`: Supplier management
+- `src/services/variant.service.ts`: Product variant operations
+- `src/services/sofa-product.service.ts`: Product lifecycle management
+- `src/services/rivestimento.service.ts`: Fabric material management
+- `src/services/pdf-generation.service.ts`: PDF creation service
+- `src/services/upload.service.ts`: File upload handling
 
 ### Models
 - Follow the pattern in `src/models/supplier.model.ts`: class-based with constructor
 - Relationships: Components have Suppliers and ComponentTypes
 - Products have variants and components
+- All models use proper TypeScript typing
 
 ### UI Components
 - Management interfaces in `src/app/components/gestione-*`
 - Use PrimeNG Table, Dialog, and Form components consistently
 - Implement bulk operations where applicable (see gestione-componenti)
+- Follow responsive design patterns with PrimeNG Grid system
+
+### Guards
+- `src/app/guards/auth.guard.ts`: Authentication and authorization logic
+- `src/app/guards/login.guard.ts`: Redirect logic for authenticated users
 
 ## Testing & Debugging
 - Unit tests use Jasmine/Karma
 - Use Angular DevTools for component debugging
 - Firebase console for database inspection
 - PrimeNG provides consistent styling - avoid custom CSS when possible
+
+## Component-Specific Patterns
+
+### Multi-Step Forms (AggiungiProdotto)
+- Use PrimeNG Steps component for navigation
+- Implement step validation before progression
+- Handle complex component selection with caching
+- Support for file uploads with progress tracking
+
+### Bulk Operations (GestioneComponenti)
+- TabView for single vs. bulk creation modes
+- Dynamic form generation for variable data
+- Real-time name generation based on selection
+- Validation across multiple form sections
+
+### User Management (GestioneUtenti)
+- Role-based UI rendering
+- Current user highlighting in tables
+- Proper permission checking for actions
+- Integration with Firebase Auth for user creation
+
+### Dependency Checking
+- Pre-deletion dependency validation
+- User-friendly dependency display
+- Cascade deletion options
+- Relationship integrity maintenance
+
+## Styling Conventions
+- Use PrimeNG themes and CSS variables
+- Implement consistent color schemes
+- Use CSS Grid and Flexbox for layouts
+- Follow responsive design principles
+- Maintain consistent spacing and typography

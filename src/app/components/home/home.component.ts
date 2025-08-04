@@ -355,7 +355,7 @@ export class HomeComponent implements OnInit {
   }
 
   canProceedRivestimenti(): boolean {
-    return this.tempRivestimentiSelection.some(r => (this.metersPerRivestimento[r.id] || 0) > 0);
+    return this.tempRivestimentiSelection?.some(r => (this.metersPerRivestimento[r.id] || 0) > 0) ?? false;
   }
 
   overallRivestimentiCost(): number {
