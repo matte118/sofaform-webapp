@@ -349,15 +349,6 @@
                 <textarea id="productMaterasso" name="materasso" pInputTextarea rows="2" autoResize="true"
                   [(ngModel)]="editingProduct.materasso" class="full-width"></textarea>
               </div>
-              <div class="form-field">
-                <button pButton type="button" label="Materassi Extra" icon="pi pi-plus-circle" class="p-button-outlined"
-                  (click)="showExtraMattressDialog = true"></button>
-              </div>
-              <div class="form-field">
-                <button pButton type="button" label="Costo Consegna" icon="pi pi-euro" class="p-button-outlined"
-                  (click)="showDeliveryPriceDialog = true"></button>
-                <span *ngIf="deliveryPrice != null" class="p-ml-2">€ {{ deliveryPrice }}</span>
-              </div>
             </div>
 
             <!-- Sezione Varianti -->
@@ -711,41 +702,6 @@
         <button pButton type="button" label="Aggiungi Variante" class="btn-dialog-yes"
           (click)="applyComponentsToNewVariant()"></button>
       </div>
-    </ng-template>
-  </p-dialog>
-
-  <!-- Dialog Materassi Extra -->
-  <p-dialog [(visible)]="showExtraMattressDialog" header="Materassi Extra" [modal]="true" [style]="{ width: '400px' }">
-    <div class="p-fluid">
-      <div class="p-field" *ngFor="let m of extraMattresses; let i = index"
-        style="display:flex; align-items:center; gap:0.5rem;">
-        <input pInputText [(ngModel)]="m.name" placeholder="Nome" class="p-inputtext-sm" style="flex:1" />
-        <p-inputNumber [(ngModel)]="m.price" inputStyle="width:100px" mode="currency" currency="EUR"
-          locale="it-IT"></p-inputNumber>
-        <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-text"
-          (click)="extraMattresses.splice(i,1)"></button>
-      </div>
-      <button pButton type="button" label="Aggiungi Materasso" icon="pi pi-plus" class="p-button-text"
-        (click)="addNewExtraMattress()"></button>
-    </div>
-    <ng-template pTemplate="footer">
-      <button pButton type="button" label="Chiudi" class="btn-dialog-yes"
-        (click)="showExtraMattressDialog=false"></button>
-    </ng-template>
-  </p-dialog>
-
-  <!-- Dialog Prezzo Consegna -->
-  <p-dialog [(visible)]="showDeliveryPriceDialog" header="Costo Consegna" [modal]="true" [style]="{ width: '300px' }">
-    <div class="p-fluid">
-      <div class="p-field">
-        <label for="deliveryPriceInput">Prezzo consegna</label>
-        <p-inputNumber id="deliveryPriceInput" [(ngModel)]="deliveryPrice" mode="currency" currency="EUR"
-          locale="it-IT"></p-inputNumber>
-      </div>
-    </div>
-    <ng-template pTemplate="footer">
-      <button pButton type="button" label="Chiudi" class="btn-dialog-yes"
-        (click)="showDeliveryPriceDialog=false"></button>
     </ng-template>
   </p-dialog>
 

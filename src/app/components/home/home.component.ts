@@ -103,8 +103,6 @@ export class HomeComponent implements OnInit {
   showEditProductDialog = false;
   showAddComponentDialog = false;
   showVariantComponentsDialog = false;
-  showExtraMattressDialog = false;
-  showDeliveryPriceDialog = false;
   showListinoExtraMattressDialog = false;
 
   displayConfirmDelete = false;
