@@ -95,9 +95,8 @@ export class AggiungiProdottoComponent implements OnInit {
   varieList: ComponentModel[] = [];
   tappezzeriaList: ComponentModel[] = [];
 
-  // 4) Remove rivestimenti properties
-  // rivestimentiList: Rivestimento[] = [];
-  // selectedRivestimenti: Rivestimento[] = [];
+  // 4) Remove rivestimenti properties - completely removed
+  // No longer needed as rivestimenti are handled separately
 
   currentStep = 0;
   value1 = 1;

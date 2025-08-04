@@ -10,12 +10,14 @@ SofaForm is an Angular 18 application for managing sofa manufacturing components
 - **Firebase**: Realtime Database, Auth, Storage, Functions
 - **PrimeNG**: UI component library (prefer over custom styling)
 - **RxJS**: Reactive patterns throughout the application
+- **pdfMake**: PDF generation for product price lists (listino)
 
 ### Authentication & Authorization
-- Role-based access with `UserRole.MANAGER` and standard user levels
-- Guards: `AuthGuard()` for basic auth, `ManagerGuard()` for elevated permissions
+- Three-tier role system: `UserRole.FOUNDER`, `UserRole.MANAGER`, `UserRole.OPERATOR`
+- Guards: `AuthGuard()` for basic auth, `ManagerGuard()` and `FounderGuard()` for elevated permissions
+- Timer-based guard initialization (300ms delay) to ensure Firebase auth state is ready
 - Authentication state managed via `AuthService` with Firebase Auth
-- Routes protected using functional guards: `canActivate: [() => AuthGuard()]`
+- Routes protected using functional guards: `canActivate: [() => AuthGuard(), () => ManagerGuard()]`
 
 ### Data Layer Architecture
 - **Models**: Located in `src/models/` - use class-based models with constructors
@@ -28,6 +30,7 @@ SofaForm is an Angular 18 application for managing sofa manufacturing components
 - **Lazy Loading**: Route-level code splitting with `loadComponent`
 - **PrimeNG Integration**: Import specific modules per component needs
 - **State Management**: Use RxJS observables and Angular signals for reactive updates
+- **Bulk Operations**: Support for creating multiple components at once (see `gestione-componenti`)
 
 ## Development Workflows
 
@@ -44,12 +47,24 @@ npm run seed           # Populate Firebase with test data
 2. Run `npm run seed` to upload to Firebase Realtime Database
 3. Uses `serviceAccountKey.json` for admin authentication
 
+### PDF Generation Workflow
+1. Products are configured with variants, components, and rivestimenti
+2. Use `PdfGenerationService.setListinoData()` to configure data
+3. Call `generateListinoPdf()` to create and download price list PDF
+4. Template rendering happens via `ListinoPdfTemplateComponent` for consistent styling
+
 ### Component Generation
 Follow Angular CLI patterns but ensure:
 - Use standalone components
 - Import necessary PrimeNG modules
 - Implement proper error handling with try-catch
 - Use `MessageService` for user notifications
+
+### Bulk Component Creation Pattern
+- Use `BulkComponentCreation` model for creating multiple similar components
+- Fixed data (type, supplier) shared across all variants
+- Variable data (measure, price, name) per component
+- Auto-generate component names from type + supplier + measure pattern
 
 ## Code Conventions
 

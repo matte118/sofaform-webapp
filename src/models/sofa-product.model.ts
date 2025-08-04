@@ -1,5 +1,4 @@
 import { ExtraMattress } from "./extra-mattress.model";
-import { Rivestimento } from "./rivestimento.model";
 
 export class SofaProduct {
   constructor(
@@ -16,7 +15,6 @@ export class SofaProduct {
     // Optional fields
     public materassiExtra?: ExtraMattress[],
     public deliveryPrice?: number,
-    public rivestimenti?: Rivestimento[],
     public ricarico?: number,
   ) { }
 }

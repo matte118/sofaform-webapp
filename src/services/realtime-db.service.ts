@@ -16,7 +16,7 @@ import { Rivestimento } from '../models/rivestimento.model';
 export class RealtimeDbService {
   constructor(private db: Database) { }
 
-  private sanitizeData(obj: any): any {
+  public sanitizeData(obj: any): any {
     if (obj === null || obj === undefined) {
       return null;
     }
@@ -67,7 +67,6 @@ export class RealtimeDbService {
       ...product,
       materassiExtra: product.materassiExtra ?? null,
       deliveryPrice: product.deliveryPrice ?? null,
-      rivestimenti: product.rivestimenti ?? null,
       ricarico: product.ricarico ?? null,
     });
 
@@ -100,7 +99,6 @@ export class RealtimeDbService {
       ...product,
       materassiExtra: product.materassiExtra ?? null,
       deliveryPrice: product.deliveryPrice ?? null,
-      rivestimenti: product.rivestimenti ?? null,
       ricarico: product.ricarico ?? null,
     });
     return set(ref(this.db, `products/${id}`), sanitizedProduct);

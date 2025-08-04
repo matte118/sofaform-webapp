@@ -40,21 +40,6 @@ export class RivestimentoService {
     });
   }
 
-  getRivestimentiAsObservable(): Observable<Rivestimento[]> {
-    return new Observable<Rivestimento[]>((observer) => {
-      this.dbService.getRivestimenti(
-        (rivestimenti: { id: string; data: any }[]) => {
-          const mappedRivestimenti = rivestimenti.map(
-            (r) =>
-              new Rivestimento(r.id, r.data.name, r.data.mtPrice)
-          );
-          observer.next(mappedRivestimenti);
-          observer.complete();
-        }
-      );
-    });
-  }
-
   updateRivestimento(id: string, rivestimento: Rivestimento): Observable<void> {
     if (!this.isBrowser) {
       return of(void 0);

@@ -10,6 +10,7 @@ export class Variant {
     public components: Component[] = [],
     public seatsCount?: number,
     public mattressWidth?: number,
+    public rivestimenti: Rivestimento[] = [],
   ) {}
 
   // Calculate price from components
@@ -17,8 +18,18 @@ export class Variant {
     return this.components.reduce((sum, component) => sum + component.price, 0);
   }
 
-  // Update price based on current components
+  // Calculate price from rivestimenti
+  calculatePriceFromRivestimenti(): number {
+    return this.rivestimenti.reduce((sum, rivestimento) => sum + rivestimento.mtPrice, 0);
+  }
+
+  // Calculate total price from components and rivestimenti
+  calculateTotalPrice(): number {
+    return this.calculatePriceFromComponents() + this.calculatePriceFromRivestimenti();
+  }
+
+  // Update price based on current components and rivestimenti
   updatePrice(): void {
-    this.price = this.calculatePriceFromComponents();
+    this.price = this.calculateTotalPrice();
   }
 }

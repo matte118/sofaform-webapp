@@ -300,7 +300,6 @@ export class HomeComponent implements OnInit {
       product.materasso,
       [...(product.materassiExtra || [])],
       product.deliveryPrice,
-      product.rivestimenti ? [...product.rivestimenti] : undefined,
       product.ricarico
     );
 
@@ -427,7 +426,6 @@ export class HomeComponent implements OnInit {
         ...this.selectedProduct,
         materassiExtra: [...this.extraMattressesForListino],
         deliveryPrice: this.deliveryPriceListino,
-        rivestimenti: this.selectedRivestimentiForListino.map(r => r.rivestimento),
         ricarico: this.markupPercentage
       };
 
@@ -514,7 +512,6 @@ export class HomeComponent implements OnInit {
       product.materasso,
       (product.materassiExtra as any) || [],
       product.deliveryPrice,
-      product.rivestimenti,
       product.ricarico
     );
 

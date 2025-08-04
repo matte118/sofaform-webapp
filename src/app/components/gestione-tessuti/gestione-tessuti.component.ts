@@ -89,7 +89,7 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
 
     // Create observable for tessuti
     const tessuti$ = this.rivestimentoService
-      .getRivestimentiAsObservable()
+      .getRivestimenti()
       .pipe(
         catchError((error) => {
           console.error('Error loading tessuti:', error);
