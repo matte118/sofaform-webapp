@@ -136,8 +136,7 @@
           <p-multiSelect id="rivestimenti" [options]="availableRivestimenti" optionLabel="name"
             [(ngModel)]="tempRivestimentiSelection" display="chip" [filter]="true" filterBy="name,code" appendTo="body"
             [showClear]="true" placeholder="Scegli uno o più rivestimenti..." [showToggleAll]="false"
-            (onChange)="onRivestimentiChange()">
-
+            (onChange)="onRivestimentiChange()" >
             <ng-template let-r pTemplate="item">
               <div class="rivestimento-item">
                 <span class="rivestimento-name">{{ r.name }}</span>
@@ -240,7 +239,7 @@
 
   <!-- Dialog Configura Ricarico -->
   <p-dialog appendTo="body" [(visible)]="showMarkupDialog" header="Configura Ricarico" [modal]="true" [closable]="false"
-    [baseZIndex]="10000" [style]="{ width: '450px' }" [draggable]="false" [resizable]="false" (onHide)="cancelMarkup()"
+    [baseZIndex]="10000" [draggable]="false" [style]="{ width: '800px', maxHeight: '90vh' }" [resizable]="false" (onHide)="cancelMarkup()"
     [dismissableMask]="false" [closeOnEscape]="false">
     <div class="p-fluid">
       <div class="field">

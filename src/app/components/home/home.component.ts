@@ -565,6 +565,8 @@ export class HomeComponent implements OnInit {
           summary: 'Prodotto eliminato',
           detail: `Il prodotto "${this.productToDelete!.name}" è stato eliminato`
         });
+        this.displayConfirmDelete = false;
+        this.productToDelete = undefined;
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -574,10 +576,11 @@ export class HomeComponent implements OnInit {
           summary: 'Errore',
           detail: 'Errore durante l\'eliminazione del prodotto'
         });
+        this.displayConfirmDelete = false;
+        this.productToDelete = undefined;
+        this.cdr.detectChanges();
       }
     });
-
-    this.rejectDelete();
   }
 
 
