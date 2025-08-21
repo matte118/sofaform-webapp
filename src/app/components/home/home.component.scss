@@ -662,523 +662,161 @@
 
 // Extra Mattress Dialog Styling
 ::ng-deep .p-dialog {
-  .extra-mattress-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  .extra-mattress-section {
+    padding: 1.5rem;
+    background: #fdfdfd;
+    border-radius: 8px;
     margin-bottom: 1rem;
 
-    .mattress-name-field {
-      flex: 2;
-      min-width: 200px;
-
-      input {
-        width: 100% !important;
-        min-width: 200px;
-      }
+    h4 {
+      margin: 0 0 1rem 0;
+      color: #2c3e50;
+      font-size: 1.1rem;
+      font-weight: 600;
     }
 
-    .mattress-price-field {
-      flex: 1;
-      min-width: 120px;
-
-      ::ng-deep .p-inputnumber {
-        width: 100% !important;
-
-        .p-inputnumber-input {
-          width: 100% !important;
-        }
-      }
+    .extra-mattress-list {
+      margin-bottom: 2rem;
     }
 
-    .mattress-actions {
-      flex: 0 0 auto;
-      display: flex;
-      justify-content: center;
-
-      button {
-        width: 2.5rem;
-        height: 2.5rem;
-      }
-    }
-  }
-
-  // Responsive adjustments for mobile
-  @media (max-width: 768px) {
     .extra-mattress-row {
-      flex-direction: column;
-      align-items: stretch;
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
+      gap: 1.5rem;
+      align-items: end;
+      margin-bottom: 1.5rem;
+      padding: 1.25rem;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: #cbd5e0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
 
       .mattress-name-field,
       .mattress-price-field {
-        width: 100%;
-        min-width: auto;
-      }
-
-      .mattress-actions {
-        align-self: center;
-        margin-top: 0.5rem;
-      }
-    }
-  }
-}
-
-::ng-deep {
-  .p-dropdown-panel {
-    .p-dropdown-items {
-      .p-dropdown-item {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid #f1f5f9;
-
-        &:hover {
-          background-color: #f8f9fa;
-        }
-
-        &.p-highlight {
-          background-color: #e3f2fd;
-          color: #1976d2;
-        }
-      }
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  ::ng-deep .p_dialog {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    margin: 1rem;
-
-    .p-dialog-content {
-      padding: 1rem;
-    }
-
-    .p-dropdown-panel {
-      max-height: 200px !important;
-
-      .p-dropdown-items-wrapper {
-        max-height: 200px !important;
-      }
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .home {
-    .p-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .product-image-container {
-      height: 160px; // Ancora più piccola su mobile
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .home {
-    .product-image-container {
-      height: 140px; // Ottimizzata per schermi molto piccoli
-    }
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-    max-height: 0;
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    max-height: 500px;
-  }
-}
-
-::ng-deep .edit-product-dialog {
-  .p-dialog-header {
-    border-bottom: 1px solid #e9ecef;
-    background: #f8f9fa;
-    padding: 1.25rem 1.5rem;
-
-    .p-dialog-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #2c3e50;
-    }
-  }
-
-  .p-dialog-content {
-    padding: 0;
-    background: white;
-    max-height: 70vh;
-    overflow-y: auto;
-
-    .edit-product-container {
-      padding: 1.5rem;
-
-      .form-sections-wrapper {
         display: flex;
         flex-direction: column;
-        gap: 2rem;
 
-        @media (min-width: 768px) {
-          flex-direction: row;
+        label {
+          font-weight: 500;
+          color: #4a5568;
+          margin-bottom: 0.5rem;
+          font-size: 0.95rem;
         }
 
-        .image-section {
-          flex: 0 0 240px;
+        input,
+        ::ng-deep .p-inputnumber {
+          width: 100% !important;
 
-          @media (max-width: 767px) {
-            flex: 1 1 auto;
-            margin-bottom: 1.5rem;
-          }
-        }
-
-        .form-fields-wrapper {
-          flex: 1 1 auto;
-        }
-      }
-
-      .form-section {
-        margin-bottom: 2rem;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 1.5rem;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-
-        .section-title {
-          font-size: 1.1rem;
-          font-weight: 600;
-          color: #2c3e50;
-          margin: 0 0 1.25rem 0;
-          padding-bottom: 0.75rem;
-          position: relative;
-          border-bottom: 1px solid #edf2f7;
-
-          &:after {
-            content: "";
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 50px;
-            height: 3px;
-            background: #3498db;
-            border-radius: 3px;
-          }
-        }
-
-        .form-field {
-          margin-bottom: 1.5rem;
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-
-          label {
-            display: block;
-            font-weight: 500;
-            color: #4a5568;
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-          }
-
-          .full-width {
-            width: 100%;
-          }
-
-          input,
-          textarea {
+          .p-inputnumber-input {
+            width: 100% !important;
+            padding: 0.75rem;
             border-radius: 0.375rem;
             border: 1px solid #e2e8f0;
-            padding: 0.625rem;
             transition: all 0.2s;
-            font-size: 1rem;
 
             &:focus {
               border-color: #3498db;
-              box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.25);
-            }
-          }
-
-          textarea {
-            min-height: 80px;
-            resize: vertical;
-          }
-        }
-      }
-
-      .variant-form {
-        background: #f8f9fa;
-        border-radius: 6px;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-
-        .p-grid {
-          gap: 1rem;
-        }
-      }
-
-      .variants-list {
-        .variants-table {
-          width: 100%;
-          border-collapse: collapse;
-          border-radius: 6px;
-          overflow: hidden;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
-          th,
-          td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-          }
-
-          th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #495057;
-            font-size: 0.9rem;
-          }
-
-          td {
-            background: white;
-            font-size: 0.9rem;
-          }
-
-          tr:hover td {
-            background: #f8f9fa;
-          }
-        }
-
-        .variant-components {
-          background: #f8f9fa !important;
-          padding: 1rem;
-
-          .components-container {
-            h5 {
-              margin: 0 0 0.75rem 0;
-              color: #4a5568;
-              font-size: 0.9rem;
-            }
-
-            .component-chips {
-              display: flex;
-              flex-wrap: wrap;
-              gap: 0.5rem;
-
-              .component-chip {
-                display: inline-flex;
-                align-items: center;
-                background: #e3f2fd;
-                color: #1976d2;
-                padding: 0.25rem 0.5rem;
-                border-radius: 16px;
-                font-size: 0.85rem;
-                border: 1px solid #bbdefb;
-
-                .remove-component {
-                  background: none;
-                  border: none;
-                  color: #d32f2f;
-                  margin-left: 0.5rem;
-                  padding: 0;
-                  cursor: pointer;
-                  font-size: 0.75rem;
-                  border-radius: 50%;
-                  width: 16px;
-                  height: 16px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-
-                  &:hover {
-                    background: #ffebee;
-                  }
-                }
-              }
+              box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
             }
           }
         }
-      }
-    }
-  }
 
-  .p-dialog-footer {
-    border-top: 1px solid #e9ecef;
-    background: #f8f9fa;
-    padding: 1.25rem 1.5rem;
-
-    .dialog-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-    }
-  }
-
-  .variant-rivestimenti-section {
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-
-    .variant-title {
-      margin: 0 0 1rem 0;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #2d3748;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid #3498db;
-    }
-
-    .field {
-      margin-bottom: 1.5rem;
-
-      label {
-        font-weight: 500;
-        color: #4a5568;
-        margin-bottom: 0.5rem;
-        display: block;
-      }
-
-      .p-multiselect {
-        width: 100%;
-        min-height: 2.5rem;
-
-        .p-multiselect-label {
+        input {
           padding: 0.75rem;
-          min-height: 2.5rem;
-          display: flex;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 0.5rem;
+          border-radius: 0.375rem;
+          border: 1px solid #e2e8f0;
+          font-size: 1rem;
+          transition: all 0.2s;
 
-          &.p-placeholder {
-            color: #6c757d;
+          &:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
+            outline: none;
+          }
+
+          &::placeholder {
+            color: #a0aec0;
             font-style: italic;
           }
         }
-
-        .p-multiselect-token {
-          background: #e3f2fd;
-          border: 1px solid #90caf9;
-          border-radius: 16px;
-          color: #1976d2;
-          padding: 0.25rem 0.75rem;
-          margin: 0.125rem;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 0.875rem;
-          font-weight: 500;
-          max-width: 200px;
-
-          .p-multiselect-token-label {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            flex: 1;
-          }
-
-          .p-multiselect-token-icon {
-            cursor: pointer;
-            color: #1976d2;
-            font-weight: bold;
-            padding: 0.125rem;
-            border-radius: 50%;
-            transition: background-color 0.2s;
-
-            &:hover {
-              background-color: rgba(25, 118, 210, 0.1);
-            }
-          }
-        }
-      }
-    }
-
-    .selected-rivestimenti {
-      margin-top: 1rem;
-
-      h6 {
-        margin: 0 0 0.75rem 0;
-        color: #4a5568;
-        font-size: 0.9rem;
-        font-weight: 600;
       }
 
-      .rivestimento-meters-row {
+      .mattress-name-field {
+        min-width: 200px;
+      }
+
+      .mattress-price-field {
+        min-width: 140px;
+      }
+
+      .mattress-actions {
         display: flex;
-        align-items: center;
+        justify-content: center;
+        align-items: end;
+        padding-bottom: 0.25rem;
+
+        button {
+          width: 2.5rem;
+          height: 2.5rem;
+          flex-shrink: 0;
+          
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+      }
+
+      // Responsive adjustments for mobile
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
         gap: 1rem;
-        margin-bottom: 0.75rem;
-        padding: 0.75rem;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
 
-        .meters-label {
-          flex: 2;
-          min-width: 200px;
-
-          .rivestimento-name {
-            display: block;
-            font-weight: 600;
-            color: #2d3748;
-          }
-
-          .rivestimento-unit-price {
-            font-size: 0.8rem;
-            color: #718096;
-          }
+        .mattress-name-field,
+        .mattress-price-field {
+          width: 100%;
+          min-width: auto;
         }
 
-        .subtotal {
-          font-size: 0.9rem;
-          font-weight: 600;
-          background: #e6f4ff;
-          color: #1976d2;
-          padding: 0.375rem 0.75rem;
-          border-radius: 16px;
-          min-width: 80px;
-          text-align: center;
+        .mattress-actions {
+          justify-content: center;
+          padding-bottom: 0;
         }
-      }
-
-      .variant-total {
-        text-align: right;
-        margin-top: 1rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid #e2e8f0;
-        color: #2d3748;
       }
     }
 
-    .no-rivestimenti {
+    .add-mattress-section {
       text-align: center;
-      padding: 1rem;
-      color: #718096;
-      font-style: italic;
-    }
-  }
+      padding: 1.5rem;
+      background: #f8f9fa;
+      border: 2px dashed #dee2e6;
+      border-radius: 8px;
+      transition: all 0.2s ease;
 
-  .total-cost-summary {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: #e6f4ff;
-    border-radius: 8px;
-    text-align: center;
+      &:hover {
+        border-color: #3498db;
+        background: rgba(52, 152, 219, 0.05);
+      }
 
-    h4 {
-      margin: 0;
-      color: #1976d2;
-      font-size: 1.2rem;
+      button {
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+      }
     }
   }
 }
