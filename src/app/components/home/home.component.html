@@ -483,9 +483,11 @@
                       <i class="pi pi-pencil"></i>
                       Modifica Variante: {{ newVariant.longName }}
                     </h4>
-                    <p-button icon="pi pi-times" label="Annulla Modifica" styleClass="p-button-outlined cancel-edit-btn"
+                    <!-- <p-button icon="pi pi-times" label="Annulla Modifica" styleClass="p-button-outlined cancel-edit-btn"
                       (click)="cancelVariantEdit()">
-                    </p-button>
+                    </p-button> -->
+                    <p-button icon="pi pi-times" label="Annulla" (onClick)="cancelVariantEdit()" styleClass="p-button-text">
+      </p-button>
                   </div>
 
                   <div class="variant-form-grid">
@@ -631,10 +633,10 @@
 
     <ng-template pTemplate="footer">
       <div class="modern-dialog-footer">
-        <p-button label="Annulla" icon="pi pi-times" styleClass="p-button-outlined cancel-dialog-btn"
+        <p-button label="Annulla" icon="pi pi-times" styleClass="btn-dialog-no"
           (click)="cancelEditProduct()">
         </p-button>
-        <p-button label="Salva Modifiche" icon="pi pi-check" styleClass="save-dialog-btn"
+        <p-button label="Salva Modifiche" icon="pi pi-check" styleClass="btn-dialog-yes"
           [disabled]="productForm?.invalid || saving" (click)="saveProductChanges()" [loading]="saving">
         </p-button>
       </div>
