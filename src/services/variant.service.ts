@@ -34,22 +34,7 @@ export class VariantService {
   getVariants(): Observable<Variant[]> {
     return new Observable((observer) => {
       this.dbService.getVariants((variants) => {
-        const mappedVariants = variants.map(
-          (v) => {
-            const variant = new Variant(
-              v.id,
-              v.data.sofaId,
-              v.data.longName,
-              v.data.price,
-              v.data.components || [],
-              v.data.seatsCount,
-              v.data.mattressWidth
-            );
-            // Ensure price is updated based on components
-            variant.updatePrice();
-            return variant;
-          }
-        );
+        const mappedVariants = variants.map((v) => this.mapToVariant(v.data, v.id));
         observer.next(mappedVariants);
       });
     });
@@ -63,22 +48,7 @@ export class VariantService {
       this.dbService.getProductsFromPath('variants', (variants) => {
         const mappedVariants = variants
           .filter((v) => v.data.sofaId === sofaId)
-          .map(
-            (v) => {
-              const variant = new Variant(
-                v.id,
-                v.data.sofaId,
-                v.data.longName,
-                v.data.price,
-                v.data.components || [],
-                v.data.seatsCount,
-                v.data.mattressWidth
-              );
-              // Ensure price is updated based on components
-              variant.updatePrice();
-              return variant;
-            }
-          );
+          .map((v) => this.mapToVariant(v.data, v.id));
         observer.next(mappedVariants);
       });
     });
@@ -97,18 +67,18 @@ export class VariantService {
     try {
       const variantRef = ref(this.db, `variants/${variantId}`);
       const snapshot = await get(variantRef);
-      
+
       if (snapshot.exists()) {
         const variantData = snapshot.val();
         const currentRivestimenti = variantData.rivestimenti || [];
-        
+
         // Add new rivestimento with unique ID if not provided
         if (!rivestimento.id) {
           rivestimento.id = `riv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         }
-        
+
         currentRivestimenti.push(rivestimento);
-        
+
         const sanitizedData = this.dbService.sanitizeData({ rivestimenti: currentRivestimenti });
         await update(variantRef, sanitizedData);
       }
@@ -123,13 +93,13 @@ export class VariantService {
     try {
       const variantRef = ref(this.db, `variants/${variantId}`);
       const snapshot = await get(variantRef);
-      
+
       if (snapshot.exists()) {
         const variantData = snapshot.val();
         const currentRivestimenti = variantData.rivestimenti || [];
-        
+
         const updatedRivestimenti = currentRivestimenti.filter((r: Rivestimento) => r.id !== rivestimentoId);
-        
+
         const sanitizedData = this.dbService.sanitizeData({ rivestimenti: updatedRivestimenti });
         await update(variantRef, sanitizedData);
       }
@@ -144,15 +114,15 @@ export class VariantService {
     try {
       const variantRef = ref(this.db, `variants/${variantId}`);
       const snapshot = await get(variantRef);
-      
+
       if (snapshot.exists()) {
         const variantData = snapshot.val();
         const currentRivestimenti = variantData.rivestimenti || [];
-        
-        const updatedRivestimenti = currentRivestimenti.map((r: Rivestimento) => 
+
+        const updatedRivestimenti = currentRivestimenti.map((r: Rivestimento) =>
           r.id === rivestimento.id ? rivestimento : r
         );
-        
+
         const sanitizedData = this.dbService.sanitizeData({ rivestimenti: updatedRivestimenti });
         await update(variantRef, sanitizedData);
       }
@@ -167,7 +137,7 @@ export class VariantService {
     if (!this.isBrowser) {
       return of([]);
     }
-    
+
     const variantRef = ref(this.db, `variants/${variantId}/rivestimenti`);
     return new Observable(observer => {
       const unsubscribe = onValue(variantRef, (snapshot) => {
@@ -177,7 +147,7 @@ export class VariantService {
       }, (error) => {
         observer.error(error);
       });
-      
+
       return () => unsubscribe();
     });
   }
@@ -187,21 +157,21 @@ export class VariantService {
     try {
       const variantRef = ref(this.db, `variants/${variantId}`);
       const snapshot = await get(variantRef);
-      
+
       if (snapshot.exists()) {
         const variantData = snapshot.val();
-        
+
         // Save rivestimenti with meters information
         const rivestimentiData = rivestimenti.map(item => ({
           rivestimento: item.rivestimento,
           metri: item.metri
         }));
-        
+
         const updatedData = {
           ...variantData,
           rivestimenti: rivestimentiData
         };
-        
+
         const sanitizedData = this.dbService.sanitizeData(updatedData);
         await update(variantRef, sanitizedData);
       }
@@ -216,12 +186,12 @@ export class VariantService {
     try {
       const variantRef = ref(this.db, `variants/${variantId}`);
       const snapshot = await get(variantRef);
-      
+
       if (snapshot.exists()) {
         const variantData = snapshot.val();
         return variantData.rivestimenti || [];
       }
-      
+
       return [];
     } catch (error) {
       console.error('Error loading variant rivestimenti:', error);
@@ -240,4 +210,47 @@ export class VariantService {
       throw error;
     }
   }
+
+  private mapToVariant(data: any, id: string): Variant {
+    console.log('Mapping variant data from Firebase:', { id, data }); // Debug log
+
+    const variant = new Variant(
+      id,
+      data.sofaId || '',
+      data.longName || '',
+      0, // Initialize with 0, will set properly below
+      data.components || [],
+      data.seatsCount,
+      data.mattressWidth,
+      data.rivestimenti,
+      data.pricingMode || 'components',
+      data.customPrice
+    );
+
+    // Preserve the price from database
+    if (typeof data.price === 'number') {
+      variant.price = data.price;
+      console.log(`Preserved price ${data.price} for variant ${data.longName}`); // Debug log
+    } else {
+      console.warn(`Missing or invalid price for variant ${data.longName}, calculating from components`); // Debug log
+      variant.updatePrice(); // Calculate if not available
+    }
+
+    // Ensure pricing mode consistency
+    if (variant.pricingMode === 'custom' && variant.customPrice !== undefined) {
+      variant.price = variant.customPrice;
+    }
+
+    console.log('Final variant object:', {
+      name: variant.longName,
+      price: variant.price,
+      pricingMode: variant.pricingMode,
+      customPrice: variant.customPrice
+    }); // Debug log
+
+    return variant;
+  }
 }
+
+
+

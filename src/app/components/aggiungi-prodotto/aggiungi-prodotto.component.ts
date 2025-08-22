@@ -25,9 +25,10 @@ import { MessageModule } from 'primeng/message';
 import { HttpClientModule } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { Router } from '@angular/router';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { Variant, PricingMode } from '../../../models/variant.model';
 
 import { SofaProduct } from '../../../models/sofa-product.model';
-import { Variant } from '../../../models/variant.model';
 import { Component as ComponentModel } from '../../../models/component.model';
 import { Supplier } from '../../../models/supplier.model';
 import { ComponentType } from '../../../models/component-type.model';
@@ -63,6 +64,7 @@ import { PhotoUploadService } from '../../../services/upload.service';
     MultiSelectModule,
     MessagesModule,
     MessageModule,
+    SelectButtonModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './aggiungi-prodotto.component.html',
@@ -74,6 +76,11 @@ export class AggiungiProdottoComponent implements OnInit {
     { label: 'Varianti' },
     { label: 'Componenti' },
   ];
+
+  pricingOptions: { label: string; value: PricingMode }[] = [
+  { label: 'Componenti',   value: 'components' as PricingMode },
+  { label: 'Custom', value: 'custom'     as PricingMode } // vedi nota sotto
+];
 
   // 1) Selezioni singole
   selectedFusto?: ComponentModel;
@@ -166,6 +173,10 @@ export class AggiungiProdottoComponent implements OnInit {
   private componentNameMeasureCount = new Map<string, number>();
   private duplicateNameMeasureKeys = new Set<string>();
 
+  // Add pricing mode properties
+  selectedPricingMode: PricingMode = 'components';
+  customVariantPrice: number = 0;
+
   constructor(
     private sofaProductService: SofaProductService,
     private variantService: VariantService,
@@ -239,26 +250,94 @@ export class AggiungiProdottoComponent implements OnInit {
     }
   }
 
-  get canApplyComponents(): boolean {
-    if (!this.selectedVariant) return false;
+  addVariant(): void {
+    this.variantFormSubmitted = true;
+    if (!this.newVariant.longName.trim()) {
+      this.variantFormValid = false;
+      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Completa tutti i campi obbligatori' });
+      return;
+    }
 
-    return !!this.selectedFusto ||
-      !!this.selectedGomma ||
-      !!this.selectedMaterasso ||
-      !!this.selectedImballo ||
-      !!this.selectedScatola ||
-      !!this.selectedPiedini ||
-      this.ferramentaList.length > 0 ||
-      this.varieList.length > 0;
+    // Validate custom price if in custom mode
+    if (this.selectedPricingMode === 'custom' && (this.customVariantPrice <= 0 || !this.customVariantPrice)) {
+      this.variantFormValid = false;
+      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Inserisci un prezzo valido per la modalità custom' });
+      return;
+    }
+
+    this.variantFormValid = true;
+    
+    // Create variant with proper price setting
+    const variant = new Variant(
+      '', 
+      this.newSofaProduct.id || '', 
+      this.newVariant.longName, 
+      0, // Initialize with 0, will be set correctly below
+      [], 
+      this.newVariant.seatsCount, 
+      this.newVariant.mattressWidth,
+      undefined,
+      this.selectedPricingMode,
+      this.selectedPricingMode === 'custom' ? this.customVariantPrice : undefined
+    );
+
+    // Set the correct price based on pricing mode
+    if (this.selectedPricingMode === 'custom') {
+      variant.price = this.customVariantPrice;
+      variant.customPrice = this.customVariantPrice;
+    } else {
+      variant.price = 0; // Will be calculated from components later
+    }
+
+    if (this.editingVariantIndex >= 0) {
+      this.variants[this.editingVariantIndex] = variant;
+      this.editingVariantIndex = -1;
+    } else {
+      this.variants.push(variant);
+    }
+    
+    this.resetVariantForm();
   }
 
-  getComponentQuantity(component: ComponentModel): number {
-    if (!this.selectedVariant) return 0;
+  editVariant(index: number): void {
+    this.editingVariantIndex = index;
+    const v = this.variants[index];
+    this.newVariant = new Variant(v.id, v.sofaId, v.longName, v.price, v.components, v.seatsCount, v.mattressWidth);
+    this.selectedPricingMode = v.pricingMode;
+    this.customVariantPrice = v.customPrice || 0;
+  }
 
-    return this.selectedVariant.components.filter(c =>
-      (c.id && c.id === component.id) ||
-      (!c.id && !component.id && c.name === component.name)
-    ).length;
+  deleteVariant(index: number): void {
+    this.confirmationService.confirm({ 
+      message: 'Sei sicuro di voler eliminare questa variante?',
+      header: 'Conferma eliminazione',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.variants.splice(index, 1);
+        // Reset form if we were editing the deleted variant
+        if (this.editingVariantIndex === index) {
+          this.resetVariantForm();
+        } else if (this.editingVariantIndex > index) {
+          // Adjust editing index if it was affected by the deletion
+          this.editingVariantIndex--;
+        }
+      }
+    });
+  }
+
+  private resetVariantForm(): void {
+    this.newVariant = new Variant('', '', '', 0);
+    this.selectedPricingMode = 'components';
+    this.customVariantPrice = 0;
+    this.variantFormSubmitted = false;
+    this.editingVariantIndex = -1;
+  }
+
+  onPricingModeChange(): void {
+    if (this.selectedPricingMode === 'custom') {
+      // Reset component selections when switching to custom
+      this.resetComponentSelections();
+    }
   }
 
   validateCurrentStep(): boolean {
@@ -283,46 +362,20 @@ export class AggiungiProdottoComponent implements OnInit {
         return false;
       }
 
-      const allHaveComponents = this.variants.every(v => v.components.length > 0);
-      if (!allHaveComponents) {
+      // Updated validation: only require components for variants in component mode
+      const componentsVariants = this.variants.filter(v => v.pricingMode === 'components');
+      const allComponentsVariantsHaveComponents = componentsVariants.every(v => v.components.length > 0);
+      
+      if (componentsVariants.length > 0 && !allComponentsVariantsHaveComponents) {
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
-          detail: 'Ogni variante deve avere almeno un componente. Applica i componenti a tutte le varianti.'
+          detail: 'Ogni variante in modalità componenti deve avere almeno un componente. Applica i componenti o cambia modalità.'
         });
         return false;
       }
     }
     return true;
-  }
-
-  addVariant(): void {
-    this.variantFormSubmitted = true;
-    if (!this.newVariant.longName.trim()) {
-      this.variantFormValid = false;
-      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Completa tutti i campi obbligatori' });
-      return;
-    }
-    this.variantFormValid = true;
-    const variant = new Variant('', this.newSofaProduct.id || '', this.newVariant.longName, this.newVariant.price, [], this.newVariant.seatsCount, this.newVariant.mattressWidth);
-    if (this.editingVariantIndex >= 0) {
-      this.variants[this.editingVariantIndex] = variant;
-      this.editingVariantIndex = -1;
-    } else {
-      this.variants.push(variant);
-    }
-    this.newVariant = new Variant('', '', '', 0);
-    this.variantFormSubmitted = false;
-  }
-
-  editVariant(index: number): void {
-    this.editingVariantIndex = index;
-    const v = this.variants[index];
-    this.newVariant = new Variant(v.id, v.sofaId, v.longName, v.price, v.components, v.seatsCount, v.mattressWidth);
-  }
-
-  deleteVariant(index: number): void {
-    this.confirmationService.confirm({ message: 'Sei sicuro?', accept: () => this.variants.splice(index, 1) });
   }
 
   selectVariantForComponents(variant: Variant): void {
@@ -332,8 +385,8 @@ export class AggiungiProdottoComponent implements OnInit {
     // Reset component selections when changing variant
     this.resetComponentSelections();
 
-    // If the variant has components, try to pre-populate the selection fields
-    if (variant.components && variant.components.length > 0) {
+    // Only populate if variant has components and is in components mode
+    if (variant.components && variant.components.length > 0 && variant.pricingMode === 'components') {
       this.populateComponentSelections(variant.components);
     }
 
@@ -342,145 +395,21 @@ export class AggiungiProdottoComponent implements OnInit {
     counts.forEach((qty, key) => this.componentQuantities.set(key, qty));
   }
 
-  // Helper to reset all component selections
-  private resetComponentSelections(): void {
-    this.selectedFusto = undefined;
-    this.selectedGomma = undefined;
-    this.selectedRete = undefined;
-    this.selectedMaterasso = undefined;
-    this.selectedImballo = undefined;
-    this.selectedScatola = undefined;
-    this.selectedPiedini = undefined;
-    this.selectedTelaMarchiata = undefined;
-    this.selectedTrasporto = undefined;
-    this.piediniQty = 2;
-    this.ferramentaList = [];
-    this.varieList = [];
-    this.tappezzeriaList = [];
-  }
-
-  // Helper to populate component selections from existing components
-  private populateComponentSelections(components: ComponentModel[]): void {
-    const compsByType = new Map<string, ComponentModel[]>();
-    components.forEach(comp => {
-      if (comp.type === undefined || comp.type === null) return;
-
-      // Convert ComponentType enum to string for mapping
-      let typeString = '';
-      switch (comp.type) {
-        case ComponentType.FUSTO:
-          typeString = 'fusto';
-          break;
-        case ComponentType.GOMMA:
-          typeString = 'gomma';
-          break;
-        case ComponentType.RETE:
-          typeString = 'rete';
-          break;
-        case ComponentType.MATERASSO:
-          typeString = 'materasso';
-          break;
-        case ComponentType.TAPPEZZERIA:
-          typeString = 'tappezzeria';
-          break;
-        case ComponentType.PIEDINI:
-          typeString = 'piedini';
-          break;
-        case ComponentType.FERRAMENTA:
-          typeString = 'ferramenta';
-          break;
-        case ComponentType.VARIE:
-          typeString = 'varie';
-          break;
-        case ComponentType.IMBALLO:
-          typeString = 'imballo';
-          break;
-        case ComponentType.SCATOLA:
-          typeString = 'scatola';
-          break;
-        case ComponentType.TELA_MARCHIATA:
-          typeString = 'tela_marchiata';
-          break;
-        case ComponentType.TRASPORTO:
-          typeString = 'trasporto';
-          break;
-        default:
-          return; // Skip unknown types
-      }
-
-      if (!compsByType.has(typeString)) compsByType.set(typeString, []);
-      compsByType.get(typeString)?.push(comp);
-    });
-
-    this.selectedFusto = this.findMatchingComponent('fusto', compsByType);
-    this.selectedGomma = this.findMatchingComponent('gomma', compsByType);
-    this.selectedRete = this.findMatchingComponent('rete', compsByType);
-    this.selectedMaterasso = this.findMatchingComponent('materasso', compsByType);
-    this.selectedImballo = this.findMatchingComponent('imballo', compsByType);
-    this.selectedScatola = this.findMatchingComponent('scatola', compsByType);
-    this.selectedTelaMarchiata = this.findMatchingComponent('tela_marchiata', compsByType);
-    this.selectedTrasporto = this.findMatchingComponent('trasporto', compsByType);
-
-    const piedini = compsByType.get('piedini');
-    if (piedini?.length) {
-      this.selectedPiedini = piedini[0];
-      this.piediniQty = piedini.length;
-    }
-
-    this.ferramentaList = compsByType.get('ferramenta') || [];
-    this.varieList = compsByType.get('varie') || [];
-    this.tappezzeriaList = compsByType.get('tappezzeria') || [];
-  }
-
-  // Helper to find a component in the availableComponents list
-  private findMatchingComponent(type: string, compsByType: Map<string, ComponentModel[]>): ComponentModel | undefined {
-    const compsOfType = compsByType.get(type);
-    if (!compsOfType?.length) return undefined;
-
-    // Find the matching available component
-    const comp = compsOfType[0];
-    return this.availableComponents.find(c =>
-      (comp.id && c.id === comp.id) ||
-      (!comp.id && c.name === comp.name)
-    );
-  }
-
-  /**
-   * Verifica se è stato selezionato almeno un componente
-   * @returns true se è presente almeno un componente selezionato
-   */
-  hasSelectedComponents(): boolean {
-    // Verifica che tutti i componenti obbligatori siano selezionati
-        return !!(
-      this.selectedFusto ||
-      this.selectedGomma ||
-      this.selectedRete ||
-      this.selectedPiedini ||
-      this.selectedMaterasso ||
-      this.selectedImballo ||
-      this.selectedScatola ||
-      this.selectedTelaMarchiata ||
-      this.selectedTrasporto ||
+  get canApplyComponents(): boolean {
+    if (!this.selectedVariant || this.selectedVariant.pricingMode === 'custom') return false;
+    
+    return !!this.selectedFusto ||
+      !!this.selectedGomma ||
+      !!this.selectedMaterasso ||
+      !!this.selectedImballo ||
+      !!this.selectedScatola ||
+      !!this.selectedPiedini ||
       this.ferramentaList.length > 0 ||
-      this.varieList.length > 0 ||
-      this.tappezzeriaList.length > 0
-    );
-
-    // I campi opzionali (ferramentaList, varieList, tappezzeriaList, selectedTelaMarchiata, selectedTrasporto) non influiscono sulla validazione
+      this.varieList.length > 0;
   }
 
-  /**
-   * Verifica se ci sono errori sui campi obbligatori dei componenti
-   * @returns un array con i nomi dei campi mancanti
-   * Ritorna un array con i campi mancanti se non è stato selezionato alcun componente
-   */
-  getMissingRequiredComponents(): string[] {
-    return this.hasSelectedComponents() ? [] : ['almeno un componente'];
-  }
-
-  // Aggiorniamo anche la funzione applySpecialComponents per usare la nuova funzione di validazione
   applySpecialComponents(silent: boolean = false): boolean {
-    if (!this.selectedVariant) return false;
+    if (!this.selectedVariant || this.selectedVariant.pricingMode === 'custom') return false;
 
     const missingComponents = [];
     if (!this.selectedFusto && !this.selectedGomma && !this.selectedRete && !this.selectedPiedini
@@ -511,7 +440,6 @@ export class AggiungiProdottoComponent implements OnInit {
     this.tappezzeriaList.forEach(c => comps.push(c));
 
     this.selectedVariant.components = comps;
-
     this.selectedVariant.updatePrice();
 
     if (!silent) {
@@ -581,8 +509,17 @@ export class AggiungiProdottoComponent implements OnInit {
     const calls = this.variants.map(v => {
       v.sofaId = productId;
 
-      const sumPrice = v.components.reduce((acc, comp) => acc + (comp.price || 0), 0);
-      v.price = sumPrice;
+      // Only calculate price from components if variant is in components mode
+      if (v.pricingMode === 'components') {
+        const sumPrice = v.components.reduce((acc, comp) => acc + (comp.price || 0), 0);
+        v.price = sumPrice;
+      }
+      // For custom pricing mode, ensure the price is preserved
+      else if (v.pricingMode === 'custom' && v.customPrice !== undefined) {
+        v.price = v.customPrice;
+      }
+
+      console.log(`Saving variant ${v.longName} with price: ${v.price}, mode: ${v.pricingMode}, customPrice: ${v.customPrice}`);
 
       return this.variantService.createVariant(v);
     });
@@ -842,5 +779,156 @@ export class AggiungiProdottoComponent implements OnInit {
       }
     }
     return Array.from(map.values());
+  }
+
+  // Add helper methods
+  isCustomPricingMode(): boolean {
+    return this.selectedPricingMode === 'custom';
+  }
+
+  isComponentsPricingMode(): boolean {
+    return this.selectedPricingMode === 'components';
+  }
+
+  shouldShowComponentsSection(): boolean {
+    return this.selectedVariant?.pricingMode === 'components';
+  }
+
+  shouldShowCustomPriceWarning(): boolean {
+    return this.selectedVariant?.pricingMode === 'custom';
+  }
+
+  // Helper to reset all component selections
+  private resetComponentSelections(): void {
+    this.selectedFusto = undefined;
+    this.selectedGomma = undefined;
+    this.selectedRete = undefined;
+    this.selectedMaterasso = undefined;
+    this.selectedImballo = undefined;
+    this.selectedScatola = undefined;
+    this.selectedPiedini = undefined;
+    this.selectedTelaMarchiata = undefined;
+    this.selectedTrasporto = undefined;
+    this.piediniQty = 2;
+    this.ferramentaList = [];
+    this.varieList = [];
+    this.tappezzeriaList = [];
+  }
+
+  // Helper to populate component selections from existing components
+  private populateComponentSelections(components: ComponentModel[]): void {
+    const compsByType = new Map<string, ComponentModel[]>();
+    components.forEach(comp => {
+      if (comp.type === undefined || comp.type === null) return;
+
+      // Convert ComponentType enum to string for mapping
+      let typeString = '';
+      switch (comp.type) {
+        case ComponentType.FUSTO:
+          typeString = 'fusto';
+          break;
+        case ComponentType.GOMMA:
+          typeString = 'gomma';
+          break;
+        case ComponentType.RETE:
+          typeString = 'rete';
+          break;
+        case ComponentType.MATERASSO:
+          typeString = 'materasso';
+          break;
+        case ComponentType.TAPPEZZERIA:
+          typeString = 'tappezzeria';
+          break;
+        case ComponentType.PIEDINI:
+          typeString = 'piedini';
+          break;
+        case ComponentType.FERRAMENTA:
+          typeString = 'ferramenta';
+          break;
+        case ComponentType.VARIE:
+          typeString = 'varie';
+          break;
+        case ComponentType.IMBALLO:
+          typeString = 'imballo';
+          break;
+        case ComponentType.SCATOLA:
+          typeString = 'scatola';
+          break;
+        case ComponentType.TELA_MARCHIATA:
+          typeString = 'tela_marchiata';
+          break;
+        case ComponentType.TRASPORTO:
+          typeString = 'trasporto';
+          break;
+        default:
+          return; // Skip unknown types
+      }
+
+      if (!compsByType.has(typeString)) compsByType.set(typeString, []);
+      compsByType.get(typeString)?.push(comp);
+    });
+
+    this.selectedFusto = this.findMatchingComponent('fusto', compsByType);
+    this.selectedGomma = this.findMatchingComponent('gomma', compsByType);
+    this.selectedRete = this.findMatchingComponent('rete', compsByType);
+    this.selectedMaterasso = this.findMatchingComponent('materasso', compsByType);
+    this.selectedImballo = this.findMatchingComponent('imballo', compsByType);
+    this.selectedScatola = this.findMatchingComponent('scatola', compsByType);
+    this.selectedTelaMarchiata = this.findMatchingComponent('tela_marchiata', compsByType);
+    this.selectedTrasporto = this.findMatchingComponent('trasporto', compsByType);
+
+    const piedini = compsByType.get('piedini');
+    if (piedini?.length) {
+      this.selectedPiedini = piedini[0];
+      this.piediniQty = piedini.length;
+    }
+
+    this.ferramentaList = compsByType.get('ferramenta') || [];
+    this.varieList = compsByType.get('varie') || [];
+    this.tappezzeriaList = compsByType.get('tappezzeria') || [];
+  }
+
+  // Helper to find a component in the availableComponents list
+  private findMatchingComponent(type: string, compsByType: Map<string, ComponentModel[]>): ComponentModel | undefined {
+    const compsOfType = compsByType.get(type);
+    if (!compsOfType?.length) return undefined;
+
+    // Find the matching available component
+    const comp = compsOfType[0];
+    return this.availableComponents.find(c =>
+      (comp.id && c.id === comp.id) ||
+      (!comp.id && c.name === comp.name)
+    );
+  }
+
+  /**
+   * Verifica se è stato selezionato almeno un componente
+   * @returns true se è presente almeno un componente selezionato
+   */
+  hasSelectedComponents(): boolean {
+    // Verifica che almeno un componente sia selezionato
+    return !!(
+      this.selectedFusto ||
+      this.selectedGomma ||
+      this.selectedRete ||
+      this.selectedPiedini ||
+      this.selectedMaterasso ||
+      this.selectedImballo ||
+      this.selectedScatola ||
+      this.selectedTelaMarchiata ||
+      this.selectedTrasporto ||
+      this.ferramentaList.length > 0 ||
+      this.varieList.length > 0 ||
+      this.tappezzeriaList.length > 0
+    );
+  }
+
+  /**
+   * Verifica se ci sono errori sui campi obbligatori dei componenti
+   * @returns un array con i nomi dei campi mancanti
+   * Ritorna un array con i campi mancanti se non è stato selezionato alcun componente
+   */
+  getMissingRequiredComponents(): string[] {
+    return this.hasSelectedComponents() ? [] : ['almeno un componente'];
   }
 }

@@ -1,6 +1,5 @@
 <div class="add-product-container">
   <p-toast></p-toast>
-
   <div *ngIf="isSavingProduct" class="saving-overlay">
     <div class="saving-content">
       <p-progressSpinner [style]="{ width: '80px', height: '80px' }" strokeWidth="4" fill="transparent"
@@ -142,6 +141,23 @@
           <div class="p-field p-col-12">
             <h3>Varianti del Prodotto</h3>
 
+<div style="padding-bottom: 15px;">
+  <p-selectButton
+  [options]="pricingOptions"
+  [(ngModel)]="selectedPricingMode"
+  optionLabel="label"
+  optionValue="value"
+  (onChange)="onPricingModeChange()"
+  name="pricingMode"
+  styleClass="segmented-control" >
+  
+</p-selectButton>
+</div>
+
+
+
+
+
             <div class="p-grid p-nogutter p-align-end" style="padding-top: 15px;">
               <div class="p-field p-col-12 p-md-2">
                 <p-floatLabel>
@@ -169,9 +185,21 @@
                 </p-floatLabel>
               </div>
 
+              <!-- Custom Price Field - only show if custom mode selected -->
+              <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;" *ngIf="isCustomPricingMode()">
+                <p-floatLabel>
+                  <p-inputNumber id="customPrice" [(ngModel)]="customVariantPrice" name="customPrice" 
+                    mode="currency" currency="EUR" locale="it-IT" [min]="0.01"></p-inputNumber>
+                  <label>Custom</label>
+                </p-floatLabel>
+                <small *ngIf="variantFormSubmitted && customVariantPrice <= 0" class="p-error">
+                  Prezzo obbligatorio
+                </small>
+              </div>
+
               <div class="p-field p-col-12 p-md-1">
                 <p-button [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'" (onClick)="addVariant()"
-                  [disabled]="!newVariant.longName.trim()"
+                  [disabled]="!newVariant.longName.trim() || (isCustomPricingMode() && customVariantPrice <= 0)"
                   [styleClass]="editingVariantIndex >= 0 ? 'p-button-success' : 'variant-add-btn'">
                 </p-button>
 
@@ -182,6 +210,8 @@
               <ng-template pTemplate="header">
                 <tr>
                   <th>Nome</th>
+                  <th>Modalità</th>
+                  <th>Prezzo</th>
                   <th>Posti</th>
                   <th>Larghezza</th>
                   <th>Azioni</th>
@@ -190,14 +220,22 @@
               <ng-template pTemplate="body" let-variant let-i="rowIndex">
                 <tr>
                   <td>{{ variant.longName }}</td>
-                  <td>{{ variant.seatsCount || "N/A" }}</td>
                   <td>
-                    {{
-                    variant.mattressWidth
-                    ? variant.mattressWidth + " cm"
-                    : "N/A"
-                    }}
+                    <span [class]="variant.pricingMode === 'custom' ? 'custom-mode-badge' : 'components-mode-badge'">
+                      {{ variant.pricingMode === 'custom' ? 'Custom' : 'Componenti' }}
+                    </span>
                   </td>
+                  <td>
+                    <span *ngIf="variant.pricingMode === 'custom'" class="custom-price">
+                      {{ variant.price | currency:'EUR' }}
+                    </span>
+                    <span *ngIf="variant.pricingMode === 'components'" class="components-price">
+                      {{ variant.price | currency:'EUR' }}
+                      <small *ngIf="!variant.hasComponents()" class="p-text-secondary"> (da configurare)</small>
+                    </span>
+                  </td>
+                  <td>{{ variant.seatsCount || "N/A" }}</td>
+                  <td>{{ variant.mattressWidth ? variant.mattressWidth + " cm" : "N/A" }}</td>
                   <td>
                     <p-button type="button" icon="pi pi-pencil"
                       styleClass="p-button-rounded p-button-text p-button transparent-icon-btn"
@@ -226,18 +264,28 @@
                   <p-floatLabel>
                     <p-dropdown [options]="variants" [(ngModel)]="selectedVariant" optionLabel="longName"
                       inputId="variantDropdown" placeholder="Scegli una variante"
-                      (onChange)="selectVariantForComponents($event.value)" [style]="{ width: '100%' }"></p-dropdown>
+                      (onChange)="selectVariantForComponents($event.value)" [style]="{ width: '100%' }">
+                      <ng-template let-variant pTemplate="item">
+                        {{ variant.longName }} 
+                        <span class="variant-mode-indicator">
+                          ({{ variant.pricingMode === 'custom' ? 'Custom' : 'Componenti' }})
+                        </span>
+                      </ng-template>
+                    </p-dropdown>
                     <label for="variantDropdown">Scegli una variante</label>
                   </p-floatLabel>
                 </div>
               </div>
             </div>
 
-            <!-- -------------------------
-            Sezione "Componenti Speciali"
-            (aggiungi-prodotto.component.html)
-            ------------------------- -->
-            <div *ngIf="selectedVariant" class="special-components p-mt-4">
+            <!-- Custom Price Warning -->
+            <div *ngIf="shouldShowCustomPriceWarning()" class="custom-price-warning p-mb-4">
+              <p-message severity="info" 
+                text="Questa variante utilizza un prezzo custom. I componenti sono opzionali."></p-message>
+            </div>
+
+            <!-- Components Section - only show for components mode -->
+            <div *ngIf="shouldShowComponentsSection()" class="special-components p-mt-4">
 
               <!-- Fusto -->
               <div class="p-field p-grid" style="padding-top: 10px;">

@@ -730,3 +730,51 @@
 :host ::ng-deep button.transparent-red-icon.p-button .p-button-icon {
   color: red !important;
 }
+
+/* Annulla la larghezza 100% ereditata da p-fluid SOLO nel select button */
+:host ::ng-deep .pricing-mode-select .p-button {
+  width: auto;
+  flex: 0 0 auto;   /* impedisce l'allargamento */
+}
+
+/* (opzionale) un po' di spazio tra i due bottoni */
+:host ::ng-deep .pricing-mode-select.p-selectbutton {
+  gap: .5rem;
+}
+
+/* Segmented control “pill” */
+:host ::ng-deep .segmented-control.p-selectbutton {
+  display: inline-flex;           /* evita layout a colonna */
+  align-items: center;
+  gap: .25rem;                    /* piccolo spazio tra pill */
+  padding: .25rem;
+  border-radius: 12px;
+  background: var(--surface-100); /* sfondo “card” tenue */
+  white-space: nowrap;            /* non andare a capo */
+}
+
+/* Bottoni interni */
+:host ::ng-deep .segmented-control .p-button {
+  border: 0;
+  background: transparent; 
+  color: var(--text-color-secondary);
+  box-shadow: none;
+  border-radius: .75rem;
+  font-weight: 600;
+  padding: .55rem 1.1rem;
+  width: auto;
+}
+
+/* Stato selezionato = “pill” bianca con ombra leggera */
+:host ::ng-deep .segmented-control .p-button.p-highlight {
+  background: #007bff;
+  color: white;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,.06),
+    0 4px 10px rgba(0,0,0,.04);
+}
+
+
+
+
+

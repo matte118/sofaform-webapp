@@ -1177,6 +1177,11 @@ export class HomeComponent implements OnInit {
   }
 
   getGroupedComponents(variant: Variant): GroupedComponent[] {
+    // Return empty array if variant has no components (custom pricing)
+    if (!variant.components || variant.components.length === 0) {
+      return [];
+    }
+    
     const map = new Map<string, GroupedComponent>();
     variant.components.forEach(c => {
       const key = `${c.id}-${c.name}`;
@@ -1192,6 +1197,11 @@ export class HomeComponent implements OnInit {
   }
 
   getEditGroupedComponents(variant: Variant): EditGroupedComponent[] {
+    // Return empty array if variant has no components
+    if (!variant.components || variant.components.length === 0) {
+      return [];
+    }
+    
     const groups: EditGroupedComponent[] = [];
     variant.components.forEach((comp, idx) => {
       const found = groups.find(g => this.areComponentsEqual(g.component, comp));
@@ -1203,6 +1213,15 @@ export class HomeComponent implements OnInit {
       }
     });
     return groups;
+  }
+
+  // Add helper methods for variant display
+  isCustomPricingVariant(variant: Variant): boolean {
+    return variant.pricingMode === 'custom';
+  }
+
+  hasComponentsToShow(variant: Variant): boolean {
+    return variant.components && variant.components.length > 0;
   }
 
   removeGroupedComponent(variant: Variant, group: EditGroupedComponent): void {
