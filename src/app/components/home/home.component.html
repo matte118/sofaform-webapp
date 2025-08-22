@@ -58,7 +58,7 @@
                 <div class="variant-meta">
                   <span class="variant-price">€ {{ variant.price.toFixed(2) }}</span>
                   <small *ngIf="variant.seatsCount" class="variant-seats">
-                    {{ variant.seatsCount }} posti
+                    {{ variant.seatsCount }}
                   </small>
                   <button pButton type="button" class="p-button-text p-button-sm variant-toggle"
                     [icon]="isVariantExpanded(variant.id) ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
@@ -168,29 +168,18 @@
           </div>
 
           <!-- Metratura e subtotali -->
-          <div class="selected-rivestimenti" *ngIf="getVariantRivestimenti(selectedVariantForRivestimento.id).length">  
-            
+          <div class="selected-rivestimenti" *ngIf="getVariantRivestimenti(selectedVariantForRivestimento.id).length">
+
             <!-- Sezione per applicare metri uniformi -->
             <div class="uniform-meters-section">
               <h6>Applica metri uguali a tutti i rivestimenti:</h6>
               <div class="uniform-meters-controls">
-                <p-inputNumber 
-                  [ngModel]="getUniformMetersForVariant(selectedVariantForRivestimento.id)"
-                  (ngModelChange)="setUniformMetersForVariant(selectedVariantForRivestimento.id, $event)"
-                  [min]="0.1" 
-                  [step]="0.1" 
-                  mode="decimal"
-                  [minFractionDigits]="1" 
-                  [maxFractionDigits]="2" 
-                  suffix=" mt" 
-                  placeholder="1.0"
-                  [style]="{ width: '140px' }">
+                <p-inputNumber [ngModel]="getUniformMetersForVariant(selectedVariantForRivestimento.id)"
+                  (ngModelChange)="setUniformMetersForVariant(selectedVariantForRivestimento.id, $event)" [min]="0.1"
+                  [step]="0.1" mode="decimal" [minFractionDigits]="1" [maxFractionDigits]="2" suffix=" mt"
+                  placeholder="1.0" [style]="{ width: '140px' }">
                 </p-inputNumber>
-                <p-button 
-                  type="button" 
-                  label="Applica a tutti" 
-                  icon="pi pi-copy"
-                  size="small"
+                <p-button type="button" label="Applica a tutti" icon="pi pi-copy" size="small"
                   styleClass="p-button-outlined p-button-sm"
                   (click)="applyUniformMetersToVariant(selectedVariantForRivestimento.id)"
                   [disabled]="!getVariantRivestimenti(selectedVariantForRivestimento.id).length">
@@ -240,10 +229,11 @@
     [baseZIndex]="10000" [style]="{ width: '700px', maxHeight: '90vh' }" [draggable]="false" [resizable]="false">
     <div class="p-fluid">
       <div class="extra-mattress-section">
-        <h4 *ngIf="extraMattressesForListino.length === 0" style="text-align: center; color: #6c757d; margin-bottom: 1.5rem;">
+        <h4 *ngIf="extraMattressesForListino.length === 0"
+          style="text-align: center; color: #6c757d; margin-bottom: 1.5rem;">
           Nessun materasso extra configurato
         </h4>
-        
+
         <div class="extra-mattress-list" *ngIf="extraMattressesForListino.length > 0">
           <div class="extra-mattress-row" *ngFor="let m of extraMattressesForListino; let i = index">
             <div class="mattress-name-field">
@@ -252,27 +242,24 @@
             </div>
             <div class="mattress-price-field">
               <label>Prezzo</label>
-              <p-inputNumber [(ngModel)]="m.price" mode="currency" currency="EUR" locale="it-IT" 
-                placeholder="€0,00" [min]="0" [style]="{ width: '100%' }"></p-inputNumber>
+              <p-inputNumber [(ngModel)]="m.price" mode="currency" currency="EUR" locale="it-IT" placeholder="€0,00"
+                [min]="0" [style]="{ width: '100%' }"></p-inputNumber>
             </div>
             <div class="mattress-actions">
-              <button pButton type="button" icon="pi pi-trash" 
-                class="p-button-danger p-button-outlined"
-                (click)="extraMattressesForListino.splice(i,1)" 
-                pTooltip="Rimuovi materasso" 
+              <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-outlined"
+                (click)="extraMattressesForListino.splice(i,1)" pTooltip="Rimuovi materasso"
                 tooltipPosition="top"></button>
             </div>
           </div>
         </div>
-        
+
         <div class="add-mattress-section">
-          <button pButton type="button" label="Aggiungi Materasso" icon="pi pi-plus" 
-            class="p-button-outlined p-button-primary"
-            (click)="addNewExtraMattressForListino()"></button>
+          <button pButton type="button" label="Aggiungi Materasso" icon="pi pi-plus"
+            class="p-button-outlined p-button-primary" (click)="addNewExtraMattressForListino()"></button>
         </div>
       </div>
     </div>
-    
+
     <ng-template pTemplate="footer">
       <button pButton type="button" label="Annulla" icon="pi pi-times" class="btn-dialog-no"
         (click)="cancelExtraMattressListino()"></button>
@@ -308,181 +295,317 @@
 
   <!-- Dialog Modifica Prodotto -->
   <p-dialog [(visible)]="showEditProductDialog" [header]="editProductDialogTitle" [modal]="true" [closable]="false"
-    [closeOnEscape]="true" [style]="{ width: '95vw', maxWidth: '1200px', height: '90vh' }"
+    [closeOnEscape]="true" [style]="{ width: '95vw', maxWidth: '1400px', height: '95vh' }"
     [breakpoints]="{ '960px': '95vw', '640px': '100vw' }" [draggable]="false" [resizable]="false"
-    styleClass="edit-product-dialog" (onHide)="onEditDialogHide()">
-    <div class="edit-product-container" *ngIf="editingProduct">
+    styleClass="modern-edit-product-dialog" (onHide)="onEditDialogHide()">
+
+    <div class="modern-edit-container" *ngIf="editingProduct">
       <form #productForm="ngForm">
-        <div class="form-sections-wrapper">
-          <!-- Sezione Immagine -->
-          <div class="image-section">
-            <h3 class="section-title">Immagine Prodotto</h3>
-            <div class="image-upload-section">
-              <div class="current-image-container" *ngIf="currentImageToShow && !uploadingNewImage">
-                <img [src]="currentImageToShow" alt="Immagine prodotto" class="current-image" />
-                <div class="image-actions">
-                  <button type="button" pButton icon="pi pi-times"
-                    class="p-button-rounded p-button-danger image-remove-btn" (click)="removeProductImage()"
-                    pTooltip="Rimuovi immagine"></button>
+        <div class="edit-grid-layout">
+
+          <!-- Left Column: Image and Basic Info -->
+          <div class="left-column">
+            <!-- Modern Image Section Card -->
+            <div class="modern-card image-card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="pi pi-image"></i>
+                  Immagine Prodotto
+                </h3>
+              </div>
+              <div class="card-content">
+                <div class="modern-image-upload">
+                  <div class="image-display-area" *ngIf="currentImageToShow && !uploadingNewImage">
+                    <div class="image-wrapper">
+                      <img [src]="currentImageToShow" alt="Immagine prodotto" class="product-preview-image" />
+                      <div class="image-overlay">
+                        <p-button icon="pi pi-pencil" styleClass="p-button-rounded p-button-outlined image-edit-btn"
+                          (click)="triggerFileInput()" pTooltip="Cambia immagine" tooltipPosition="top">
+                        </p-button>
+                        <p-button icon="pi pi-trash"
+                          styleClass="p-button-rounded p-button-outlined p-button-danger image-delete-btn"
+                          (click)="removeProductImage()" pTooltip="Rimuovi immagine" tooltipPosition="top">
+                        </p-button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="upload-area"
+                    [ngClass]="{ 'active': isUploadMode, 'has-image': currentImageToShow && !uploadingNewImage }"
+                    *ngIf="shouldShowImagePlaceholder || uploadingNewImage || isUploadMode">
+                    <div class="upload-content" *ngIf="!uploadingNewImage">
+                      <div class="upload-icon">
+                        <i class="pi pi-cloud-upload"></i>
+                      </div>
+                      <h4 class="upload-title">{{ shouldShowImagePlaceholder ? 'Carica immagine' : 'Cambia immagine' }}
+                      </h4>
+                      <p class="upload-subtitle">Trascina un file qui o clicca per selezionare</p>
+                      <div class="upload-actions">
+                        <p-button label="Scegli File" icon="pi pi-upload" styleClass="p-button-primary upload-btn"
+                          (click)="triggerFileInput()">
+                        </p-button>
+                        <p-button *ngIf="isUploadMode && !shouldShowImagePlaceholder" label="Annulla" icon="pi pi-times"
+                          styleClass="p-button-outlined cancel-btn" (click)="cancelImageUpload()">
+                        </p-button>
+                      </div>
+                      <input #hiddenFileInput type="file" style="display: none" accept="image/*"
+                        (change)="onFileSelected($event)" />
+                      <div class="upload-info">
+                        <small><i class="pi pi-info-circle"></i> JPG, PNG fino a 5MB</small>
+                      </div>
+                    </div>
+
+                    <div class="upload-progress-area" *ngIf="uploadingNewImage">
+                      <div class="progress-content">
+                        <i class="pi pi-spin pi-spinner upload-spinner"></i>
+                        <h4>Caricamento in corso...</h4>
+                        <p-progressBar [value]="uploadProgress" styleClass="modern-progress"></p-progressBar>
+                        <small>{{ uploadProgress }}% completato</small>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="upload-container" [ngClass]="{ 'upload-mode': isUploadMode }"
-                *ngIf="shouldShowImagePlaceholder || uploadingNewImage || isUploadMode">
-                <div class="image-placeholder" *ngIf="!uploadingNewImage">
-                  <i class="pi pi-images"></i>
-                  <span>{{ shouldShowImagePlaceholder ? 'Nessuna immagine' : 'Cambia immagine' }}</span>
-                  <button pButton type="button" label="Carica" icon="pi pi-upload"
-                    class="p-button-primary upload-image-btn" (click)="triggerFileInput()"></button>
-                  <input #hiddenFileInput type="file" style="display: none" accept="image/*"
-                    (change)="onFileSelected($event)" />
-                  <button *ngIf="isUploadMode && !shouldShowImagePlaceholder" pButton type="button" label="Annulla"
-                    icon="pi pi-times" class="p-button-outlined p-button-secondary cancel-upload-btn"
-                    (click)="cancelImageUpload()"></button>
-                </div>
-                <div class="upload-hint" *ngIf="!uploadingNewImage">
+            </div>
+
+            <!-- Basic Info Card -->
+            <div class="modern-card info-card">
+              <div class="card-header">
+                <h3 class="card-title">
                   <i class="pi pi-info-circle"></i>
-                  <span>Formati supportati: JPG, PNG. Max 5MB</span>
+                  Informazioni Base
+                </h3>
+              </div>
+              <div class="card-content">
+                <div class="modern-field-group">
+                  <p-floatLabel>
+                    <input id="productName" name="name" pInputText type="text" [(ngModel)]="editingProduct.name"
+                      required class="modern-input" />
+                    <label for="productName">Nome Prodotto <span class="required-asterisk">*</span></label>
+                  </p-floatLabel>
+                  <small *ngIf="productForm.submitted && !editingProduct.name" class="field-error">
+                    <i class="pi pi-exclamation-triangle"></i> Nome obbligatorio
+                  </small>
                 </div>
-                <div class="upload-progress" *ngIf="uploadProgress > 0 && uploadProgress < 100">
-                  <p-progressBar [value]="uploadProgress"></p-progressBar>
-                  <small>Caricamento in corso... {{ uploadProgress }}%</small>
+
+                <div class="modern-field-group">
+                  <p-floatLabel>
+                    <textarea id="productDescription" name="description" pInputTextarea rows="3" autoResize="true"
+                      [(ngModel)]="editingProduct.description" class="modern-textarea">
+                    </textarea>
+                    <label for="productDescription">Descrizione</label>
+                  </p-floatLabel>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Sezione Informazioni -->
-          <div class="form-fields-wrapper">
-            <div class="form-section">
-              <h3 class="section-title">Informazioni Principali</h3>
-              <div class="form-field">
-                <label for="productName">Nome del Prodotto <span class="required-field">*</span></label>
-                <input id="productName" name="name" pInputText type="text" [(ngModel)]="editingProduct.name" required
-                  class="full-width" />
-                <small *ngIf="productForm.submitted && !editingProduct.name" class="p-error">
-                  Nome obbligatorio
-                </small>
+          <!-- Right Column: Features and Variants -->
+          <div class="right-column">
+            <!-- Features Card -->
+            <div class="modern-card features-card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="pi pi-cog"></i>
+                  Caratteristiche Tecniche
+                </h3>
               </div>
-              <div class="form-field">
-                <label for="productDescription">Descrizione</label>
-                <textarea id="productDescription" name="description" pInputTextarea rows="3" autoResize="true"
-                  [(ngModel)]="editingProduct.description" class="full-width"></textarea>
-              </div>
-            </div>
-
-            <div class="form-section">
-              <h3 class="section-title">Caratteristiche del Prodotto</h3>
-              <div class="form-field">
-                <label for="productSeduta">Seduta</label>
-                <textarea id="productSeduta" name="seduta" pInputTextarea rows="2" autoResize="true"
-                  [(ngModel)]="editingProduct.seduta" class="full-width"></textarea>
-              </div>
-              <div class="form-field">
-                <label for="productSchienale">Schienale</label>
-                <textarea id="productSchienale" name="schienale" pInputTextarea rows="2" autoResize="true"
-                  [(ngModel)]="editingProduct.schienale" class="full-width"></textarea>
-              </div>
-              <div class="form-field">
-                <label for="productMeccanica">Meccanica</label>
-                <textarea id="productMeccanica" name="meccanica" pInputTextarea rows="2" autoResize="true"
-                  [(ngModel)]="editingProduct.meccanica" class="full-width"></textarea>
-              </div>
-              <div class="form-field">
-                <label for="productMaterasso">Materasso</label>
-                <textarea id="productMaterasso" name="materasso" pInputTextarea rows="2" autoResize="true"
-                  [(ngModel)]="editingProduct.materasso" class="full-width"></textarea>
-              </div>
-            </div>
-
-            <!-- Sezione Varianti -->
-            <div class="form-section">
-              <h3 class="section-title">Gestione Varianti</h3>
-
-              <!-- Form per aggiungere/modificare varianti -->
-              <div class="variant-form">
-                <div class="p-grid p-align-end">
-                  <div class="p-col-12 p-md-4">
-                    <label for="variantName" style="padding-right: 10px;">Nome Variante:</label>
-                    <input id="variantName" pInputText [(ngModel)]="newVariant.longName" name="variantName"
-                      class="full-width" />
+              <div class="card-content">
+                <div class="features-grid">
+                  <div class="modern-field-group">
+                    <p-floatLabel>
+                      <textarea id="productSeduta" name="seduta" pInputTextarea rows="2" autoResize="true"
+                        [(ngModel)]="editingProduct.seduta" class="modern-textarea">
+                      </textarea>
+                      <label for="productSeduta">Seduta</label>
+                    </p-floatLabel>
                   </div>
-                  <div class="p-col-12 p-md-2">
-                    <label for="variantSeats">Posti:</label>
-                    <p-inputNumber id="variantSeats" [(ngModel)]="newVariant.seatsCount" name="variantSeats" [min]="1"
-                      [max]="20" class="full-width" [ngStyle]="{'padding-left': '10px'}"></p-inputNumber>
+
+                  <div class="modern-field-group">
+                    <p-floatLabel>
+                      <textarea id="productSchienale" name="schienale" pInputTextarea rows="2" autoResize="true"
+                        [(ngModel)]="editingProduct.schienale" class="modern-textarea">
+                      </textarea>
+                      <label for="productSchienale">Schienale</label>
+                    </p-floatLabel>
                   </div>
-                  <div class="p-col-12 p-md-3">
-                    <label for="variantWidth">Larghezza (cm):</label>
-                    <p-inputNumber id="variantWidth" [(ngModel)]="newVariant.mattressWidth" name="variantWidth"
-                      [min]="1" [max]="500" suffix=" cm" class="full-width"
-                      [ngStyle]="{'padding-left': '10px'}"></p-inputNumber>
+
+                  <div class="modern-field-group">
+                    <p-floatLabel>
+                      <textarea id="productMeccanica" name="meccanica" pInputTextarea rows="2" autoResize="true"
+                        [(ngModel)]="editingProduct.meccanica" class="modern-textarea">
+                      </textarea>
+                      <label for="productMeccanica">Meccanica</label>
+                    </p-floatLabel>
                   </div>
-                  <div class="p-col-12 p-md-3">
-                    <p-button [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'"
-                      [icon]="editingVariantIndex >= 0 ? 'pi pi-check' : 'pi pi-plus'" (onClick)="addVariantToProduct()"
-                      [disabled]="!newVariant.longName.trim()" class="full-width"
-                      styleClass="btn-dialog-yes"></p-button>
+
+                  <div class="modern-field-group">
+                    <p-floatLabel>
+                      <textarea id="productMaterasso" name="materasso" pInputTextarea rows="2" autoResize="true"
+                        [(ngModel)]="editingProduct.materasso" class="modern-textarea">
+                      </textarea>
+                      <label for="productMaterasso">Materasso</label>
+                    </p-floatLabel>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Lista varianti esistenti -->
-              <div class="variants-list" *ngIf="editingVariants.length > 0">
-                <table class="variants-table">
-                  <thead>
-                    <tr>
-                      <th>Nome</th>
-                      <th>Posti</th>
-                      <th>Larghezza</th>
-                      <th>Prezzo</th>
-                      <th>Componenti</th>
-                      <th>Azioni</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <ng-container *ngFor="let variant of editingVariants; let i = index">
+            <!-- Variants Management Card -->
+            <div class="modern-card variants-card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="pi pi-list"></i>
+                  Gestione Varianti
+                </h3>
+              </div>
+              <div class="card-content">
+                <!-- Add/Edit Variant Form - Solo per modifica esistenti -->
+                <div class="variant-form-section" *ngIf="editingVariantIndex >= 0">
+                  <div class="variant-form-header">
+                    <h4 class="editing-variant-title">
+                      <i class="pi pi-pencil"></i>
+                      Modifica Variante: {{ newVariant.longName }}
+                    </h4>
+                    <p-button icon="pi pi-times" label="Annulla Modifica" styleClass="p-button-outlined cancel-edit-btn"
+                      (click)="cancelVariantEdit()">
+                    </p-button>
+                  </div>
+
+                  <div class="variant-form-grid">
+                    <div class="form-col">
+                      <p-floatLabel>
+                        <input id="variantName" pInputText [(ngModel)]="newVariant.longName" name="variantName"
+                          class="modern-input" />
+                        <label for="variantName">Nome Variante</label>
+                      </p-floatLabel>
+                    </div>
+
+                    <div class="form-col">
+                      <p-floatLabel>
+                        <p-inputNumber id="variantSeats" [(ngModel)]="newVariant.seatsCount" name="variantSeats"
+                          [min]="1" [max]="20" styleClass="modern-input-number">
+                        </p-inputNumber>
+                        <label for="variantSeats">Posti</label>
+                      </p-floatLabel>
+                    </div>
+
+                    <div class="form-col">
+                      <p-floatLabel>
+                        <p-inputNumber id="variantWidth" [(ngModel)]="newVariant.mattressWidth" name="variantWidth"
+                          [min]="1" [max]="500" suffix=" cm" styleClass="modern-input-number">
+                        </p-inputNumber>
+                        <label for="variantWidth">Larghezza</label>
+                      </p-floatLabel>
+                    </div>
+
+                    <div class="form-col action-col">
+                      <p-button label="Salva Modifiche" icon="pi pi-check" (onClick)="addVariantToProduct()"
+                        [disabled]="!newVariant.longName.trim()" styleClass="modern-variant-btn">
+                      </p-button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Info message quando non si sta modificando -->
+                <div class="variant-info-section" *ngIf="editingVariantIndex < 0">
+                  <div class="info-message">
+                    <i class="pi pi-info-circle"></i>
+                    <span>Seleziona una variante dalla tabella sottostante per modificarla.</span>
+                  </div>
+                </div>
+
+                <!-- Variants Table -->
+                <div class="variants-table-section" *ngIf="editingVariants.length > 0">
+                  <p-table [value]="editingVariants" styleClass="modern-variants-table"
+                    [tableStyle]="{ 'min-width': '100%' }" [scrollable]="true">
+
+                    <ng-template pTemplate="header">
                       <tr>
-                        <td>{{ variant.longName }}</td>
-                        <td>{{ variant.seatsCount || '-' }}</td>
-                        <td>{{ variant.mattressWidth ? variant.mattressWidth + ' cm' : '-' }}</td>
-                        <td>€{{ variant.price.toFixed(2) }}</td>
+                        <th>Variante</th>
+                        <th>Posti</th>
+                        <th>Larghezza</th>
+                        <th>Prezzo</th>
+                        <th>Componenti</th>
+                        <th>Azioni</th>
+                      </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-variant let-i="rowIndex">
+                      <tr>
                         <td>
-                          <button pButton type="button" icon="pi pi-plus" class="p-button-sm p-button-text"
-                            (click)="openAddComponentToVariant(variant)" pTooltip="Aggiungi componente"
-                            style="color: #007bff;"></button>
+                          <div class="variant-name-cell">
+                            <span class="variant-title">{{ variant.longName }}</span>
+                          </div>
                         </td>
                         <td>
-                          <button pButton type="button" icon="pi pi-pencil"
-                            class="p-button-rounded p-button-text p-button transparent-icon-btn"
-                            (click)="editVariantInProduct(i)" pTooltip="Modifica variante"></button>
-                          <button pButton type="button" icon="pi pi-trash"
-                            class="p-button-rounded p-button-text p-button transparent-red-icon"
-                            (click)="deleteVariantFromProduct(i)" pTooltip="Elimina variante"></button>
+                          <p-tag *ngIf="variant.seatsCount" [value]="variant.seatsCount" severity="info"
+                            styleClass="compact-tag">
+                          </p-tag>
+                          <span *ngIf="!variant.seatsCount" class="text-muted">-</span>
+                        </td>
+                        <td>
+                          <p-tag *ngIf="variant.mattressWidth" [value]="variant.mattressWidth + ' cm'"
+                            severity="secondary" styleClass="compact-tag">
+                          </p-tag>
+                          <span *ngIf="!variant.mattressWidth" class="text-muted">-</span>
+                        </td>
+                        <td>
+                          <div class="price-cell">
+                            <span class="price-value">€{{ variant.price.toFixed(2) }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <p-button icon="pi pi-plus"
+                            styleClass="p-button-rounded p-button-text p-button-sm add-component-btn"
+                            (click)="openAddComponentToVariant(variant)" pTooltip="Aggiungi componente"
+                            tooltipPosition="top">
+                          </p-button>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <p-button icon="pi pi-pencil"
+                              styleClass="p-button-rounded p-button-text p-button-sm edit-btn"
+                              (click)="editVariantInProduct(i)" pTooltip="Modifica" tooltipPosition="top">
+                            </p-button>
+                            <p-button icon="pi pi-trash"
+                              styleClass="p-button-rounded p-button-text p-button-sm p-button-danger delete-btn"
+                              (click)="deleteVariantFromProduct(i)" pTooltip="Elimina" tooltipPosition="top">
+                            </p-button>
+                          </div>
                         </td>
                       </tr>
-                      <tr *ngIf="variant.components && variant.components.length > 0">
-                        <td colspan="6" class="variant-components">
-                          <div class="components-container">
-                            <h5>Componenti della variante:</h5>
-                            <div class="component-chips">
-                              <span *ngFor="let group of getEditGroupedComponents(variant)" class="component-chip">
-                                {{ formatComponentName(group.component) }}
-                                <span *ngIf="group.quantity > 1" class="component-quantity">
-                                  × {{ group.quantity }}
-                                </span>
-                                <button type="button" class="remove-component"
-                                  (click)="removeGroupedComponent(variant, group)"
-                                  [title]="group.quantity > 1 ? 'Rimuovi tutte le occorrenze' : 'Rimuovi componente'">
-                                  <i class="pi pi-times"></i>
-                                </button>
-                              </span>
+
+                      <!-- Components Row -->
+                      <tr *ngIf="variant.components && variant.components.length > 0" class="components-row">
+                        <td colspan="6">
+                          <div class="components-section">
+                            <div class="components-header">
+                              <h5><i class="pi pi-th-large"></i> Componenti della variante</h5>
+                            </div>
+                            <div class="components-chips">
+                              <div *ngFor="let group of getEditGroupedComponents(variant)"
+                                class="component-chip-modern">
+                                <div class="chip-content">
+                                  <span class="chip-name">{{ formatComponentName(group.component) }}</span>
+                                  <p-tag *ngIf="group.quantity > 1" [value]="'×' + group.quantity" severity="warning"
+                                    styleClass="quantity-tag">
+                                  </p-tag>
+                                  <p-button icon="pi pi-times"
+                                    styleClass="p-button-rounded p-button-text p-button-sm chip-remove"
+                                    (click)="removeGroupedComponent(variant, group)"
+                                    [pTooltip]="group.quantity > 1 ? 'Rimuovi tutte le occorrenze' : 'Rimuovi componente'"
+                                    tooltipPosition="top">
+                                  </p-button>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </td>
                       </tr>
-                    </ng-container>
-                  </tbody>
-                </table>
+                    </ng-template>
+                  </p-table>
+                </div>
               </div>
             </div>
           </div>
@@ -491,36 +614,60 @@
     </div>
 
     <ng-template pTemplate="footer">
-      <div class="dialog-footer">
-        <button pButton type="button" label="Annulla" class="btn-dialog-no" (click)="cancelEditProduct()"></button>
-        <button pButton type="button" label="Salva Modifiche" class="btn-dialog-yes"
-          [disabled]="productForm?.invalid || saving" (click)="saveProductChanges()" [loading]="saving"></button>
+      <div class="modern-dialog-footer">
+        <p-button label="Annulla" icon="pi pi-times" styleClass="p-button-outlined cancel-dialog-btn"
+          (click)="cancelEditProduct()">
+        </p-button>
+        <p-button label="Salva Modifiche" icon="pi pi-check" styleClass="save-dialog-btn"
+          [disabled]="productForm?.invalid || saving" (click)="saveProductChanges()" [loading]="saving">
+        </p-button>
       </div>
     </ng-template>
   </p-dialog>
 
   <!-- Dialog per aggiungere componenti alle varianti -->
   <p-dialog [(visible)]="showAddComponentDialog" header="Aggiungi Componente alla Variante" [modal]="true"
-    [style]="{ width: '500px' }" [closable]="false">
+    [style]="{ width: '600px' }" [closable]="false">
     <div class="p-fluid">
-      <div class="p-field">
-        <label for="componentSelect">Componente</label>
-        <p-dropdown id="componentSelect" [options]="availableComponents" [(ngModel)]="selectedComponentForVariant"
-          optionLabel="name" placeholder="Seleziona un componente" [showClear]="true" [filter]="true" filterBy="name"
-          appendTo="body">
-          <ng-template let-component pTemplate="item">
-            {{ formatComponentName(component) }}
-          </ng-template>
-          <ng-template let-selectedComponent pTemplate="selectedItem">
-            {{ formatComponentName(selectedComponent) }}
-          </ng-template>
-        </p-dropdown>
+      <div class="component-selection-grid">
+        <div class="component-field">
+          <label for="componentSelect">Componente <span class="required-field">*</span></label>
+          <p-dropdown id="componentSelect" [options]="availableComponents" [(ngModel)]="selectedComponentForVariant"
+            optionLabel="name" placeholder="Seleziona un componente" [showClear]="true" [filter]="true" filterBy="name"
+            appendTo="body" [style]="{ width: '100%' }">
+            <ng-template let-component pTemplate="item">
+              {{ formatComponentName(component) }}
+            </ng-template>
+            <ng-template let-selectedComponent pTemplate="selectedItem">
+              {{ formatComponentName(selectedComponent) }}
+            </ng-template>
+          </p-dropdown>
+        </div>
+
+        <div class="quantity-field">
+          <label for="componentQuantity">Quantità <span class="required-field">*</span></label>
+          <p-inputNumber id="componentQuantity" [(ngModel)]="componentQuantityForVariant" [min]="1" [max]="50"
+            [style]="{ width: '100%' }">
+          </p-inputNumber>
+        </div>
       </div>
 
-      <div class="p-field">
-        <label for="componentQuantity">Quantità</label>
-        <p-inputNumber id="componentQuantity" [(ngModel)]="componentQuantityForVariant" [min]="1"
-          [max]="50"></p-inputNumber>
+      <div class="selection-preview" *ngIf="selectedComponentForVariant">
+        <div class="preview-content">
+          <div class="preview-info">
+            <strong>Componente selezionato:</strong>
+            <span>{{ formatComponentName(selectedComponentForVariant) }}</span>
+          </div>
+          <div class="preview-price">
+            <strong>Prezzo unitario:</strong>
+            <span class="price-value">€{{ selectedComponentForVariant.price.toFixed(2) }}</span>
+          </div>
+          <div class="preview-total" *ngIf="componentQuantityForVariant && componentQuantityForVariant > 1">
+            <strong>Totale (×{{ componentQuantityForVariant }}):</strong>
+            <span class="total-value">€{{ (selectedComponentForVariant.price * componentQuantityForVariant).toFixed(2)
+              }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -528,7 +675,7 @@
       <button pButton type="button" icon="pi pi-times" label="Annulla" (click)="cancelAddComponent()"
         class="btn-dialog-no"></button>
       <button pButton type="button" icon="pi pi-check" label="Aggiungi" (click)="addComponentToVariant()"
-        [disabled]="!selectedComponentForVariant" class="btn-dialog-yes"></button>
+        [disabled]="!selectedComponentForVariant || !componentQuantityForVariant" class="btn-dialog-yes"></button>
     </ng-template>
   </p-dialog>
 

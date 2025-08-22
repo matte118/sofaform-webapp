@@ -63,102 +63,166 @@ export class PdfGenerationService {
   }
 
   /**
+   * Converte il logo da base64
+   */
+  private async getLogoBase64(): Promise<string> {
+    try {
+      const response = await fetch('/logo_sofaform_pdf.png');
+      const blob = await response.blob();
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Errore nel caricamento logo'));
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.warn('Impossibile caricare il logo:', error);
+      // Fallback to placeholder if logo fails to load
+      return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+    }
+  }
+
+  /**
    * Genera e scarica il PDF sfruttando pdfmake
    */
   async generateListinoPdf(productName: string) {
     const docDefinition: any = {
       pageSize: 'A4',
-      pageMargins: [30, 30, 30, 30],
+      pageMargins: [35, 35, 35, 35],
       defaultStyle: {
-        fontSize: 11,
+        fontSize: 10,
         lineHeight: 1.3,
-        color: '#333333'
+        color: '#2d3748'
       },
       styles: {
         title: {
           fontSize: 24,
           bold: true,
-          color: '#2c5aa0',
-          margin: [0, 0, 0, 5],
+          color: '#1a365d',
+          margin: [0, 10, 0, 15],
           alignment: 'center'
         },
         productName: {
           fontSize: 18,
-          bold: true,
-          color: '#444444',
-          margin: [0, 0, 0, 15],
+          italics: true,
+          color: '#2d3748',
+          margin: [0, 15, 0, 15],
           alignment: 'center'
         },
         description: {
-          fontSize: 12,
-          color: '#666666',
+          fontSize: 11,
+          color: '#718096',
           margin: [0, 0, 0, 20],
           alignment: 'center',
-          italics: true
+          italics: true,
+          lineHeight: 1.4
         },
         sectionHeader: {
-          fontSize: 16,
-          bold: true,
-          color: '#2c5aa0',
-          margin: [0, 25, 0, 15]
-        },
-        variantHeader: {
           fontSize: 14,
           bold: true,
-          color: '#2c5aa0',
-          margin: [0, 20, 0, 10],
-          fillColor: '#f8f9fa',
-          padding: [10, 8, 10, 8]
+          color: '#1a365d',
+          margin: [0, 20, 0, 12],
+          fillColor: '#f7fafc',
+          padding: [12, 8, 12, 8]
+        },
+        variantName: {
+          fontSize: 12,
+          bold: true,
+          color: '#1a365d',
+          margin: [0, 15, 0, 5]
         },
         tableHeader: {
           bold: true,
-          fillColor: '#e3f2fd',
-          color: '#1976d2',
-          fontSize: 11,
-          margin: [5, 8, 5, 8]
+          fillColor: '#4299e1',
+          color: '#ffffff',
+          fontSize: 10,
+          margin: [8, 6, 8, 6]
         },
         tableCell: {
-          margin: [5, 6, 5, 6],
-          fontSize: 10
-        },
-        priceBox: {
-          fillColor: '#f5f5f5',
-          margin: [0, 15, 0, 0]
-        },
-        deliveryBox: {
-          fillColor: '#fff3e0',
-          margin: [0, 15, 0, 0]
-        },
-        totalPrice: {
-          fontSize: 16,
-          bold: true,
-          color: '#2c5aa0'
+          margin: [8, 4, 8, 4],
+          fontSize: 9,
+          lineHeight: 1.2
         },
         small: {
-          fontSize: 9,
-          color: '#888888'
+          fontSize: 8,
+          color: '#a0aec0'
+        },
+        normal: {
+          fontSize: 10,
+          color: '#2d3748'
+        },
+        bold: {
+          fontSize: 10,
+          bold: true,
+          color: '#2d3748'
+        },
+        italic: {
+          fontSize: 10,
+          italics: true,
+          color: '#4a5568'
         }
+      },
+      header: (currentPage: number) => {
+        if (currentPage > 1) {
+          return {
+            columns: [
+              { text: '', width: '*' },
+              {
+                text: this.productData.name,
+                style: 'small',
+                alignment: 'center',
+                margin: [0, 12, 0, 0],
+                color: '#718096'
+              },
+              { text: '', width: '*' }
+            ]
+          };
+        }
+        return {};
       },
       footer: (currentPage: number, pageCount: number) => ({
         columns: [
           {
-            text: `Pagina ${currentPage} di ${pageCount}`,
+            text: `${currentPage} / ${pageCount}`,
             style: 'small',
             alignment: 'center',
-            margin: [0, 10, 0, 0]
+            margin: [0, 12, 0, 0]
           }
         ]
       }),
       content: []
     };
 
-    // Header principale
-    docDefinition.content.push(
-      { text: 'LISTINO PREZZI', style: 'title' },
-      { text: this.productData.name, style: 'productName' }
-    );
+    // Logo centrato
+    const logoBase64 = await this.getLogoBase64();
+    docDefinition.content.push({
+      image: logoBase64,
+      width: 300,
+      alignment: 'center',
+      margin: [0, 0, 0, 5]
+    });
 
-    // Descrizione prodotto (se presente)
+    // Nome prodotto
+    docDefinition.content.push({
+      text: this.productData.name,
+      style: 'productName'
+    });
+
+    // Immagine prodotto se disponibile
+    if (this.productData.photoUrl) {
+      const imageBase64 = await this.urlToBase64(this.productData.photoUrl);
+      if (imageBase64) {
+        docDefinition.content.push({
+          image: imageBase64,
+          width: 220, // Aumentato da 180 a 220
+          alignment: 'center',
+          margin: [0, 0, 0, 20]
+        });
+      }
+    }
+
+    // Descrizione prodotto
     if (this.productData.description) {
       docDefinition.content.push({
         text: this.productData.description,
@@ -166,87 +230,87 @@ export class PdfGenerationService {
       });
     }
 
-    // Foto prodotto (se presente)
-    if (this.productData.photoUrl) {
-      const imageBase64 = await this.urlToBase64(this.productData.photoUrl);
-      if (imageBase64) {
-        docDefinition.content.push({
-          image: imageBase64,
-          width: 200,
-          alignment: 'center',
-          margin: [0, 0, 0, 25]
-        });
-      }
-    }
-
-    // Scheda Tecnica moderna
-    docDefinition.content.push({ text: 'Scheda Tecnica', style: 'sectionHeader' });
-
+    // Scheda Tecnica compatta
     const techSpecs = [
       ['Seduta', this.productData.seduta || 'N/D'],
       ['Schienale', this.productData.schienale || 'N/D'],
       ['Meccanica', this.productData.meccanica || 'N/D'],
       ['Materasso', this.productData.materasso || 'N/D']
-    ].filter(spec => spec[1] !== 'N/D'); // Mostra solo le specifiche disponibili
+    ].filter(spec => spec[1] !== 'N/D');
 
     if (techSpecs.length > 0) {
-      docDefinition.content.push({
-        table: {
-          widths: ['30%', '70%'],
-          body: [
-            [
-              { text: 'Caratteristica', style: 'tableHeader' },
-              { text: 'Dettaglio', style: 'tableHeader' }
-            ],
-            ...techSpecs.map(spec => [
-              { text: spec[0], style: 'tableCell', bold: true },
-              { text: spec[1], style: 'tableCell' }
-            ])
-          ]
-        },
-        layout: {
-          fillColor: (rowIndex: number) => rowIndex === 0 ? '#e3f2fd' : (rowIndex % 2 === 0 ? '#fafafa' : null),
-          hLineWidth: () => 0.5,
-          vLineWidth: () => 0.5,
-          hLineColor: () => '#e0e0e0',
-          vLineColor: () => '#e0e0e0'
-        },
-        margin: [0, 0, 0, 30]
-      });
+      docDefinition.content.push(
+        { text: 'Scheda Tecnica', style: 'sectionHeader' },
+        {
+          table: {
+            widths: ['30%', '70%'],
+            body: [
+              [
+                { text: 'Caratteristica', style: 'tableHeader' },
+                { text: 'Dettaglio', style: 'tableHeader' }
+              ],
+              ...techSpecs.map((spec, index) => [
+                {
+                  text: spec[0],
+                  style: index % 2 === 0 ? 'bold' : 'normal',
+                  fillColor: index % 2 === 0 ? '#f8fafc' : '#ffffff'
+                },
+                {
+                  text: spec[1],
+                  style: index % 2 === 0 ? 'italic' : 'normal',
+                  fillColor: index % 2 === 0 ? '#f8fafc' : '#ffffff'
+                }
+              ])
+            ]
+          },
+          layout: {
+            hLineWidth: () => 0.5,
+            vLineWidth: () => 0.5,
+            hLineColor: () => '#e2e8f0',
+            vLineColor: () => '#e2e8f0',
+            paddingLeft: () => 8,
+            paddingRight: () => 8,
+            paddingTop: () => 4,
+            paddingBottom: () => 4
+          },
+          margin: [0, 0, 0, 25]
+        }
+      );
     }
 
-    // Varianti con rivestimenti
+    // Varianti con tabelle compatte - RIMUOVO pageBreak
     this.variantsData.forEach((variant, index) => {
-      if (index > 0) {
-        docDefinition.content.push({ text: '', pageBreak: 'before' });
-      }
-
-      // Header variante
+      // Nome variante sopra la tabella
       docDefinition.content.push({
         text: variant.longName,
-        style: 'variantHeader'
+        style: 'variantName'
       });
 
-      // Tabella rivestimenti (prezzo variante + rivestimento per ogni riga)
+      // Tabella rivestimenti compatta
       const rivestimentiBody: any[] = [
         [
           { text: 'Rivestimento', style: 'tableHeader' },
-          { text: 'Prezzo Totale', style: 'tableHeader', alignment: 'right' }
+          { text: 'Prezzo', style: 'tableHeader', alignment: 'right' }
         ]
       ];
 
-      this.rivestimentiData.forEach(r => {
-        // Calcola: prezzo base variante + costo rivestimento per questa riga
+      this.rivestimentiData.forEach((r, idx) => {
         const rivestimentoCost = r.rivestimento.mtPrice * r.metri;
         const variantTotalPrice = variant.price + rivestimentoCost;
+        const finalPrice = this.applyMarkup(variantTotalPrice, this.markupPerc);
 
         rivestimentiBody.push([
-          { text: r.rivestimento.name, style: 'tableCell' },
           {
-            text: `€ ${variantTotalPrice.toFixed(2)}`,
-            style: 'tableCell',
+            text: r.rivestimento.name,
+            style: 'bold', // Sempre bold per i nomi rivestimenti
+            fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
+          },
+          {
+            text: `€ ${finalPrice.toFixed(2)}`,
+            style: idx % 2 === 0 ? 'bold' : 'normal',
             alignment: 'right',
-            bold: true
+            color: '#38a169',
+            fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
           }
         ]);
       });
@@ -257,132 +321,106 @@ export class PdfGenerationService {
           body: rivestimentiBody
         },
         layout: {
-          fillColor: (rowIndex: number) => rowIndex === 0 ? '#e3f2fd' : (rowIndex % 2 === 0 ? '#fafafa' : null),
           hLineWidth: () => 0.5,
           vLineWidth: () => 0.5,
-          hLineColor: () => '#e0e0e0',
-          vLineColor: () => '#e0e0e0'
+          hLineColor: () => '#e2e8f0',
+          vLineColor: () => '#e2e8f0',
+          paddingLeft: () => 8,
+          paddingRight: () => 8,
+          paddingTop: () => 3,
+          paddingBottom: () => 3
         },
-        margin: [0, 0, 0, 20]
+        margin: [0, 0, 0, 8]
       });
-
-      // Box prezzi (aggiornato per mostrare il range di prezzi)
-      const minPrice = Math.min(...this.rivestimentiData.map(r => variant.price + (r.rivestimento.mtPrice * r.metri)));
-      const maxPrice = Math.max(...this.rivestimentiData.map(r => variant.price + (r.rivestimento.mtPrice * r.metri)));
-
-      const minPriceWithMarkup = this.applyMarkup(minPrice, this.markupPerc);
-      const maxPriceWithMarkup = this.applyMarkup(maxPrice, this.markupPerc);
-
-      const priceDisplay = minPrice === maxPrice
-        ? `€ ${minPriceWithMarkup.toFixed(2)}`
-        : `€ ${minPriceWithMarkup.toFixed(2)} - ${maxPriceWithMarkup.toFixed(2)}`;
-
-      docDefinition.content.push({
-        table: {
-          widths: ['60%', '40%'],
-          body: [
-            [
-              { text: 'Range prezzi variante:', style: 'tableCell' },
-              { text: priceDisplay, style: 'tableCell', alignment: 'right' }
-            ],
-            [
-              { text: 'TOTALE VARIANTE:', style: 'tableCell', bold: true, color: '#2c5aa0' },
-              {
-                text: priceDisplay,
-                style: ['tableCell', 'totalPrice'],
-                alignment: 'right'
-              }
-            ]
-          ]
-        },
-        style: 'priceBox',
-        layout: {
-          fillColor: (rowIndex: number) => rowIndex === 1 ? '#e8f5e8' : '#f5f5f5',
-          hLineWidth: () => 0.5,
-          vLineWidth: () => 0.5,
-          hLineColor: () => '#e0e0e0',
-          vLineColor: () => '#e0e0e0'
-        },
-        margin: [0, 10, 0, 0]
-      });
-
-      // Box consegna separato
-      if (this.deliveryCost > 0) {
-        docDefinition.content.push({
-          table: {
-            widths: ['60%', '40%'],
-            body: [
-              [
-                {
-                  text: '🚛 Costo Consegna:',
-                  style: 'tableCell',
-                  bold: true,
-                  color: '#f57c00'
-                },
-                {
-                  text: `€ ${this.deliveryCost.toFixed(2)}`,
-                  style: 'tableCell',
-                  alignment: 'right',
-                  bold: true,
-                  color: '#f57c00'
-                }
-              ]
-            ]
-          },
-          style: 'deliveryBox',
-          layout: {
-            fillColor: () => '#fff3e0',
-            hLineWidth: () => 0.5,
-            vLineWidth: () => 0.5,
-            hLineColor: () => '#ffb74d',
-            vLineColor: () => '#ffb74d'
-          },
-          margin: [0, 10, 0, 20]
-        });
-      }
     });
 
-    // Materassi Extra (se presenti)
-    if (this.extrasData.length > 0) {
+    // Sezione finale: Materassi Extra e Costo Consegna
+    const hasExtras = this.extrasData.length > 0;
+    const hasDelivery = this.deliveryCost > 0;
+
+    if (hasExtras || hasDelivery) {
       docDefinition.content.push({
-        text: 'Materassi Extra Disponibili',
+        text: 'Servizi Aggiuntivi',
         style: 'sectionHeader'
       });
 
-      const extrasBody: any[] = [
+      const servicesBody: any[] = [
         [
-          { text: 'Materasso', style: 'tableHeader' },
+          { text: 'Servizio', style: 'tableHeader' },
           { text: 'Prezzo', style: 'tableHeader', alignment: 'right' }
         ]
       ];
 
-      this.extrasData.forEach(extra => {
-        extrasBody.push([
-          { text: extra.name, style: 'tableCell' },
+      // Aggiungi materassi extra
+      this.extrasData.forEach((extra, idx) => {
+        servicesBody.push([
+          {
+            text: extra.name,
+            style: idx % 2 === 0 ? 'bold' : 'italic',
+            fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
+          },
           {
             text: `€ ${extra.price.toFixed(2)}`,
-            style: 'tableCell',
+            style: idx % 2 === 0 ? 'bold' : 'normal',
             alignment: 'right',
-            bold: true
+            color: '#38a169',
+            fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
           }
         ]);
       });
 
+      // Aggiungi costo consegna sulla stessa tabella
+      if (hasDelivery) {
+        const deliveryIndex = this.extrasData.length;
+        servicesBody.push([
+          {
+            text: 'Consegna',
+            style: deliveryIndex % 2 === 0 ? 'bold' : 'italic',
+            fillColor: deliveryIndex % 2 === 0 ? '#f8fafc' : '#ffffff'
+          },
+          {
+            text: `€ ${this.deliveryCost.toFixed(2)}`,
+            style: deliveryIndex % 2 === 0 ? 'bold' : 'normal',
+            alignment: 'right',
+            color: '#c05621',
+            fillColor: deliveryIndex % 2 === 0 ? '#f8fafc' : '#ffffff'
+          }
+        ]);
+      }
+
       docDefinition.content.push({
         table: {
           widths: ['70%', '30%'],
-          body: extrasBody
+          body: servicesBody
         },
         layout: {
-          fillColor: (rowIndex: number) => rowIndex === 0 ? '#e3f2fd' : (rowIndex % 2 === 0 ? '#fafafa' : null),
           hLineWidth: () => 0.5,
           vLineWidth: () => 0.5,
-          hLineColor: () => '#e0e0e0',
-          vLineColor: () => '#e0e0e0'
+          hLineColor: () => '#e2e8f0',
+          vLineColor: () => '#e2e8f0',
+          paddingLeft: () => 8,
+          paddingRight: () => 8,
+          paddingTop: () => 3,
+          paddingBottom: () => 3
         },
         margin: [0, 0, 0, 20]
       });
     }
+
+    // Footer minimalista
+    docDefinition.content.push({
+      canvas: [
+        {
+          type: 'rect',
+          x: 0,
+          y: 0,
+          w: 515,
+          h: 1,
+          color: '#4299e1'
+        }
+      ],
+      margin: [0, 15, 0, 0]
+    });
 
     // Genera e scarica il PDF
     const filename = this.getFilename(productName);

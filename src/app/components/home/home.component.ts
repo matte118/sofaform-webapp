@@ -29,6 +29,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { TooltipModule } from 'primeng/tooltip';
+import { TagModule } from 'primeng/tag';
 
 
 import { SofaProduct } from '../../../models/sofa-product.model';
@@ -79,6 +80,7 @@ interface EditGroupedComponent {
     MultiSelectModule,
     FloatLabelModule,
     InputNumberModule,
+    TagModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -124,7 +126,7 @@ export class HomeComponent implements OnInit {
   // New properties for per-variant rivestimenti selection
   variantRivestimentiSelections: { [variantId: string]: Rivestimento[] } = {};
   variantRivestimentiMeters: { [variantId: string]: { [rivestimentoId: string]: number } } = {};
-  
+
   // New property for uniform meters application
   uniformMetersForVariant: { [variantId: string]: number } = {};
 
@@ -525,21 +527,21 @@ export class HomeComponent implements OnInit {
   // Set uniform meters for all rivestimenti in a variant
   applyUniformMetersToVariant(variantId: string): void {
     if (!variantId || !this.uniformMetersForVariant[variantId]) return;
-    
+
     const uniformMeters = Math.max(0.1, this.uniformMetersForVariant[variantId] || 0.1);
     const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
-    
+
     if (!this.variantRivestimentiMeters[variantId]) {
       this.variantRivestimentiMeters[variantId] = {};
     }
-    
+
     // Apply uniform meters to all rivestimenti in this variant
     rivestimenti.forEach(r => {
       this.variantRivestimentiMeters[variantId][r.id] = uniformMeters;
     });
-    
+
     this.cdr.detectChanges();
-    
+
     this.messageService.add({
       severity: 'success',
       summary: 'Metri applicati',
@@ -910,6 +912,11 @@ export class HomeComponent implements OnInit {
     this.editingVariantIndex = index;
   }
 
+  cancelVariantEdit(): void {
+    this.editingVariantIndex = -1;
+    this.newVariant = new Variant('', '', '', 0);
+  }
+
   deleteVariantFromProduct(index: number): void {
     this.confirmationService.confirm({
       message: 'Sei sicuro di voler eliminare questa variante?',
@@ -917,6 +924,13 @@ export class HomeComponent implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.editingVariants.splice(index, 1);
+        // Se stavamo modificando questa variante, annulla la modifica
+        if (this.editingVariantIndex === index) {
+          this.cancelVariantEdit();
+        } else if (this.editingVariantIndex > index) {
+          // Aggiusta l'indice se necessario
+          this.editingVariantIndex--;
+        }
         this.cdr.detectChanges();
       }
     });

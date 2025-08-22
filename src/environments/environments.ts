@@ -5,7 +5,7 @@ export const environment = {
     authDomain: "sofaform-59f6f.firebaseapp.com",
     databaseURL: "https://sofaform-59f6f-default-rtdb.europe-west1.firebasedatabase.app/",
     projectId: "sofaform-59f6f",
-    storageBucket: "sofaform-59f6f.appspot.com",
+    storageBucket: "sofaform-59f6f.firebasestorage.app",
     messagingSenderId: "your-sender-id-here",
     appId: "your-app-id-here"
   }

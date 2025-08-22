@@ -16,7 +16,7 @@ export interface UploadProgress {
 
 @Injectable({ providedIn: 'root' })
 export class PhotoUploadService {
-  constructor(private storage: Storage) {}
+  constructor(private storage: Storage) { }
 
   /**
    * Upload an image to the specified folder
