@@ -347,7 +347,7 @@ export class PdfGenerationService {
       }
     });
 
-    // Sezione finale: Materassi Extra e Costo Consegna
+    // Sezione finale: Materassi Extra
     const hasExtras = this.extrasData.length > 0;
     const hasDelivery = this.deliveryCost > 0;
 
@@ -381,25 +381,6 @@ export class PdfGenerationService {
           }
         ]);
       });
-
-      // Aggiungi costo consegna sulla stessa tabella
-      if (hasDelivery) {
-        const deliveryIndex = this.extrasData.length;
-        servicesBody.push([
-          {
-            text: 'Consegna',
-            style: deliveryIndex % 2 === 0 ? 'bold' : 'italic',
-            fillColor: deliveryIndex % 2 === 0 ? '#f8fafc' : '#ffffff'
-          },
-          {
-            text: `€ ${this.deliveryCost.toFixed(2)}`,
-            style: deliveryIndex % 2 === 0 ? 'bold' : 'normal',
-            alignment: 'right',
-            color: '#c05621',
-            fillColor: deliveryIndex % 2 === 0 ? '#f8fafc' : '#ffffff'
-          }
-        ]);
-      }
 
       docDefinition.content.push({
         table: {

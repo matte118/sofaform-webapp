@@ -294,13 +294,6 @@
         <p-inputNumber id="markup" [(ngModel)]="markupPercentage" [min]="0" [max]="1000" suffix="%"
           placeholder="Inserisci la percentuale"></p-inputNumber>
       </div>
-
-      <div class="field">
-        <label for="deliveryPrice">Prezzo di consegna:</label>
-        <p-inputNumber id="deliveryPrice" [(ngModel)]="deliveryPriceListino" mode="currency" currency="EUR"
-          locale="it-IT" placeholder="€0,00">
-        </p-inputNumber>
-      </div>
     </div>
 
     <ng-template pTemplate="footer">
