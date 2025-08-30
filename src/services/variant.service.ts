@@ -189,7 +189,17 @@ export class VariantService {
 
       if (snapshot.exists()) {
         const variantData = snapshot.val();
-        return variantData.rivestimenti || [];
+        const rivestimentiData = variantData.rivestimenti || [];
+        
+        // Ensure the data structure is correct
+        if (Array.isArray(rivestimentiData)) {
+          return rivestimentiData.filter(item => 
+            item && 
+            item.rivestimento && 
+            typeof item.metri === 'number' && 
+            item.metri > 0
+          );
+        }
       }
 
       return [];

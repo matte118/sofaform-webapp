@@ -16,7 +16,7 @@ export class PdfGenerationService {
   // --- Proprietà interne per l'adapter ---
   private productData!: SofaProduct;
   private variantsData: Variant[] = [];
-  private rivestimentiData: { rivestimento: Rivestimento; metri: number }[] = [];
+  private rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] } = {};
   private extrasData: ExtraMattress[] = [];
   private markupPerc = 0;
   private deliveryCost = 0;
@@ -24,19 +24,19 @@ export class PdfGenerationService {
   constructor() { }
 
   /**
-   * Configura i dati da usare nel PDF
+   * Configura i dati da usare nel PDF con rivestimenti organizzati per variante
    */
   setListinoData(
     product: SofaProduct,
     variants: Variant[],
-    rivestimenti: { rivestimento: Rivestimento; metri: number }[],
+    rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] },
     extras: ExtraMattress[],
     markup: number,
     delivery: number
   ): void {
     this.productData = product;
     this.variantsData = variants;
-    this.rivestimentiData = rivestimenti;
+    this.rivestimentiByVariant = rivestimentiByVariant;
     this.extrasData = extras;
     this.markupPerc = markup;
     this.deliveryCost = delivery;
@@ -278,7 +278,7 @@ export class PdfGenerationService {
       );
     }
 
-    // Varianti con tabelle compatte - RIMUOVO pageBreak
+    // Varianti con rivestimenti specifici per ogni variante
     this.variantsData.forEach((variant, index) => {
       // Nome variante sopra la tabella
       docDefinition.content.push({
@@ -286,52 +286,65 @@ export class PdfGenerationService {
         style: 'variantName'
       });
 
-      // Tabella rivestimenti compatta
-      const rivestimentiBody: any[] = [
-        [
-          { text: 'Rivestimento', style: 'tableHeader' },
-          { text: 'Prezzo', style: 'tableHeader', alignment: 'right' }
-        ]
-      ];
+      // Ottieni i rivestimenti specifici per questa variante
+      const variantRivestimenti = this.rivestimentiByVariant[variant.id] || [];
 
-      this.rivestimentiData.forEach((r, idx) => {
-        const rivestimentoCost = r.rivestimento.mtPrice * r.metri;
-        const variantTotalPrice = variant.price + rivestimentoCost;
-        const finalPrice = this.applyMarkup(variantTotalPrice, this.markupPerc);
+      if (variantRivestimenti.length > 0) {
+        // Tabella rivestimenti per questa specifica variante
+        const rivestimentiBody: any[] = [
+          [
+            { text: 'Rivestimento', style: 'tableHeader' },
+            { text: 'Prezzo', style: 'tableHeader', alignment: 'right' }
+          ]
+        ];
 
-        rivestimentiBody.push([
-          {
-            text: r.rivestimento.name,
-            style: 'bold', // Sempre bold per i nomi rivestimenti
-            fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
+        variantRivestimenti.forEach((r, idx) => {
+          const rivestimentoCost = r.rivestimento.mtPrice * r.metri;
+          const variantTotalPrice = variant.price + rivestimentoCost + this.deliveryCost;
+          const finalPrice = this.applyMarkup(variantTotalPrice, this.markupPerc);
+
+          rivestimentiBody.push([
+            {
+              text: r.rivestimento.name,
+              style: 'bold',
+              fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
+            },
+            {
+              text: `€ ${finalPrice.toFixed(2)}`,
+              style: idx % 2 === 0 ? 'bold' : 'normal',
+              alignment: 'right',
+              color: '#38a169',
+              fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
+            }
+          ]);
+        });
+
+        docDefinition.content.push({
+          table: {
+            widths: ['70%', '30%'],
+            body: rivestimentiBody
           },
-          {
-            text: `€ ${finalPrice.toFixed(2)}`,
-            style: idx % 2 === 0 ? 'bold' : 'normal',
-            alignment: 'right',
-            color: '#38a169',
-            fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
-          }
-        ]);
-      });
-
-      docDefinition.content.push({
-        table: {
-          widths: ['70%', '30%'],
-          body: rivestimentiBody
-        },
-        layout: {
-          hLineWidth: () => 0.5,
-          vLineWidth: () => 0.5,
-          hLineColor: () => '#e2e8f0',
-          vLineColor: () => '#e2e8f0',
-          paddingLeft: () => 8,
-          paddingRight: () => 8,
-          paddingTop: () => 3,
-          paddingBottom: () => 3
-        },
-        margin: [0, 0, 0, 8]
-      });
+          layout: {
+            hLineWidth: () => 0.5,
+            vLineWidth: () => 0.5,
+            hLineColor: () => '#e2e8f0',
+            vLineColor: () => '#e2e8f0',
+            paddingLeft: () => 8,
+            paddingRight: () => 8,
+            paddingTop: () => 3,
+            paddingBottom: () => 3
+          },
+          margin: [0, 0, 0, 8]
+        });
+      } else {
+        // Se non ci sono rivestimenti per questa variante, mostra un messaggio
+        docDefinition.content.push({
+          text: 'Nessun rivestimento configurato per questa variante',
+          style: 'italic',
+          color: '#718096',
+          margin: [0, 0, 0, 8]
+        });
+      }
     });
 
     // Sezione finale: Materassi Extra e Costo Consegna
@@ -428,7 +441,13 @@ export class PdfGenerationService {
   }
 
   private sumRivestimenti(): number {
-    return this.rivestimentiData.reduce((sum, r) => sum + (r.rivestimento.mtPrice * r.metri), 0);
+    // Calculate total from rivestimentiByVariant structure
+    let total = 0;
+    Object.values(this.rivestimentiByVariant).forEach((variantRivestimenti: { rivestimento: Rivestimento; metri: number }[]) => {
+      total += variantRivestimenti.reduce((sum: number, r: { rivestimento: Rivestimento; metri: number }) => 
+        sum + (r.rivestimento.mtPrice * r.metri), 0);
+    });
+    return total;
   }
 
   private applyMarkup(amount: number, perc: number): number {

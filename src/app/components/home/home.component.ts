@@ -385,6 +385,7 @@ export class HomeComponent implements OnInit {
   async confirmRivestimentiSelection(): Promise<void> {
     // Convert variant selections to the expected format and save to database
     this.selectedRivestimentiForListino = [];
+    const rivestimentiMap = new Map<string, { rivestimento: Rivestimento; metri: number }>();
 
     try {
       // Save rivestimenti for each variant to database
@@ -398,16 +399,19 @@ export class HomeComponent implements OnInit {
           if (meters > 0) {
             variantRivestimentiData.push({ rivestimento: r, metri: meters });
 
-            // Add to listino data
-            const existing = this.selectedRivestimentiForListino.find(item => item.rivestimento.id === r.id);
+            // Aggregate for listino - combine meters for same rivestimento across variants
+            const existing = rivestimentiMap.get(r.id);
             if (existing) {
               existing.metri += meters;
             } else {
-              this.selectedRivestimentiForListino.push({ rivestimento: r, metri: meters });
+              rivestimentiMap.set(r.id, { rivestimento: r, metri: meters });
             }
           }
         });
       }
+
+      // Convert map to array for listino
+      this.selectedRivestimentiForListino = Array.from(rivestimentiMap.values());
 
       if (!this.selectedRivestimentiForListino.length) {
         this.messageService.add({
@@ -417,6 +421,8 @@ export class HomeComponent implements OnInit {
         });
         return;
       }
+
+      console.log('Selected rivestimenti for listino:', this.selectedRivestimentiForListino); // Debug log
 
       this.showRivestimentoDialog = false;
       this.cdr.detectChanges();
@@ -449,9 +455,7 @@ export class HomeComponent implements OnInit {
         detail: 'Generazione del listino in corso...'
       });
 
-      // 1. ✅ ADESSO salviamo tutto nel database
-
-      // Salva i rivestimenti per ogni variante
+      // Save rivestimenti for each variant
       for (const variantId of Object.keys(this.variantRivestimentiSelections)) {
         const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
         const variantRivestimentiData: { rivestimento: Rivestimento; metri: number }[] = [];
@@ -463,13 +467,13 @@ export class HomeComponent implements OnInit {
           }
         });
 
-        // Salva nel database solo ora
+        // Save to database
         if (variantRivestimentiData.length > 0) {
           await this.variantService.saveVariantRivestimenti(variantId, variantRivestimentiData);
         }
       }
 
-      // Salva il prodotto aggiornato
+      // Save updated product
       const updatedProduct: SofaProduct = {
         ...this.selectedProduct,
         materassiExtra: [...this.extraMattressesForListino],
@@ -479,15 +483,34 @@ export class HomeComponent implements OnInit {
 
       await firstValueFrom(this.sofaProductService.updateSofaProduct(updatedProduct.id, updatedProduct));
 
-      // 2. Generate PDF
+      // Generate PDF with rivestimenti organized by variant
       this.showPdfTemplate = true;
       this.cdr.detectChanges();
       await new Promise(res => setTimeout(res, 100));
 
+      // Prepare rivestimenti data organized by variant for PDF
+      const rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] } = {};
+      
+      Object.keys(this.variantRivestimentiSelections).forEach(variantId => {
+        const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
+        const variantRivestimentiData: { rivestimento: Rivestimento; metri: number }[] = [];
+
+        rivestimenti.forEach(r => {
+          const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
+          if (meters > 0) {
+            variantRivestimentiData.push({ rivestimento: r, metri: meters });
+          }
+        });
+
+        if (variantRivestimentiData.length > 0) {
+          rivestimentiByVariant[variantId] = variantRivestimentiData;
+        }
+      });
+
       this.pdfService.setListinoData(
         updatedProduct,
         this.getProductVariants(updatedProduct.id),
-        this.selectedRivestimentiForListino,
+        rivestimentiByVariant,
         this.extraMattressesForListino,
         this.markupPercentage,
         this.deliveryPriceListino
@@ -497,7 +520,7 @@ export class HomeComponent implements OnInit {
       this.showPdfTemplate = false;
       this.cdr.detectChanges();
 
-      // 3. Update local product copy
+      // Update local product copy
       const productIndex = this.products.findIndex(p => p.id === updatedProduct.id);
       if (productIndex !== -1) {
         this.products[productIndex] = { ...updatedProduct };
