@@ -76,10 +76,19 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   @ViewChild('componentTable') componentTable?: ElementRef;
   @ViewChild('variantEntriesContainer') variantEntriesContainer?: ElementRef<HTMLDivElement>;
 
+  componentsView: Array<
+    ComponentModel & {
+      supplierName: string;
+      typeLabel: string;
+      priceText: string;
+      priceTextComma: string;
+    }
+  > = [];
+
+
   components: ComponentModel[] = [];
   newComponent: ComponentModel = new ComponentModel('', '', null as any);
 
-  // Cambiato da supplier: Supplier | null = null; a:
   availableSuppliers: Supplier[] = [];
   selectedSupplier: Supplier | null = null;
 
@@ -169,8 +178,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         console.error('Error loading components:', error);
         this.addError('Errore caricamento componenti');
         return of([]);
-      }),
-      tap(() => { })
+      })
     );
 
     const suppliers$ = this.supplierService.getSuppliersAsObservable().pipe(
@@ -202,10 +210,33 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       )
       .subscribe(results => {
         this.components = results.components;
-        this.availableSuppliers = results.suppliers; // Cambiato da supplier a availableSuppliers
+        this.availableSuppliers = results.suppliers;
+
+        this.rebuildComponentsView();
+
         this.refreshNeeded = true;
       });
   }
+
+
+  private rebuildComponentsView(): void {
+    this.componentsView = this.components.map(c => {
+      const priceNum = c.price ?? null;
+      const priceText = priceNum !== null ? priceNum.toFixed(2) : '';
+      const priceTextComma = priceText ? priceText.replace('.', ',') : '';
+
+      return {
+        ...c,
+        supplierName: c.supplier?.name ?? 'Nessuno',
+        typeLabel: this.getComponentTypeDisplayName(c.type ?? null),
+        priceText,
+        priceTextComma
+      };
+    });
+  }
+
+
+
 
   private loadComponentTypes() {
     this.availableComponentTypes = [

@@ -115,7 +115,6 @@ export class ComponentService {
 
   // Helper method to parse component type from string back to enum
   private parseComponentType(typeString: string | undefined | null): ComponentType | undefined {
-    console.log('Parsing component type from DB:', typeString, 'Type:', typeof typeString);
     
     if (!typeString || typeString === 'null' || typeString === 'undefined') {
       return undefined;
@@ -135,7 +134,6 @@ export class ComponentService {
 
     if (matchingKey) {
       const enumValue = ComponentType[matchingKey as keyof typeof ComponentType];
-      console.log('Parsed as string enum:', enumValue, 'from key:', matchingKey);
       return enumValue;
     }
 

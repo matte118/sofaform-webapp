@@ -226,53 +226,94 @@
       <p>Caricamento componenti...</p>
     </div>
 
-    <p-table *ngIf="dataLoaded && !loading" #componentTable [value]="components"
-      styleClass="p-datatable-sm components-table" [paginator]="true" [rows]="10"
-      [globalFilterFields]="['name','price','measure']" [rowHover]="true" #dt>
-      <ng-template pTemplate="caption">
-        <div class="table-header">
-          <h4>Componenti ({{ components.length }})</h4>
-          <div class="search-container">
-            <input pInputText type="text" placeholder="Cerca componente..." (input)="onGlobalFilter($event, dt)" />
-          </div>
-        </div>
-      </ng-template>
+    <p-table
+  *ngIf="dataLoaded && !loading"
+  #componentTable
+  [value]="componentsView"
+  styleClass="p-datatable-sm components-table"
+  [paginator]="true"
+  [rows]="10"
+  [globalFilterFields]="[
+    'name',
+    'priceText',
+    'priceTextComma',
+    'typeLabel',
+    'measure',
+    'supplierName'
+  ]"
+  [rowHover]="true"
+  #dt
+>
 
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Nome</th>
-          <th>Prezzo</th>
-          <th>Tipo</th>
-          <th>Misura</th>
-          <th>Fornitore</th>
-          <th>Azioni</th>
-        </tr>
-      </ng-template>
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="name">
+        Nome
+        <p-sortIcon field="name"></p-sortIcon>
+      </th>
 
-      <ng-template pTemplate="body" let-component let-i="rowIndex">
-        <tr>
-          <td>{{ component.name }}</td>
-          <td>{{ component.price | currency:'EUR' }}</td>
-          <td>{{ getComponentTypeDisplayName(component.type) }}</td>
-          <td>{{ component.measure || '-' }}</td>
-          <td>{{ component.supplier?.name || 'Nessuno' }}</td>
-          <td class="actions-cell">
-            <p-button type="button" icon="pi pi-pencil"
-              styleClass="p-button-rounded p-button-text p-button transparent-icon-btn"
-              (click)="editComponent(component, i)" pTooltip="Modifica"></p-button>
-            <p-button type="button" icon="pi pi-trash"
-              styleClass="p-button-rounded p-button-text p-button transparent-red-icon"
-              (click)="deleteComponent(component)" pTooltip="Elimina"></p-button>
-          </td>
-        </tr>
-      </ng-template>
+      <th pSortableColumn="price">
+        Prezzo
+        <p-sortIcon field="price"></p-sortIcon>
+      </th>
 
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="6" class="empty-message">Nessun componente trovato</td>
-        </tr>
-      </ng-template>
-    </p-table>
+      <th pSortableColumn="typeLabel">
+        Tipo
+        <p-sortIcon field="typeLabel"></p-sortIcon>
+      </th>
+
+      <th pSortableColumn="measure">
+        Misura
+        <p-sortIcon field="measure"></p-sortIcon>
+      </th>
+
+      <th pSortableColumn="supplierName">
+        Fornitore
+        <p-sortIcon field="supplierName"></p-sortIcon>
+      </th>
+
+      <th>Azioni</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="caption">
+  <div class="table-header search-tab">
+    <h4>Componenti ({{ componentsView.length }})</h4>
+
+    <div class="search-container">
+      <span class="p-input w-full">
+        <input
+          pInputText
+          type="text"
+          placeholder="Cerca Componenti"
+          (input)="onGlobalFilter($event, dt)"
+          class="w-full"
+        />
+      </span>
+    </div>
+  </div>
+</ng-template>
+
+
+  <ng-template pTemplate="body" let-component let-i="rowIndex">
+    <tr>
+      <td>{{ component.name }}</td>
+      <td>{{ component.price | currency:'EUR' }}</td>
+      <td>{{ component.typeLabel }}</td>
+      <td>{{ component.measure || '-' }}</td>
+      <td>{{ component.supplierName }}</td>
+      <td class="actions-cell">
+        <p-button type="button" icon="pi pi-pencil"
+                  styleClass="p-button-rounded p-button-text p-button transparent-icon-btn"
+                  (click)="editComponent(component, i)" pTooltip="Modifica"></p-button>
+        <p-button type="button" icon="pi pi-trash"
+                  styleClass="p-button-rounded p-button-text p-button transparent-red-icon"
+                  (click)="deleteComponent(component)" pTooltip="Elimina"></p-button>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
   </div>
 
   <p-dialog header="Conferma Eliminazione" [(visible)]="displayConfirmDelete" [modal]="true" [closable]="false"

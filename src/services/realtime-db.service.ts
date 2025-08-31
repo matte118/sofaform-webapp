@@ -314,7 +314,6 @@ export class RealtimeDbService {
 
       const parsed = raw
         ? Object.entries(raw).map(([id, val]) => {
-          console.log('RealtimeDbService: Processing component:', id, val);
           return {
             id,
             data: val as any,

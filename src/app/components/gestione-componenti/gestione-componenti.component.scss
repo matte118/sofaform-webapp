@@ -1243,3 +1243,21 @@ button.transparent-icon-btn.p-button:active {
 ::ng-deep .component-mode-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
   color: #007bff !important;
 }
+
+.table-header.search-tab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  h4 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+}
+
+.search-container {
+  min-width: 320px;
+  max-width: 520px;
+  width: 40%;
+}
