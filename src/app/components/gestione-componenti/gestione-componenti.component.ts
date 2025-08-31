@@ -132,6 +132,16 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   componentToDelete?: ComponentModel;
   componentDependentProducts: string[] = [];
 
+  // Price List Properties
+  priceListData = {
+    selectedSupplier: null as Supplier | null,
+    percentage: null as number | null
+  };
+  
+  filteredComponentsForPriceList: ComponentModel[] = [];
+  displayConfirmPriceUpdate = false;
+  savingPriceList = false;
+
   constructor(
     private componentService: ComponentService,
     private messageService: MessageService,
@@ -931,5 +941,119 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   }
 
 
+
+  // Price List Methods
+  onPriceListSupplierChange(event: any): void {
+    this.priceListData.selectedSupplier = event.value;
+    this.updateFilteredComponentsForPriceList();
+  }
+
+  onPercentageChange(): void {
+    this.updateFilteredComponentsForPriceList();
+  }
+
+  updateFilteredComponentsForPriceList(): void {
+    if (this.priceListData.selectedSupplier) {
+      this.filteredComponentsForPriceList = this.components.filter(
+        component => component.supplier?.id === this.priceListData.selectedSupplier!.id
+      );
+    } else {
+      this.filteredComponentsForPriceList = [];
+    }
+  }
+
+  calculateNewPrice(currentPrice: number): number {
+    if (this.priceListData.percentage === null) return currentPrice;
+    const multiplier = 1 + (this.priceListData.percentage / 100);
+    return Math.round(currentPrice * multiplier * 100) / 100;
+  }
+
+  getPriceDifference(currentPrice: number): number {
+    return this.calculateNewPrice(currentPrice) - currentPrice;
+  }
+
+  getPriceDifferenceClass(currentPrice: number): string {
+    const difference = this.getPriceDifference(currentPrice);
+    if (difference > 0) return 'price-increase';
+    if (difference < 0) return 'price-decrease';
+    return 'price-neutral';
+  }
+
+  confirmPriceListUpdate(): void {
+    if (!this.priceListData.selectedSupplier || this.priceListData.percentage === null) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Attenzione',
+        detail: 'Seleziona un fornitore e inserisci una percentuale'
+      });
+      return;
+    }
+
+    if (this.filteredComponentsForPriceList.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Attenzione',
+        detail: 'Nessun componente da aggiornare per il fornitore selezionato'
+      });
+      return;
+    }
+
+    this.displayConfirmPriceUpdate = true;
+  }
+
+  async applyPriceListUpdate(): Promise<void> {
+    if (!this.priceListData.selectedSupplier || this.priceListData.percentage === null) return;
+
+    this.savingPriceList = true;
+    
+    try {
+      await this.componentService.updateComponentsPricesBySupplier(
+        this.priceListData.selectedSupplier.id,
+        this.priceListData.percentage
+      );
+
+      // Update local components array
+      this.filteredComponentsForPriceList.forEach(component => {
+        const index = this.components.findIndex(c => c.id === component.id);
+        if (index !== -1) {
+          this.components[index].price = this.calculateNewPrice(component.price);
+        }
+      });
+
+      this.rebuildComponentsView();
+      this.updateFilteredComponentsForPriceList();
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Successo',
+        detail: `Prezzi aggiornati per ${this.filteredComponentsForPriceList.length} componenti`
+      });
+
+      this.displayConfirmPriceUpdate = false;
+      this.resetPriceListForm();
+
+    } catch (error) {
+      console.error('Errore durante l\'aggiornamento dei prezzi:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'Errore durante l\'aggiornamento dei prezzi'
+      });
+    } finally {
+      this.savingPriceList = false;
+    }
+  }
+
+  rejectPriceUpdate(): void {
+    this.displayConfirmPriceUpdate = false;
+  }
+
+  resetPriceListForm(): void {
+    this.priceListData = {
+      selectedSupplier: null,
+      percentage: null
+    };
+    this.filteredComponentsForPriceList = [];
+  }
 
 }

@@ -216,6 +216,117 @@
         </div>
       </div>
     </p-tabPanel>
+
+    <!-- TAB PREZZO LISTINO -->
+    <p-tabPanel header="Prezzo Listino">
+      <div class="price-list-form-card">
+        <h2>Aggiornamento Prezzi per Fornitore</h2>
+        <p class="section-description">Modifica i prezzi di tutti i componenti di un fornitore applicando una percentuale di variazione</p>
+
+        <div class="price-list-section">
+          <div class="form-row" style="padding-top: 20px;">
+            <div class="form-group">
+              <p-floatLabel>
+                <p-dropdown 
+                  id="priceListSupplier" 
+                  [options]="availableSuppliers" 
+                  [(ngModel)]="priceListData.selectedSupplier"
+                  name="priceListSupplier" 
+                  optionLabel="name" 
+                  [showClear]="true" 
+                  class="w-100"
+                  (onChange)="onPriceListSupplierChange($event)">
+                </p-dropdown>
+                <label for="priceListSupplier">Fornitore <span class="required-field">*</span></label>
+              </p-floatLabel>
+            </div>
+
+            <div class="form-group">
+              <p-floatLabel>
+                <p-inputNumber 
+                  id="pricePercentage" 
+                  [(ngModel)]="priceListData.percentage" 
+                  name="pricePercentage"
+                  [minFractionDigits]="1" 
+                  [maxFractionDigits]="2" 
+                  suffix="%" 
+                  [min]="-100"
+                  [max]="1000"
+                  placeholder="0.0"
+                  (onInput)="onPercentageChange()">
+                </p-inputNumber>
+                <label for="pricePercentage">Variazione Percentuale <span class="required-field">*</span></label>
+              </p-floatLabel>
+              <div class="field-hint">
+                <i class="pi pi-info-circle info-icon"></i>
+                Valori positivi aumentano i prezzi, valori negativi li diminuiscono
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="priceListData.selectedSupplier && priceListData.percentage !== null" class="price-preview-section">
+            <h3><i style="color: #007bff;" class="pi pi-eye"></i> Anteprima Modifiche</h3>
+            <p class="preview-summary">
+              Componenti da aggiornare: <strong style="color: #007bff;">{{ filteredComponentsForPriceList.length }}</strong>
+              - Variazione: <strong style="color: #007bff;">{{ (priceListData.percentage !== null && priceListData.percentage > 0) ? '+' : '' }}{{ priceListData.percentage }}%</strong>
+            </p>
+
+            <div *ngIf="filteredComponentsForPriceList.length > 0" class="price-preview-table">
+              <p-table 
+                [value]="filteredComponentsForPriceList" 
+                styleClass="p-datatable-sm price-preview-table"
+                [paginator]="true"
+                [rows]="5"
+                [rowHover]="true">
+                
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Nome Componente</th>
+                    <th>Prezzo Attuale</th>
+                    <th>Nuovo Prezzo</th>
+                    <th>Differenza</th>
+                  </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-component>
+                  <tr>
+                    <td>{{ component.name }}</td>
+                    <td>{{ component.price | currency:'EUR' }}</td>
+                    <td class="new-price">{{ calculateNewPrice(component.price) | currency:'EUR' }}</td>
+                    <td [class]="getPriceDifferenceClass(component.price)">
+                       {{ getPriceDifference(component.price) | currency:'EUR' }}
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+
+            <div *ngIf="filteredComponentsForPriceList.length === 0" class="no-components-message">
+              <i class="pi pi-info-circle"></i>
+              <span>Nessun componente trovato per il fornitore selezionato</span>
+            </div>
+          </div>
+
+          <div class="price-list-actions" *ngIf="priceListData.selectedSupplier && priceListData.percentage !== null && filteredComponentsForPriceList.length > 0">
+            <p-button 
+              label="Applica Modifiche" 
+              icon="pi pi-check" 
+              (onClick)="confirmPriceListUpdate()"
+              styleClass="primary-button"
+              [loading]="savingPriceList" 
+              [disabled]="savingPriceList">
+            </p-button>
+            <p-button 
+              label="Reset" 
+              icon="pi pi-refresh" 
+              (onClick)="resetPriceListForm()" 
+              styleClass="secondary-button"
+              [disabled]="savingPriceList">
+            </p-button>
+          </div>
+        </div>
+      </div>
+    </p-tabPanel>
   </p-tabView>
 
   <div class="component-table-section">
@@ -357,6 +468,36 @@
         (click)="rejectDelete()"></button>
       <button pButton type="button" label="Sì" icon="pi pi-check" class="btn-dialog-yes" (click)="confirmDelete()"
         [disabled]="loadingDependencies" autofocus></button>
+    </ng-template>
+  </p-dialog>
+
+  <p-dialog header="Conferma Aggiornamento Prezzi" [(visible)]="displayConfirmPriceUpdate" [modal]="true" [closable]="false"
+    [style]="{ width: '600px', maxWidth: '95vw' }">
+    <div class="price-update-confirmation">
+      <p>Sei sicuro di voler aggiornare i prezzi di <strong>{{ filteredComponentsForPriceList.length }}</strong> componenti del fornitore <strong>{{ priceListData.selectedSupplier?.name }}</strong>?</p>
+      
+      <div class="update-summary">
+        <div class="summary-item">
+          <span class="label">Variazione:</span>
+          <span style="color: #007bff;" class="value">{{ (priceListData.percentage !== null && priceListData.percentage > 0) ? '+' : '' }}{{ priceListData.percentage }}%</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Componenti interessati:</span>
+          <span style="color: #007bff;" class="value">{{ filteredComponentsForPriceList.length }}</span>
+        </div>
+      </div>
+
+      <div class="field-hint">
+        <i class="pi pi-exclamation-triangle" style="color: red;"></i>
+        <strong>Questa operazione non può essere annullata.</strong>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Annulla" icon="pi pi-times" class="btn-dialog-no"
+        (click)="rejectPriceUpdate()"></button>
+      <button pButton type="button" label="Conferma" icon="pi pi-check" class="btn-dialog-yes" (click)="applyPriceListUpdate()"
+        [disabled]="savingPriceList" autofocus></button>
     </ng-template>
   </p-dialog>
 

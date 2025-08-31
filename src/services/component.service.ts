@@ -254,4 +254,46 @@ export class ComponentService {
   private generateComponentId(): string {
     return 'comp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
+
+  async updateComponentsPricesBySupplier(supplierId: string, percentageChange: number): Promise<void> {
+    try {
+      // Get components using the existing observable method
+      const components = await new Promise<Component[]>((resolve, reject) => {
+        this.getComponentsAsObservable().subscribe({
+          next: (components) => resolve(components),
+          error: (error) => reject(error)
+        });
+      });
+
+      const componentsToUpdate = components.filter(component => 
+        component.supplier?.id === supplierId
+      );
+      
+      if (componentsToUpdate.length === 0) {
+        throw new Error('Nessun componente trovato per il fornitore specificato');
+      }
+
+      const multiplier = 1 + (percentageChange / 100);
+      const updatePromises = componentsToUpdate.map(component => {
+        const newPrice = Math.round(component.price * multiplier * 100) / 100;
+        
+        // Create updated component data using the same structure as updateComponent
+        const updatedComponentData = {
+          id: component.id,
+          name: component.name,
+          price: newPrice,
+          supplier: component.supplier || null,
+          type: component.type !== null && component.type !== undefined ? ComponentType[component.type] : null,
+          measure: component.measure || null
+        };
+
+        return this.dbService.updateComponent(component.id, updatedComponentData);
+      });
+
+      await Promise.all(updatePromises);
+    } catch (error) {
+      console.error('Errore durante l\'aggiornamento dei prezzi per fornitore:', error);
+      throw error;
+    }
+  }
 }
