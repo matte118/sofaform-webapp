@@ -9,8 +9,8 @@ import { BulkComponentCreation } from '../models/bulk-component.model';
   providedIn: 'root',
 })
 export class ComponentService {
-  constructor(private dbService: RealtimeDbService) {}
-  
+  constructor(private dbService: RealtimeDbService) { }
+
   addComponent(component: Component): Observable<void> {
     console.log('ComponentService: Adding component', component);
     console.log('Component type before saving:', component.type, 'Type:', typeof component.type);
@@ -19,7 +19,7 @@ export class ComponentService {
 
     // Create a plain object for database storage, converting enum to string
     let typeToSave = null;
-    
+
     if (component.type !== null && component.type !== undefined) {
       // Convert enum number to string
       typeToSave = ComponentType[component.type];
@@ -38,7 +38,7 @@ export class ComponentService {
     // Add explicit logging to see what's being saved
     console.log('Component data type field:', componentData.type);
     console.log('Component data being saved to DB:', componentData);
-    
+
     return from(this.dbService.addComponent(componentData));
   }
 
@@ -90,7 +90,7 @@ export class ComponentService {
 
     // Create a plain object for database storage, converting enum to string
     let typeToSave = null;
-    
+
     if (component.type !== null && component.type !== undefined) {
       // Convert enum number to string
       typeToSave = ComponentType[component.type];
@@ -109,37 +109,55 @@ export class ComponentService {
     // Add explicit logging to see what's being saved
     console.log('Component data type field for update:', componentData.type);
     console.log('Component data being updated in DB:', componentData);
-    
+
     return from(this.dbService.updateComponent(id, componentData));
   }
 
-  // Helper method to parse component type from string back to enum
+
   private parseComponentType(typeString: string | undefined | null): ComponentType | undefined {
-    
-    if (!typeString || typeString === 'null' || typeString === 'undefined') {
+    if (typeString === null || typeString === undefined) {
       return undefined;
     }
 
-    // Handle both numeric and string enum values
-    if (!isNaN(Number(typeString))) {
-      // If it's a numeric string, convert to number and use as enum value
-      const numericValue = Number(typeString) as ComponentType;
-      console.log('Parsed as numeric enum:', numericValue);
-      return numericValue;
+    const raw = String(typeString).trim();
+    if (raw === '' || raw.toLowerCase() === 'null' || raw.toLowerCase() === 'undefined') {
+      return undefined;
     }
 
-    // If it's a string, find the matching enum key
-    const enumKeys = Object.keys(ComponentType).filter((key) => isNaN(Number(key)));
-    const matchingKey = enumKeys.find((key) => key === typeString);
+    if (!isNaN(Number(raw))) {
+      return Number(raw) as ComponentType;
+    }
 
-    if (matchingKey) {
-      const enumValue = ComponentType[matchingKey as keyof typeof ComponentType];
-      return enumValue;
+    const enumKeys = Object.keys(ComponentType).filter(k => isNaN(Number(k)));
+    const keyMatch = enumKeys.find(k => k.toLowerCase() === raw.toLowerCase());
+    if (keyMatch) {
+      return ComponentType[keyMatch as keyof typeof ComponentType];
+    }
+
+    const labelToKey: Record<string, keyof typeof ComponentType> = {
+      'fusto': 'FUSTO',
+      'gomma': 'GOMMA',
+      'rete': 'RETE',
+      'materasso': 'MATERASSO',
+      'tappezzeria': 'TAPPEZZERIA',
+      'piedini': 'PIEDINI',
+      'ferramenta': 'FERRAMENTA',
+      'varie': 'VARIE',
+      'imballo': 'IMBALLO',
+      'scatola': 'SCATOLA',
+      'tela marchiata': 'TELA_MARCHIATA',
+      'trasporto': 'TRASPORTO'
+    };
+
+    const labelKey = labelToKey[raw.toLowerCase()];
+    if (labelKey) {
+      return ComponentType[labelKey];
     }
 
     console.warn('Unable to parse component type:', typeString);
     return undefined;
   }
+
 
   deleteComponent(id: string): Observable<void> {
     return new Observable((observer) => {
@@ -196,16 +214,16 @@ export class ComponentService {
     const componentPromises = bulkData.variableData.map(variableData => {
       // Generate unique ID for each component
       const componentId = this.generateComponentId();
-      
+
       // Generate component name: Type + Supplier + Measure
       const typeName = this.getComponentTypeDisplayName(bulkData.fixedData.type);
       const supplierName = bulkData.fixedData.supplier?.name || '';
       const measure = variableData.measure?.trim() || '';
-      
+
       const componentName = [typeName, supplierName, measure]
         .filter(part => part)
         .join(' ');
-      
+
       // Create component with generated name - fix supplier null handling
       const component = new Component(
         componentId,
@@ -247,7 +265,7 @@ export class ComponentService {
       [ComponentType.TELA_MARCHIATA]: 'Tela Marchiata',
       [ComponentType.TRASPORTO]: 'Trasporto'
     };
-    
+
     return typeNames[type] || 'Sconosciuto';
   }
 
@@ -265,10 +283,10 @@ export class ComponentService {
         });
       });
 
-      const componentsToUpdate = components.filter(component => 
+      const componentsToUpdate = components.filter(component =>
         component.supplier?.id === supplierId
       );
-      
+
       if (componentsToUpdate.length === 0) {
         throw new Error('Nessun componente trovato per il fornitore specificato');
       }
@@ -276,7 +294,7 @@ export class ComponentService {
       const multiplier = 1 + (percentageChange / 100);
       const updatePromises = componentsToUpdate.map(component => {
         const newPrice = Math.round(component.price * multiplier * 100) / 100;
-        
+
         // Create updated component data using the same structure as updateComponent
         const updatedComponentData = {
           id: component.id,

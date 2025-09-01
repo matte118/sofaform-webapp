@@ -101,6 +101,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   dataLoaded = false;
   saving = false;
 
+  editingId: string | null = null;
+
   private refresh$ = new Subject<void>();
   refreshNeeded = false;
 
@@ -137,7 +139,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     selectedSupplier: null as Supplier | null,
     percentage: null as number | null
   };
-  
+
   filteredComponentsForPriceList: ComponentModel[] = [];
   displayConfirmPriceUpdate = false;
   savingPriceList = false;
@@ -289,10 +291,10 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.saving = true;
 
     const component = new ComponentModel(
-      this.isEditing ? this.components[this.editingIndex].id : '',
+      this.isEditing ? (this.editingId || '') : '',
       this.newComponent.name.trim(),
       this.newComponent.price ?? 0,
-      this.selectedSupplier || undefined, // Usa selectedSupplier direttamente
+      this.selectedSupplier || undefined,
       this.selectedComponentType !== null ? this.selectedComponentType : undefined,
       this.newComponent.measure
     );
@@ -451,21 +453,24 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     console.log('Component supplier:', component.supplier);
     console.log('Component type before editing:', component.type);
 
-    // Deep copy per evitare problemi di riferimento
+    this.editingIndex = index;
+    this.editingId = component.id;
+
     this.newComponent = new ComponentModel(
       component.id,
       component.name,
       component.price,
       component.supplier ? JSON.parse(JSON.stringify(component.supplier)) : undefined,
       component.type,
-      component.measure // Include measure in editing
+      component.measure
     );
 
-    // Imposta il supplier selezionato direttamente dal component
     this.selectedSupplier = component.supplier || null;
 
-    // Imposta il tipo di componente per il dropdown
-    this.selectedComponentType = component.type || null;
+    this.selectedComponentType = component.type !== undefined && component.type !== null
+      ? component.type
+      : null;
+
     console.log('Selected component type for editing:', this.selectedComponentType);
     console.log('Selected supplier for editing:', this.selectedSupplier);
     console.log('Component measure for editing:', this.newComponent.measure);
@@ -706,9 +711,11 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.selectedSupplier = null;
     this.selectedComponentType = null;
     this.editingIndex = -1;
+    this.editingId = null;
     this.formSubmitted = false;
     this.formValid = true;
   }
+
 
   private validateBulkForm(): boolean {
     // Controllo tipo e fornitore
@@ -789,14 +796,14 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       return false;
     }
 
-    // Check for duplicate name + measure combination
-    const duplicate = this.components.find(
-      (comp, idx) => {
-        const isSameName = comp.name.toLowerCase() === this.newComponent.name.trim().toLowerCase();
-        const isSameMeasure = (comp.measure || '').toLowerCase() === (this.newComponent.measure || '').toLowerCase();
-        return isSameName && isSameMeasure && idx !== this.editingIndex;
-      }
-    );
+    const duplicate = this.components.find(comp => {
+      const sameId = this.isEditing && comp.id === this.editingId;
+      if (sameId) return false;
+
+      const isSameName = comp.name.trim().toLowerCase() === this.newComponent.name.trim().toLowerCase();
+      const isSameMeasure = (comp.measure || '').trim().toLowerCase() === (this.newComponent.measure || '').trim().toLowerCase();
+      return isSameName && isSameMeasure;
+    });
 
     if (duplicate) {
       this.addError('Esiste già un componente con questo nome e misura', 'Errore di Validazione');
@@ -1005,7 +1012,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     if (!this.priceListData.selectedSupplier || this.priceListData.percentage === null) return;
 
     this.savingPriceList = true;
-    
+
     try {
       await this.componentService.updateComponentsPricesBySupplier(
         this.priceListData.selectedSupplier.id,
