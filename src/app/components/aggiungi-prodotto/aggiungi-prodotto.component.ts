@@ -23,7 +23,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { MessagesModule } from 'primeng/messages';
 import { MessageModule } from 'primeng/message';
 import { HttpClientModule } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
+import { forkJoin, interval, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { Variant, PricingMode } from '../../../models/variant.model';
@@ -38,6 +38,7 @@ import { VariantService } from '../../../services/variant.service';
 import { ComponentService } from '../../../services/component.service';
 import { SupplierService } from '../../../services/supplier.service';
 import { PhotoUploadService } from '../../../services/upload.service';
+import { AddProductDraft, AddProductDraftService } from '../../../services/add-product-draft.service';
 
 @NgComponent({
   selector: 'app-aggiungi-prodotto',
@@ -78,9 +79,9 @@ export class AggiungiProdottoComponent implements OnInit {
   ];
 
   pricingOptions: { label: string; value: PricingMode }[] = [
-  { label: 'Componenti',   value: 'components' as PricingMode },
-  { label: 'Custom', value: 'custom'     as PricingMode } // vedi nota sotto
-];
+    { label: 'Componenti', value: 'components' as PricingMode },
+    { label: 'Custom', value: 'custom' as PricingMode } // vedi nota sotto
+  ];
 
   // 1) Selezioni singole
   selectedFusto?: ComponentModel;
@@ -167,6 +168,9 @@ export class AggiungiProdottoComponent implements OnInit {
   // Component quantities map
   componentQuantities = new Map<string, number>();
 
+  private autosaveSub?: Subscription;
+  private lastSerialized = ''; // per evitare write inutili
+
   // Add a cache for component types
   private componentsByTypeCache = new Map<string, ComponentModel[]>();
 
@@ -185,6 +189,7 @@ export class AggiungiProdottoComponent implements OnInit {
     private uploadService: PhotoUploadService,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
+    private draftService: AddProductDraftService,
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
@@ -194,9 +199,20 @@ export class AggiungiProdottoComponent implements OnInit {
   ngOnInit() {
     if (this.isBrowser) {
       this.loadInitialData();
-      // Remove rivestimento service call
+
+      const draft = this.draftService.load();
+      if (draft) {
+        this.applyDraft(draft);
+      }
+
+      this.autosaveSub = interval(2000).subscribe(() => this.autosaveIfChanged());
     }
   }
+
+  ngOnDestroy(): void {
+    this.autosaveSub?.unsubscribe();
+  }
+
 
   private loadInitialData() {
     this.componentService.getComponents().subscribe(components => {
@@ -266,15 +282,15 @@ export class AggiungiProdottoComponent implements OnInit {
     }
 
     this.variantFormValid = true;
-    
+
     // Create variant with proper price setting
     const variant = new Variant(
-      '', 
-      this.newSofaProduct.id || '', 
-      this.newVariant.longName, 
+      '',
+      this.newSofaProduct.id || '',
+      this.newVariant.longName,
       0, // Initialize with 0, will be set correctly below
-      [], 
-      this.newVariant.seatsCount, 
+      [],
+      this.newVariant.seatsCount,
       this.newVariant.mattressWidth,
       undefined,
       this.selectedPricingMode,
@@ -295,7 +311,7 @@ export class AggiungiProdottoComponent implements OnInit {
     } else {
       this.variants.push(variant);
     }
-    
+
     this.resetVariantForm();
   }
 
@@ -308,7 +324,7 @@ export class AggiungiProdottoComponent implements OnInit {
   }
 
   deleteVariant(index: number): void {
-    this.confirmationService.confirm({ 
+    this.confirmationService.confirm({
       message: 'Sei sicuro di voler eliminare questa variante?',
       header: 'Conferma eliminazione',
       icon: 'pi pi-exclamation-triangle',
@@ -365,7 +381,7 @@ export class AggiungiProdottoComponent implements OnInit {
       // Updated validation: only require components for variants in component mode
       const componentsVariants = this.variants.filter(v => v.pricingMode === 'components');
       const allComponentsVariantsHaveComponents = componentsVariants.every(v => v.components.length > 0);
-      
+
       if (componentsVariants.length > 0 && !allComponentsVariantsHaveComponents) {
         this.messageService.add({
           severity: 'error',
@@ -397,7 +413,7 @@ export class AggiungiProdottoComponent implements OnInit {
 
   get canApplyComponents(): boolean {
     if (!this.selectedVariant || this.selectedVariant.pricingMode === 'custom') return false;
-    
+
     return !!this.selectedFusto ||
       !!this.selectedGomma ||
       !!this.selectedMaterasso ||
@@ -525,6 +541,7 @@ export class AggiungiProdottoComponent implements OnInit {
     });
     forkJoin(calls).subscribe(ids => {
       this.sofaProductService.updateProductVariants(productId, ids).subscribe(() => {
+        this.draftService.clear();
         this.router.navigate(['/prodotti']);
       });
     });
@@ -901,12 +918,7 @@ export class AggiungiProdottoComponent implements OnInit {
     );
   }
 
-  /**
-   * Verifica se è stato selezionato almeno un componente
-   * @returns true se è presente almeno un componente selezionato
-   */
   hasSelectedComponents(): boolean {
-    // Verifica che almeno un componente sia selezionato
     return !!(
       this.selectedFusto ||
       this.selectedGomma ||
@@ -923,12 +935,146 @@ export class AggiungiProdottoComponent implements OnInit {
     );
   }
 
-  /**
-   * Verifica se ci sono errori sui campi obbligatori dei componenti
-   * @returns un array con i nomi dei campi mancanti
-   * Ritorna un array con i campi mancanti se non è stato selezionato alcun componente
-   */
   getMissingRequiredComponents(): string[] {
     return this.hasSelectedComponents() ? [] : ['almeno un componente'];
+  }
+
+  private getDraftSnapshot(): AddProductDraft {
+    const selectedVariantIndex = this.selectedVariant
+      ? this.variants.findIndex(v => v === this.selectedVariant)
+      : null;
+
+    const id = (c: any | undefined) => c?.id ?? null;
+
+    return {
+      currentStep: this.currentStep,
+      newSofaProduct: {
+        id: this.newSofaProduct.id,
+        name: this.newSofaProduct.name,
+        description: this.newSofaProduct.description,
+        photoUrl: this.newSofaProduct.photoUrl,
+        seduta: this.newSofaProduct.seduta,
+        schienale: this.newSofaProduct.schienale,
+        meccanica: this.newSofaProduct.meccanica,
+        materasso: this.newSofaProduct.materasso
+      },
+      variants: this.variants.map(v => ({
+        id: v.id,
+        sofaId: v.sofaId,
+        longName: v.longName,
+        price: v.price,
+        seatsCount: v.seatsCount,
+        mattressWidth: v.mattressWidth,
+        pricingMode: v.pricingMode,
+        customPrice: v.customPrice,
+        components: (v.components || []).map((c: any) => c?.id ?? null)
+      })),
+      selections: {
+        selectedVariantIndex,
+        selectedFustoId: id(this.selectedFusto),
+        selectedGommaId: id(this.selectedGomma),
+        selectedReteId: id(this.selectedRete),
+        selectedMaterassoId: id(this.selectedMaterasso),
+        selectedImballoId: id(this.selectedImballo),
+        selectedScatolaId: id(this.selectedScatola),
+        selectedTelaMarchiataId: id(this.selectedTelaMarchiata),
+        selectedTrasportoId: id(this.selectedTrasporto),
+        selectedPiediniId: id(this.selectedPiedini),
+        piediniQty: this.piediniQty ?? null,
+        ferramentaIds: (this.ferramentaList || []).map(id),
+        varieIds: (this.varieList || []).map(id),
+        tappezzeriaIds: (this.tappezzeriaList || []).map(id),
+      },
+      ui: {
+        selectedPricingMode: this.selectedPricingMode,
+        customVariantPrice: this.customVariantPrice,
+        editingVariantIndex: this.editingVariantIndex
+      }
+    };
+  }
+
+  private applyDraft(d: AddProductDraft) {
+    this.currentStep = d.currentStep ?? 0;
+    this.newSofaProduct.name = d.newSofaProduct?.name ?? '';
+    this.newSofaProduct.description = d.newSofaProduct?.description ?? '';
+    this.newSofaProduct.photoUrl = d.newSofaProduct?.photoUrl ?? '';
+    this.newSofaProduct.seduta = d.newSofaProduct?.seduta ?? '';
+    this.newSofaProduct.schienale = d.newSofaProduct?.schienale ?? '';
+    this.newSofaProduct.meccanica = d.newSofaProduct?.meccanica ?? '';
+    this.newSofaProduct.materasso = d.newSofaProduct?.materasso ?? '';
+
+    this.variants = (d.variants || []).map(v => {
+      const variant = new Variant(
+        v.id ?? '',
+        v.sofaId ?? '',
+        v.longName ?? '',
+        v.price ?? 0,
+        [],
+        v.seatsCount,
+        v.mattressWidth,
+        undefined,
+        v.pricingMode ?? 'components',
+        v.customPrice
+      );
+
+      if (variant.pricingMode === 'custom' && typeof variant.customPrice === 'number') {
+        variant.price = variant.customPrice;
+      }
+      return variant;
+    });
+
+    this.selectedPricingMode = d.ui?.selectedPricingMode ?? 'components';
+    this.customVariantPrice = d.ui?.customVariantPrice ?? 0;
+    this.editingVariantIndex = d.ui?.editingVariantIndex ?? -1;
+
+    const mapById = (ids?: (string | null)[]) =>
+      (ids || [])
+        .map(x => this.availableComponents.find(c => c.id === x))
+        .filter(Boolean) as ComponentModel[];
+
+    const sel = (d.selections || {}) as AddProductDraft['selections'];
+    this.selectedVariant = (sel.selectedVariantIndex != null && sel.selectedVariantIndex >= 0)
+      ? this.variants[sel.selectedVariantIndex] ?? undefined
+      : undefined;
+
+    this.selectedFusto = this.availableComponents.find(c => c.id === sel.selectedFustoId);
+    this.selectedGomma = this.availableComponents.find(c => c.id === sel.selectedGommaId);
+    this.selectedRete = this.availableComponents.find(c => c.id === sel.selectedReteId);
+    this.selectedMaterasso = this.availableComponents.find(c => c.id === sel.selectedMaterassoId);
+    this.selectedImballo = this.availableComponents.find(c => c.id === sel.selectedImballoId);
+    this.selectedScatola = this.availableComponents.find(c => c.id === sel.selectedScatolaId);
+    this.selectedTelaMarchiata = this.availableComponents.find(c => c.id === sel.selectedTelaMarchiataId);
+    this.selectedTrasporto = this.availableComponents.find(c => c.id === sel.selectedTrasportoId);
+    this.selectedPiedini = this.availableComponents.find(c => c.id === sel.selectedPiediniId);
+    this.piediniQty = sel.piediniQty ?? null;
+
+    this.ferramentaList = mapById(sel.ferramentaIds);
+    this.varieList = mapById(sel.varieIds);
+    this.tappezzeriaList = mapById(sel.tappezzeriaIds);
+
+    d.variants?.forEach((v, idx) => {
+      const ids = (v.components || []).filter(Boolean) as string[];
+      if (ids.length) {
+        this.variants[idx].components = ids
+          .map(cid => this.availableComponents.find(c => c.id === cid))
+          .filter(Boolean) as ComponentModel[];
+
+        if (this.variants[idx].pricingMode === 'components') {
+          this.variants[idx].updatePrice();
+        }
+      }
+    });
+  }
+
+  private autosaveIfChanged() {
+    try {
+      const snapshot = this.getDraftSnapshot();
+      const serialized = JSON.stringify(snapshot);
+      if (serialized !== this.lastSerialized) {
+        this.draftService.save(snapshot);
+        this.lastSerialized = serialized;
+      }
+    } catch {
+    }
   }
 }
