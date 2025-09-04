@@ -349,6 +349,12 @@ export class HomeComponent implements OnInit {
     }
 
     this.showRivestimentoDialog = true;
+    
+    // Prevent body scroll when dialog is open
+    if (this.isBrowser) {
+      document.body.style.overflow = 'hidden';
+    }
+    
     this.cdr.detectChanges();
   }
 
@@ -592,6 +598,7 @@ export class HomeComponent implements OnInit {
     this.variantRivestimentiSelections = {};
     this.variantRivestimentiMeters = {};
     this.uniformMetersForVariant = {};
+    this.selectedVariantForRivestimento = undefined; // Reset selected variant
   }
 
   cancelMarkup() {
@@ -1160,6 +1167,11 @@ export class HomeComponent implements OnInit {
   onVariantComponentSelected(type: string, component: any): void { }
 
   onRivestimentoHide(): void {
+    // Restore body scroll when dialog is hidden
+    if (this.isBrowser) {
+      document.body.style.overflow = 'auto';
+    }
+    
     // Se abbiamo almeno un rivestimento con metri > 0, procediamo al dialog successivo
     if (this.canProceedRivestimenti()) {
       // NgZone per evitare errori di ChangeDetection fuori dal contesto Angular
@@ -1310,6 +1322,12 @@ export class HomeComponent implements OnInit {
   cancelRivestimento() {
     this.showRivestimentoDialog = false;
     this.resetListinoWizard();
+    
+    // Restore body scroll
+    if (this.isBrowser) {
+      document.body.style.overflow = 'auto';
+    }
+    
     this.cdr.detectChanges();
   }
 
