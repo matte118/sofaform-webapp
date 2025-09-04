@@ -328,13 +328,15 @@ export class AggiungiProdottoComponent implements OnInit {
       message: 'Sei sicuro di voler eliminare questa variante?',
       header: 'Conferma eliminazione',
       icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Conferma',
+      rejectLabel: 'Annulla',
+      acceptButtonStyleClass: 'p-button-primary',
+      rejectButtonStyleClass: 'p-button-danger',
       accept: () => {
         this.variants.splice(index, 1);
-        // Reset form if we were editing the deleted variant
         if (this.editingVariantIndex === index) {
           this.resetVariantForm();
         } else if (this.editingVariantIndex > index) {
-          // Adjust editing index if it was affected by the deletion
           this.editingVariantIndex--;
         }
       }
