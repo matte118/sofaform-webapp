@@ -1,0 +1,22 @@
+{
+  "listino": {
+    "techSpecs": {
+      "title": "Scheda Tecnica",
+      "characteristic": "Caratteristica",
+      "detail": "Dettaglio",
+      "seduta": "Seduta",
+      "schienale": "Schienale",
+      "meccanica": "Meccanica",
+      "materasso": "Materasso"
+    },
+    "pricing": {
+      "rivestimento": "Rivestimento",
+      "prezzo": "Prezzo",
+      "servizio": "Servizio",
+      "serviziAggiuntivi": "Servizi Aggiuntivi"
+    },
+    "messages": {
+      "noRivestimento": "Nessun rivestimento configurato per questa variante"
+    }
+  }
+}

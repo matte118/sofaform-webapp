@@ -5,6 +5,8 @@ import { SofaProduct } from '../models/sofa-product.model';
 import { Variant } from '../models/variant.model';
 import { Rivestimento } from '../models/rivestimento.model';
 import { ExtraMattress } from '../models/extra-mattress.model';
+import { TranslationService } from './translation.service';
+import { I18nService } from './i18n.service';
 
 // Inizializza il Virtual File System per i font
 (pdfMake as any).vfs = pdfFonts.vfs;
@@ -21,7 +23,10 @@ export class PdfGenerationService {
   private markupPerc = 0;
   private deliveryCost = 0;
 
-  constructor() { }
+  constructor(
+    private translationService: TranslationService,
+    private i18nService: I18nService
+  ) { }
 
   /**
    * Configura i dati da usare nel PDF con rivestimenti organizzati per variante
@@ -86,95 +91,83 @@ export class PdfGenerationService {
   /**
    * Genera e scarica il PDF sfruttando pdfmake
    */
-  async generateListinoPdf(productName: string) {
+  /**
+   * Genera e scarica il PDF sfruttando pdfmake con supporto per traduzioni.
+   * Se languageCode = 'it' usa i testi originali (identity mapping).
+   */
+  async generateListinoPdf(productName: string, languageCode: string = 'it') {
+    // 1) Get static translations directly (no HTTP requests, no async)
+    const staticTranslations = this.i18nService.getListinoTranslations(languageCode);
+    
+    // 2) Collect dynamic texts to translate (excluding static labels)
+    const textsToTranslate: string[] = [];
+
+    // Add dynamic content only (not static labels)
+    if (this.productData.name) textsToTranslate.push(this.productData.name);
+    if (this.productData.description) textsToTranslate.push(this.productData.description);
+    
+    // Add actual content values (not labels) for technical specs
+    if (this.productData.seduta) textsToTranslate.push(this.productData.seduta);
+    if (this.productData.schienale) textsToTranslate.push(this.productData.schienale);
+    if (this.productData.meccanica) textsToTranslate.push(this.productData.meccanica);
+    if (this.productData.materasso) textsToTranslate.push(this.productData.materasso);
+
+    this.variantsData.forEach(v => { if (v.longName) textsToTranslate.push(v.longName); });
+
+    Object.values(this.rivestimentiByVariant).forEach(rivs => {
+      rivs.forEach(r => { if (r.rivestimento.name) textsToTranslate.push(r.rivestimento.name); });
+    });
+
+    this.extrasData.forEach(extra => { if (extra.name) textsToTranslate.push(extra.name); });
+
+    // 3) Get dynamic translations via ChatGPT (only if not Italian and has texts to translate)
+    let dynamicTranslations: { [key: string]: string } = {};
+    if (languageCode !== 'it' && textsToTranslate.length > 0) {
+      try {
+        dynamicTranslations = await this.translationService.translateTexts(textsToTranslate, languageCode).toPromise() || {};
+      } catch (error) {
+        console.warn('Dynamic translation failed, using original texts:', error);
+        textsToTranslate.forEach(t => dynamicTranslations[t] = t);
+      }
+    } else {
+      // For Italian or empty texts, use identity mapping
+      textsToTranslate.forEach(t => dynamicTranslations[t] = t);
+    }
+    
+    // 4) Combined translation function: static from JSON, dynamic from ChatGPT
+    const t = (text: string) => {
+      // Check if it's a static translation first (from JSON)
+      if (staticTranslations[text] !== undefined) {
+        return staticTranslations[text];
+      }
+      // Otherwise use dynamic translation (from ChatGPT)
+      return dynamicTranslations[text] || text;
+    };
+
+    // 3) DocDefinition (header/footer dinamici, stili, contenuti)
     const docDefinition: any = {
       pageSize: 'A4',
       pageMargins: [35, 35, 35, 35],
-      defaultStyle: {
-        fontSize: 10,
-        lineHeight: 1.3,
-        color: '#2d3748'
-      },
+      defaultStyle: { fontSize: 10, lineHeight: 1.3, color: '#2d3748' },
       styles: {
-        title: {
-          fontSize: 24,
-          bold: true,
-          color: '#1a365d',
-          margin: [0, 10, 0, 15],
-          alignment: 'center'
-        },
-        productName: {
-          fontSize: 18,
-          italics: true,
-          color: '#2d3748',
-          margin: [0, 15, 0, 15],
-          alignment: 'center'
-        },
-        description: {
-          fontSize: 11,
-          color: '#718096',
-          margin: [0, 0, 0, 20],
-          alignment: 'center',
-          italics: true,
-          lineHeight: 1.4
-        },
-        sectionHeader: {
-          fontSize: 14,
-          bold: true,
-          color: '#1a365d',
-          margin: [0, 20, 0, 12],
-          fillColor: '#f7fafc',
-          padding: [12, 8, 12, 8]
-        },
-        variantName: {
-          fontSize: 12,
-          bold: true,
-          color: '#1a365d',
-          margin: [0, 15, 0, 5]
-        },
-        tableHeader: {
-          bold: true,
-          fillColor: '#4299e1',
-          color: '#ffffff',
-          fontSize: 10,
-          margin: [8, 6, 8, 6]
-        },
-        tableCell: {
-          margin: [8, 4, 8, 4],
-          fontSize: 9,
-          lineHeight: 1.2
-        },
-        small: {
-          fontSize: 8,
-          color: '#a0aec0'
-        },
-        normal: {
-          fontSize: 10,
-          color: '#2d3748'
-        },
-        bold: {
-          fontSize: 10,
-          bold: true,
-          color: '#2d3748'
-        },
-        italic: {
-          fontSize: 10,
-          italics: true,
-          color: '#4a5568'
-        }
+        title: { fontSize: 24, bold: true, color: '#1a365d', margin: [0, 10, 0, 15], alignment: 'center' },
+        productName: { fontSize: 18, italics: true, color: '#2d3748', margin: [0, 15, 0, 15], alignment: 'center' },
+        description: { fontSize: 11, color: '#718096', margin: [0, 0, 0, 20], alignment: 'center', italics: true, lineHeight: 1.4 },
+        sectionHeader: { fontSize: 14, bold: true, color: '#1a365d', margin: [0, 20, 0, 12], fillColor: '#f7fafc', padding: [12, 8, 12, 8] },
+        variantName: { fontSize: 12, bold: true, color: '#1a365d', margin: [0, 15, 0, 5] },
+        tableHeader: { bold: true, fillColor: '#4299e1', color: '#ffffff', fontSize: 10, margin: [8, 6, 8, 6] },
+        tableCell: { margin: [8, 4, 8, 4], fontSize: 9, lineHeight: 1.2 },
+        small: { fontSize: 8, color: '#a0aec0' },
+        normal: { fontSize: 10, color: '#2d3748' },
+        bold: { fontSize: 10, bold: true, color: '#2d3748' },
+        italic: { fontSize: 10, italics: true, color: '#4a5568' }
       },
       header: (currentPage: number) => {
         if (currentPage > 1) {
           return {
             columns: [
               { text: '', width: '*' },
-              {
-                text: this.productData.name,
-                style: 'small',
-                alignment: 'center',
-                margin: [0, 12, 0, 0],
-                color: '#718096'
-              },
+              { text: t(this.productData.name), style: 'small', alignment: 'center', margin: [0, 12, 0, 0], color: '#718096' },
               { text: '', width: '*' }
             ]
           };
@@ -182,55 +175,32 @@ export class PdfGenerationService {
         return {};
       },
       footer: (currentPage: number, pageCount: number) => ({
-        columns: [
-          {
-            text: `${currentPage} / ${pageCount}`,
-            style: 'small',
-            alignment: 'center',
-            margin: [0, 12, 0, 0]
-          }
-        ]
+        columns: [{ text: `${currentPage} / ${pageCount}`, style: 'small', alignment: 'center', margin: [0, 12, 0, 0] }]
       }),
       content: []
     };
 
-    // Logo centrato
+    // Logo
     const logoBase64 = await this.getLogoBase64();
-    docDefinition.content.push({
-      image: logoBase64,
-      width: 300,
-      alignment: 'center',
-      margin: [0, 0, 0, 5]
-    });
+    docDefinition.content.push({ image: logoBase64, width: 300, alignment: 'center', margin: [0, 0, 0, 5] });
 
-    // Nome prodotto
-    docDefinition.content.push({
-      text: this.productData.name,
-      style: 'productName'
-    });
+    // Nome prodotto (tradotto)
+    docDefinition.content.push({ text: t(this.productData.name), style: 'productName' });
 
-    // Immagine prodotto se disponibile
+    // Immagine prodotto
     if (this.productData.photoUrl) {
       const imageBase64 = await this.urlToBase64(this.productData.photoUrl);
       if (imageBase64) {
-        docDefinition.content.push({
-          image: imageBase64,
-          width: 220, // Aumentato da 180 a 220
-          alignment: 'center',
-          margin: [0, 0, 0, 20]
-        });
+        docDefinition.content.push({ image: imageBase64, width: 220, alignment: 'center', margin: [0, 0, 0, 20] });
       }
     }
 
-    // Descrizione prodotto
+    // Descrizione (tradotta)
     if (this.productData.description) {
-      docDefinition.content.push({
-        text: this.productData.description,
-        style: 'description'
-      });
+      docDefinition.content.push({ text: t(this.productData.description), style: 'description' });
     }
 
-    // Scheda Tecnica compatta
+    // Scheda tecnica (con traduzioni statiche per le etichette)
     const techSpecs = [
       ['Seduta', this.productData.seduta || 'N/D'],
       ['Schienale', this.productData.schienale || 'N/D'],
@@ -240,62 +210,38 @@ export class PdfGenerationService {
 
     if (techSpecs.length > 0) {
       docDefinition.content.push(
-        { text: 'Scheda Tecnica', style: 'sectionHeader' },
+        { text: t('Scheda Tecnica'), style: 'sectionHeader' },
         {
           table: {
             widths: ['30%', '70%'],
             body: [
-              [
-                { text: 'Caratteristica', style: 'tableHeader' },
-                { text: 'Dettaglio', style: 'tableHeader' }
-              ],
+              [{ text: t('Caratteristica'), style: 'tableHeader' }, { text: t('Dettaglio'), style: 'tableHeader' }],
               ...techSpecs.map((spec, index) => [
-                {
-                  text: spec[0],
-                  style: index % 2 === 0 ? 'bold' : 'normal',
-                  fillColor: index % 2 === 0 ? '#f8fafc' : '#ffffff'
-                },
-                {
-                  text: spec[1],
-                  style: index % 2 === 0 ? 'italic' : 'normal',
-                  fillColor: index % 2 === 0 ? '#f8fafc' : '#ffffff'
-                }
+                // Use static translation for technical labels (spec[0])
+                { text: t(spec[0]), style: index % 2 === 0 ? 'bold' : 'normal', fillColor: index % 2 === 0 ? '#f8fafc' : '#ffffff' },
+                // Use dynamic translation for content values (spec[1])
+                { text: t(spec[1]), style: index % 2 === 0 ? 'italic' : 'normal', fillColor: index % 2 === 0 ? '#f8fafc' : '#ffffff' }
               ])
             ]
           },
           layout: {
-            hLineWidth: () => 0.5,
-            vLineWidth: () => 0.5,
-            hLineColor: () => '#e2e8f0',
-            vLineColor: () => '#e2e8f0',
-            paddingLeft: () => 8,
-            paddingRight: () => 8,
-            paddingTop: () => 4,
-            paddingBottom: () => 4
+            hLineWidth: () => 0.5, vLineWidth: () => 0.5,
+            hLineColor: () => '#e2e8f0', vLineColor: () => '#e2e8f0',
+            paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 4, paddingBottom: () => 4
           },
           margin: [0, 0, 0, 25]
         }
       );
     }
 
-    // Varianti con rivestimenti specifici per ogni variante
-    this.variantsData.forEach((variant, index) => {
-      // Nome variante sopra la tabella
-      docDefinition.content.push({
-        text: variant.longName,
-        style: 'variantName'
-      });
+    // Varianti + rivestimenti (tradotti)
+    this.variantsData.forEach((variant) => {
+      docDefinition.content.push({ text: t(variant.longName), style: 'variantName' });
 
-      // Ottieni i rivestimenti specifici per questa variante
       const variantRivestimenti = this.rivestimentiByVariant[variant.id] || [];
-
       if (variantRivestimenti.length > 0) {
-        // Tabella rivestimenti per questa specifica variante
         const rivestimentiBody: any[] = [
-          [
-            { text: 'Rivestimento', style: 'tableHeader' },
-            { text: 'Prezzo', style: 'tableHeader', alignment: 'right' }
-          ]
+          [{ text: t('Rivestimento'), style: 'tableHeader' }, { text: t('Prezzo'), style: 'tableHeader', alignment: 'right' }]
         ];
 
         variantRivestimenti.forEach((r, idx) => {
@@ -304,42 +250,23 @@ export class PdfGenerationService {
           const finalPrice = this.applyMarkup(variantTotalPrice, this.markupPerc);
 
           rivestimentiBody.push([
-            {
-              text: r.rivestimento.name,
-              style: 'bold',
-              fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
-            },
-            {
-              text: `€ ${finalPrice.toFixed(2)}`,
-              style: idx % 2 === 0 ? 'bold' : 'normal',
-              alignment: 'right',
-              color: '#38a169',
-              fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
-            }
+            { text: t(r.rivestimento.name), style: 'bold', fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff' },
+            { text: `€ ${finalPrice.toFixed(2)}`, style: idx % 2 === 0 ? 'bold' : 'normal', alignment: 'right', color: '#38a169', fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff' }
           ]);
         });
 
         docDefinition.content.push({
-          table: {
-            widths: ['70%', '30%'],
-            body: rivestimentiBody
-          },
+          table: { widths: ['70%', '30%'], body: rivestimentiBody },
           layout: {
-            hLineWidth: () => 0.5,
-            vLineWidth: () => 0.5,
-            hLineColor: () => '#e2e8f0',
-            vLineColor: () => '#e2e8f0',
-            paddingLeft: () => 8,
-            paddingRight: () => 8,
-            paddingTop: () => 3,
-            paddingBottom: () => 3
+            hLineWidth: () => 0.5, vLineWidth: () => 0.5,
+            hLineColor: () => '#e2e8f0', vLineColor: () => '#e2e8f0',
+            paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3
           },
           margin: [0, 0, 0, 8]
         });
       } else {
-        // Se non ci sono rivestimenti per questa variante, mostra un messaggio
         docDefinition.content.push({
-          text: 'Nessun rivestimento configurato per questa variante',
+          text: t('Nessun rivestimento configurato per questa variante'),
           style: 'italic',
           color: '#718096',
           margin: [0, 0, 0, 8]
@@ -347,85 +274,52 @@ export class PdfGenerationService {
       }
     });
 
-    // Sezione finale: Materassi Extra
+    // Servizi aggiuntivi (tradotti)
     const hasExtras = this.extrasData.length > 0;
     const hasDelivery = this.deliveryCost > 0;
 
     if (hasExtras || hasDelivery) {
-      docDefinition.content.push({
-        text: 'Servizi Aggiuntivi',
-        style: 'sectionHeader'
-      });
+      docDefinition.content.push({ text: t('Servizi Aggiuntivi'), style: 'sectionHeader' });
 
       const servicesBody: any[] = [
-        [
-          { text: 'Servizio', style: 'tableHeader' },
-          { text: 'Prezzo', style: 'tableHeader', alignment: 'right' }
-        ]
+        [{ text: t('Servizio'), style: 'tableHeader' }, { text: t('Prezzo'), style: 'tableHeader', alignment: 'right' }]
       ];
 
-      // Aggiungi materassi extra
       this.extrasData.forEach((extra, idx) => {
         servicesBody.push([
-          {
-            text: extra.name,
-            style: idx % 2 === 0 ? 'bold' : 'italic',
-            fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
-          },
-          {
-            text: `€ ${extra.price.toFixed(2)}`,
-            style: idx % 2 === 0 ? 'bold' : 'normal',
-            alignment: 'right',
-            color: '#38a169',
-            fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff'
-          }
+          { text: t(extra.name), style: idx % 2 === 0 ? 'bold' : 'italic', fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff' },
+          { text: `€ ${extra.price.toFixed(2)}`, style: idx % 2 === 0 ? 'bold' : 'normal', alignment: 'right', color: '#38a169', fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff' }
         ]);
       });
 
       docDefinition.content.push({
-        table: {
-          widths: ['70%', '30%'],
-          body: servicesBody
-        },
+        table: { widths: ['70%', '30%'], body: servicesBody },
         layout: {
-          hLineWidth: () => 0.5,
-          vLineWidth: () => 0.5,
-          hLineColor: () => '#e2e8f0',
-          vLineColor: () => '#e2e8f0',
-          paddingLeft: () => 8,
-          paddingRight: () => 8,
-          paddingTop: () => 3,
-          paddingBottom: () => 3
+          hLineWidth: () => 0.5, vLineWidth: () => 0.5,
+          hLineColor: () => '#e2e8f0', vLineColor: () => '#e2e8f0',
+          paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3
         },
         margin: [0, 0, 0, 20]
       });
     }
 
-    // Footer minimalista
+    // Footer minimal
     docDefinition.content.push({
-      canvas: [
-        {
-          type: 'rect',
-          x: 0,
-          y: 0,
-          w: 515,
-          h: 1,
-          color: '#4299e1'
-        }
-      ],
+      canvas: [{ type: 'rect', x: 0, y: 0, w: 515, h: 1, color: '#4299e1' }],
       margin: [0, 15, 0, 0]
     });
 
-    // Genera e scarica il PDF
-    const filename = this.getFilename(productName);
+    // 4) Download
+    const filename = this.getFilename(productName, languageCode);
     pdfMake.createPdf(docDefinition).download(filename);
   }
+
 
   private sumRivestimenti(): number {
     // Calculate total from rivestimentiByVariant structure
     let total = 0;
     Object.values(this.rivestimentiByVariant).forEach((variantRivestimenti: { rivestimento: Rivestimento; metri: number }[]) => {
-      total += variantRivestimenti.reduce((sum: number, r: { rivestimento: Rivestimento; metri: number }) => 
+      total += variantRivestimenti.reduce((sum: number, r: { rivestimento: Rivestimento; metri: number }) =>
         sum + (r.rivestimento.mtPrice * r.metri), 0);
     });
     return total;
@@ -436,9 +330,10 @@ export class PdfGenerationService {
     return factor > 0 ? amount / factor : amount;
   }
 
-  getFilename(productName: string): string {
+  getFilename(productName: string, languageCode: string = 'it'): string {
     const timestamp = new Date().toISOString().slice(0, 10);
     const cleanName = productName.replace(/[^a-zA-Z0-9_-]/g, '_');
-    return `Listino_${cleanName}_${timestamp}.pdf`;
+    const langSuffix = languageCode !== 'it' ? `_${languageCode.toUpperCase()}` : '';
+    return `Listino_${cleanName}${langSuffix}_${timestamp}.pdf`;
   }
 }

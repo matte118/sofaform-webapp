@@ -1846,3 +1846,52 @@
   gap: 1rem !important;
   padding: 0.5rem 1.5rem !important;
 }
+
+.language-dropdown {
+  .p-dropdown-panel {
+    .p-dropdown-items {
+      .p-dropdown-item {
+        padding: 8px 12px;
+        
+        &:hover {
+          background-color: #f8f9fa;
+        }
+      }
+    }
+  }
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .language-flag {
+    font-size: 1.2em;
+    min-width: 24px;
+  }
+  
+  .language-name {
+    font-weight: 500;
+  }
+}
+
+.language-info {
+  color: #6c757d;
+  font-style: italic;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  
+  .pi-info-circle {
+    font-size: 0.8em;
+  }
+}
+
+:host ::ng-deep .p-dialog .p-dialog-content {
+  overflow: visible !important;
+}
+:host ::ng-deep .p-dropdown-panel {
+  z-index: 12000 !important;
+}

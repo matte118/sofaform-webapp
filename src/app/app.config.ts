@@ -8,6 +8,7 @@ import { provideAuth, getAuth } from '@angular/fire/auth';
 import { provideDatabase, getDatabase } from '@angular/fire/database';
 import { provideStorage, getStorage } from '@angular/fire/storage';
 import { provideFunctions, getFunctions } from '@angular/fire/functions';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { routes } from './app.routes';
 import { environment } from '../environments/environments';
 
@@ -30,5 +31,8 @@ export const appConfig: ApplicationConfig = {
 
     // Animations e PrimeNG
     importProvidersFrom(BrowserAnimationsModule, PanelMenuModule),
+
+    // HttpClient
+    provideHttpClient(withInterceptorsFromDi()),
   ],
 };

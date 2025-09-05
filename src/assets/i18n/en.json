@@ -1,0 +1,22 @@
+{
+  "listino": {
+    "techSpecs": {
+      "title": "Technical Specifications",
+      "characteristic": "Feature",
+      "detail": "Detail",
+      "seduta": "Seat",
+      "schienale": "Backrest",
+      "meccanica": "Mechanism",
+      "materasso": "Mattress"
+    },
+    "pricing": {
+      "rivestimento": "Upholstery",
+      "prezzo": "Price",
+      "servizio": "Service",
+      "serviziAggiuntivi": "Additional Services"
+    },
+    "messages": {
+      "noRivestimento": "No upholstery configured for this variant"
+    }
+  }
+}

@@ -44,6 +44,7 @@ import { Component as ComponentModel } from '../../../models/component.model';
 import { ComponentService } from '../../../services/component.service';
 import { ExtraMattress } from '../../../models/extra-mattress.model';
 import { PdfGenerationService } from '../../../services/pdf-generation.service';
+import { TranslationService, LanguageOption } from '../../../services/translation.service';
 import { firstValueFrom } from 'rxjs';
 
 interface GroupedComponent {
@@ -98,6 +99,11 @@ export class HomeComponent implements OnInit {
   expandedVariants: Set<string> = new Set();
   productImages: Map<string, string> = new Map();
   imageLoadErrors: Set<string> = new Set();
+
+  // Translation
+  availableLanguages: LanguageOption[] = [];
+  selectedLanguage: LanguageOption = { code: 'it', name: 'Italiano', flag: '🇮🇹' };
+  isTranslating = false;
 
   // Dialog states
   showMarkupDialog = false;
@@ -194,7 +200,8 @@ export class HomeComponent implements OnInit {
     @Inject(PLATFORM_ID) platformId: Object,
     private componentService: ComponentService,
     private zone: NgZone,
-    private pdfService: PdfGenerationService
+    private pdfService: PdfGenerationService,
+    private translationService: TranslationService
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
@@ -206,6 +213,7 @@ export class HomeComponent implements OnInit {
       this.loadComponentTypes();
       this.loadAvailableComponents();
       this.loadRivestimentiList();
+      this.availableLanguages = this.translationService.getAvailableLanguages();
     }
   }
 
@@ -349,12 +357,12 @@ export class HomeComponent implements OnInit {
     }
 
     this.showRivestimentoDialog = true;
-    
+
     // Prevent body scroll when dialog is open
     if (this.isBrowser) {
       document.body.style.overflow = 'hidden';
     }
-    
+
     this.cdr.detectChanges();
   }
 
@@ -473,7 +481,6 @@ export class HomeComponent implements OnInit {
           }
         });
 
-        // Save to database
         if (variantRivestimentiData.length > 0) {
           await this.variantService.saveVariantRivestimenti(variantId, variantRivestimentiData);
         }
@@ -489,14 +496,14 @@ export class HomeComponent implements OnInit {
 
       await firstValueFrom(this.sofaProductService.updateSofaProduct(updatedProduct.id, updatedProduct));
 
-      // Generate PDF with rivestimenti organized by variant
+      // Generate PDF with translation if needed
       this.showPdfTemplate = true;
       this.cdr.detectChanges();
       await new Promise(res => setTimeout(res, 100));
 
       // Prepare rivestimenti data organized by variant for PDF
       const rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] } = {};
-      
+
       Object.keys(this.variantRivestimentiSelections).forEach(variantId => {
         const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
         const variantRivestimentiData: { rivestimento: Rivestimento; metri: number }[] = [];
@@ -513,6 +520,7 @@ export class HomeComponent implements OnInit {
         }
       });
 
+      // Set data and generate PDF with selected language
       this.pdfService.setListinoData(
         updatedProduct,
         this.getProductVariants(updatedProduct.id),
@@ -522,7 +530,7 @@ export class HomeComponent implements OnInit {
         this.deliveryPriceListino
       );
 
-      await this.pdfService.generateListinoPdf(updatedProduct.name);
+      await this.pdfService.generateListinoPdf(updatedProduct.name, this.selectedLanguage.code);
       this.showPdfTemplate = false;
       this.cdr.detectChanges();
 
@@ -1171,7 +1179,7 @@ export class HomeComponent implements OnInit {
     if (this.isBrowser) {
       document.body.style.overflow = 'auto';
     }
-    
+
     // Se abbiamo almeno un rivestimento con metri > 0, procediamo al dialog successivo
     if (this.canProceedRivestimenti()) {
       // NgZone per evitare errori di ChangeDetection fuori dal contesto Angular
@@ -1216,7 +1224,7 @@ export class HomeComponent implements OnInit {
     if (!variant.components || variant.components.length === 0) {
       return [];
     }
-    
+
     const map = new Map<string, GroupedComponent>();
     variant.components.forEach(c => {
       const key = `${c.id}-${c.name}`;
@@ -1236,7 +1244,7 @@ export class HomeComponent implements OnInit {
     if (!variant.components || variant.components.length === 0) {
       return [];
     }
-    
+
     const groups: EditGroupedComponent[] = [];
     variant.components.forEach((comp, idx) => {
       const found = groups.find(g => this.areComponentsEqual(g.component, comp));
@@ -1322,12 +1330,12 @@ export class HomeComponent implements OnInit {
   cancelRivestimento() {
     this.showRivestimentoDialog = false;
     this.resetListinoWizard();
-    
+
     // Restore body scroll
     if (this.isBrowser) {
       document.body.style.overflow = 'auto';
     }
-    
+
     this.cdr.detectChanges();
   }
 

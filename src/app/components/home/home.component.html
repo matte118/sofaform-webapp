@@ -303,22 +303,89 @@
   </p-dialog>
 
   <!-- Dialog Configura Ricarico -->
-  <p-dialog appendTo="body" [(visible)]="showMarkupDialog" header="Configura Ricarico" [modal]="true" [closable]="false"
-    [baseZIndex]="10000" [draggable]="false" [style]="{ width: '800px', maxHeight: '90vh' }" [resizable]="false"
-    (onHide)="cancelMarkup()" [dismissableMask]="false" [closeOnEscape]="false">
-    <div class="p-fluid">
-      <div class="field">
-        <label for="markup">Percentuale di ricarico:</label>
-        <p-inputNumber id="markup" [(ngModel)]="markupPercentage" [min]="0" [max]="1000" suffix="%"
-          placeholder="Inserisci la percentuale"></p-inputNumber>
-      </div>
+<p-dialog
+  appendTo="body"
+  [(visible)]="showMarkupDialog"
+  header="Configura Ricarico e Lingua"
+  [modal]="true"
+  [closable]="false"
+  [baseZIndex]="11000"
+  [draggable]="false"
+  [style]="{ width: '800px', maxHeight: '90vh' }"
+  [contentStyle]="{ overflow: 'visible', paddingBottom: '4.5rem' }"
+  [resizable]="false"
+  (onHide)="cancelMarkup()"
+  [dismissableMask]="false"
+  [closeOnEscape]="false"
+>
+  <div class="p-fluid">
+    <div class="field">
+      <label for="markup">Percentuale di ricarico:</label>
+      <p-inputNumber
+        id="markup"
+        [(ngModel)]="markupPercentage"
+        [min]="0"
+        [max]="1000"
+        suffix="%"
+        placeholder="Inserisci la percentuale"
+      ></p-inputNumber>
     </div>
 
-    <ng-template pTemplate="footer">
-      <p-button type="button" label="Annulla" styleClass="btn-dialog-no" (click)="cancelMarkup()"></p-button>
-      <p-button type="button" label="Genera PDF" styleClass="btn-dialog-yes" (click)="generateWithMarkup()"></p-button>
-    </ng-template>
-  </p-dialog>
+    <!-- Selezione Lingua -->
+    <div class="field">
+      <label for="languageSelect">Lingua del listino:</label>
+      <p-dropdown
+        id="languageSelect"
+        [options]="availableLanguages"
+        [(ngModel)]="selectedLanguage"
+        optionLabel="name"
+        placeholder="Seleziona lingua"
+        [style]="{ width: '100%' }"
+        styleClass="language-dropdown"
+        appendTo="body"
+        [autoZIndex]="true"
+        [baseZIndex]="12000"
+        [panelStyle]="{ 'max-height': '40vh', 'overflow': 'auto' }"
+      >
+        <ng-template let-language pTemplate="item">
+          <div class="language-option">
+            <span class="language-name">{{ language.name }}</span>
+          </div>
+        </ng-template>
+
+        <ng-template let-selectedLanguage pTemplate="selectedItem">
+          <div class="language-option" *ngIf="selectedLanguage">
+            <span class="language-name">{{ selectedLanguage.name }}</span>
+          </div>
+        </ng-template>
+      </p-dropdown>
+
+      <small class="language-info">
+        <i class="pi pi-info-circle"></i>
+        Il listino sarà tradotto automaticamente nella lingua selezionata
+      </small>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      type="button"
+      label="Annulla"
+      styleClass="btn-dialog-no"
+      (click)="cancelMarkup()"
+      [disabled]="isTranslating"
+    ></p-button>
+    <p-button
+      type="button"
+      label="Genera PDF"
+      styleClass="btn-dialog-yes"
+      (click)="generateWithMarkup()"
+      [loading]="isTranslating"
+      [disabled]="isTranslating"
+    ></p-button>
+  </ng-template>
+</p-dialog>
+
 
   <!-- Dialog Modifica Prodotto -->
   <p-dialog [(visible)]="showEditProductDialog" [header]="editProductDialogTitle" [modal]="true" [closable]="false"

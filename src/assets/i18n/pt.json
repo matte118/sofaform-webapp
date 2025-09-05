@@ -1,0 +1,22 @@
+{
+  "listino": {
+    "techSpecs": {
+      "title": "Especificações Técnicas",
+      "characteristic": "Característica",
+      "detail": "Detalhe",
+      "seduta": "Assento",
+      "schienale": "Encosto",
+      "meccanica": "Mecanismo",
+      "materasso": "Colchão"
+    },
+    "pricing": {
+      "rivestimento": "Revestimento",
+      "prezzo": "Preço",
+      "servizio": "Serviço",
+      "serviziAggiuntivi": "Serviços Adicionais"
+    },
+    "messages": {
+      "noRivestimento": "Nenhum revestimento configurado para esta variante"
+    }
+  }
+}
