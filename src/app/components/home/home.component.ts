@@ -153,7 +153,9 @@ export class HomeComponent implements OnInit {
   // Image handling
   tempImageFile?: File;
   tempImageUrl?: string;
+  tempImagePreview?: string;
   imageRemoved = false;
+  imageChanged = false;
   isUploadMode = false;
   uploadingNewImage = false;
   uploadProgress = 0;
@@ -746,23 +748,55 @@ export class HomeComponent implements OnInit {
   }
 
   removeProductImage(): void {
+    console.log('removeProductImage called');
     this.confirmationService.confirm({
       message: 'Sei sicuro di voler rimuovere l\'immagine del prodotto?',
       header: 'Conferma rimozione',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
+        console.log('Image removal confirmed');
         this.imageRemoved = true;
         this.tempImageFile = undefined;
         this.tempImageUrl = undefined;
         if (this.editingProduct) this.editingProduct.photoUrl = undefined;
         this.isUploadMode = false;
         this.cdr.detectChanges();
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Immagine rimossa',
+          detail: 'Immagine rimossa (modifiche non salvate)'
+        });
       }
     });
   }
 
   triggerFileInput(): void {
-    this.hiddenFileInput?.nativeElement.click();
+    console.log('triggerFileInput called');
+    console.log('hiddenFileInput:', this.hiddenFileInput);
+
+    if (this.hiddenFileInput?.nativeElement) {
+      console.log('Clicking file input');
+      this.hiddenFileInput.nativeElement.click();
+    } else {
+      console.log('hiddenFileInput not found, creating manual input');
+      // Fallback: create file input manually
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.style.display = 'none';
+
+      fileInput.addEventListener('change', (event: any) => {
+        const file = event.target.files[0];
+        if (file) {
+          this.onFileSelected(event);
+        }
+      });
+
+      document.body.appendChild(fileInput);
+      fileInput.click();
+      document.body.removeChild(fileInput);
+    }
   }
 
   onFileSelected(event: any): void {

@@ -1376,13 +1376,26 @@
           gap: 1rem;
           opacity: 0;
           transition: opacity 0.3s ease;
+          pointer-events: auto;
 
           .image-edit-btn,
           .image-delete-btn {
             width: 3rem;
             height: 3rem;
-            background: white;
+            border-radius: 50%;
             border: 2px solid white;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            pointer-events: auto;
+            z-index: 100;
+
+            i {
+              font-size: 1.2rem;
+            }
 
             &.image-edit-btn {
               color: #4299e1;
@@ -1390,6 +1403,7 @@
               &:hover {
                 background: #4299e1;
                 color: white;
+                transform: scale(1.1);
               }
             }
 
@@ -1399,7 +1413,12 @@
               &:hover {
                 background: #e53e3e;
                 color: white;
+                transform: scale(1.1);
               }
+            }
+
+            &:active {
+              transform: scale(0.95);
             }
           }
         }
