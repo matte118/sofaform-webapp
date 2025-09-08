@@ -34,6 +34,7 @@ import { ComponentService } from '../../../services/component.service';
 import { SupplierService } from '../../../services/supplier.service';
 import { VariantService } from '../../../services/variant.service';
 import { SofaProductService } from '../../../services/sofa-product.service';
+import { Variant } from '../../../models/variant.model';
 
 import { forkJoin, of, Subject } from 'rxjs';
 import { finalize, tap, catchError } from 'rxjs/operators';
@@ -1014,6 +1015,9 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.savingPriceList = true;
 
     try {
+      // Get the component IDs that will be updated
+      const updatedComponentIds = this.filteredComponentsForPriceList.map(c => c.id);
+
       await this.componentService.updateComponentsPricesBySupplier(
         this.priceListData.selectedSupplier.id,
         this.priceListData.percentage
@@ -1030,10 +1034,13 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       this.rebuildComponentsView();
       this.updateFilteredComponentsForPriceList();
 
+      // Update all variants that use these components
+      await this.updateVariantPricesForComponents(updatedComponentIds);
+
       this.messageService.add({
         severity: 'success',
         summary: 'Successo',
-        detail: `Prezzi aggiornati per ${this.filteredComponentsForPriceList.length} componenti`
+        detail: `Prezzi aggiornati per ${this.filteredComponentsForPriceList.length} componenti e relative varianti`
       });
 
       this.displayConfirmPriceUpdate = false;
@@ -1048,6 +1055,75 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       });
     } finally {
       this.savingPriceList = false;
+    }
+  }
+
+  /**
+   * Update all variants that contain components with updated prices
+   */
+  private async updateVariantPricesForComponents(updatedComponentIds: string[]): Promise<void> {
+    try {
+      // Get all variants using firstValueFrom for modern RxJS
+      const allVariants = await new Promise<Variant[]>((resolve, reject) => {
+        this.variantService.getVariants().subscribe({
+          next: (variants) => resolve(variants),
+          error: (error) => reject(error)
+        });
+      });
+      
+      if (!allVariants || allVariants.length === 0) {
+        console.log('No variants found to update');
+        return;
+      }
+
+      // Filter variants that contain any of the updated components
+      const variantsToUpdate = allVariants.filter((variant: Variant) => 
+        variant.components && variant.components.some((component: ComponentModel) => 
+          updatedComponentIds.includes(component.id)
+        )
+      );
+
+      if (variantsToUpdate.length === 0) {
+        console.log('No variants contain the updated components');
+        return;
+      }
+
+      console.log(`Found ${variantsToUpdate.length} variants to update`);
+
+      // Update each variant's price
+      const variantUpdatePromises = variantsToUpdate.map(async (variant: Variant) => {
+        // Update component prices in the variant
+        variant.components.forEach((component: ComponentModel) => {
+          if (updatedComponentIds.includes(component.id)) {
+            const updatedComponent = this.components.find(c => c.id === component.id);
+            if (updatedComponent) {
+              component.price = updatedComponent.price;
+            }
+          }
+        });
+
+        // Recalculate variant price only if it's in components mode
+        if (variant.pricingMode === 'components') {
+          variant.updatePrice();
+        }
+
+        // Save the updated variant - convert Observable to Promise
+        return new Promise<void>((resolve, reject) => {
+          this.variantService.updateVariant(variant.id, variant).subscribe({
+            next: () => resolve(),
+            error: (error) => reject(error)
+          });
+        });
+      });
+
+      // Wait for all variant updates to complete
+      await Promise.all(variantUpdatePromises);
+
+      console.log(`Successfully updated ${variantsToUpdate.length} variant prices`);
+
+    } catch (error) {
+      console.error('Error updating variant prices:', error);
+      throw error; // Re-throw to be caught by the main method
     }
   }
 

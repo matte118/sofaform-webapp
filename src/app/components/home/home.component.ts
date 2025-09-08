@@ -45,7 +45,7 @@ import { ComponentService } from '../../../services/component.service';
 import { ExtraMattress } from '../../../models/extra-mattress.model';
 import { PdfGenerationService } from '../../../services/pdf-generation.service';
 import { TranslationService, LanguageOption } from '../../../services/translation.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
 
 interface GroupedComponent {
   component: ComponentModel;
@@ -694,15 +694,44 @@ export class HomeComponent implements OnInit {
   confirmDelete() {
     if (!this.productToDelete) return;
 
+    // Get associated variants for deletion
+    const variants = this.getProductVariants(this.productToDelete.id);
+    
+    // Delete the product first
     this.sofaProductService.deleteSofaProduct(this.productToDelete.id).subscribe({
       next: () => {
+        // After product deletion, delete all associated variants
+        if (variants.length > 0) {
+          const variantDeletions = variants.map(variant => 
+            this.variantService.deleteVariant(variant.id)
+          );
+
+          // Use forkJoin to wait for all variant deletions
+          forkJoin(variantDeletions).subscribe({
+            next: () => {
+              console.log(`Deleted ${variants.length} variants associated with product ${this.productToDelete!.name}`);
+            },
+            error: (error) => {
+              console.error('Error deleting some variants:', error);
+              this.messageService.add({
+                severity: 'warn',
+                summary: 'Attenzione',
+                detail: 'Prodotto eliminato ma potrebbero esserci problemi con l\'eliminazione delle varianti'
+              });
+            }
+          });
+        }
+
+        // Update local state
         this.products = this.products.filter(p => p.id !== this.productToDelete!.id);
         this.productVariants.delete(this.productToDelete!.id);
+        
         this.messageService.add({
           severity: 'success',
           summary: 'Prodotto eliminato',
-          detail: `Il prodotto "${this.productToDelete!.name}" è stato eliminato`
+          detail: `Il prodotto "${this.productToDelete!.name}" è stato eliminato${variants.length > 0 ? ` insieme a ${variants.length} varianti` : ''}`
         });
+        
         this.displayConfirmDelete = false;
         this.productToDelete = undefined;
         this.cdr.detectChanges();
