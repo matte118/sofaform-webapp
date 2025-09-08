@@ -22,8 +22,8 @@ export class PhotoUploadService {
    * Upload an image to the specified folder
    */
   uploadImage(file: File, folder: string): Observable<UploadProgress> {
-    const timestamp = Date.now();
-    const filePath = `${folder}/${timestamp}_${file.name}`;
+    // Save using the original filename inside the target folder
+    const filePath = `${folder}/${file.name}`;
     const storageRef = ref(this.storage, filePath);
     const task = uploadBytesResumable(storageRef, file);
 
@@ -106,9 +106,9 @@ export class PhotoUploadService {
     originalFile: File
   ): Observable<string> {
     return new Observable((observer) => {
-      // Ottieni l'estensione del file originale
-      const fileExtension = originalFile.name.split('.').pop() || 'jpg';
-      const newFilePath = `products/${productId}/${productId}.${fileExtension}`;
+      // Usa il nome originale del file nella cartella del prodotto
+      const originalName = originalFile.name;
+      const newFilePath = `products/${productId}/${originalName}`;
       const newStorageRef = ref(this.storage, newFilePath);
 
       // Carica il file con il nuovo nome

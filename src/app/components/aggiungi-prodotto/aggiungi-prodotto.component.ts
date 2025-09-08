@@ -515,8 +515,38 @@ export class AggiungiProdottoComponent implements OnInit {
     this.saveProgress = 'Preparazione dati...';
     this.sofaProductService.createProduct(this.newSofaProduct).subscribe(pid => {
       this.newSofaProduct.id = pid;
-      this.saveProgress = 'Creazione varianti...';
-      this.createVariants(pid);
+
+      // Se è stata caricata un'immagine in anticipo con ID temporaneo, rinomina/sposta sotto products/{pid}/{filename}
+      if (this.uploadComplete && this.selectedFile && this.newSofaProduct.photoUrl) {
+        this.saveProgress = 'Allineamento immagine prodotto...';
+        this.uploadService
+          .renameProductImage(this.newSofaProduct.photoUrl, pid, this.selectedFile)
+          .subscribe({
+            next: (newUrl) => {
+              // Aggiorna l'URL nel prodotto e salva
+              this.newSofaProduct.photoUrl = newUrl;
+              this.saveProgress = 'Aggiornamento prodotto...';
+              this.sofaProductService.updateProduct(pid, this.newSofaProduct).subscribe({
+                next: () => {
+                  this.saveProgress = 'Creazione varianti...';
+                  this.createVariants(pid);
+                },
+                error: () => {
+                  // Anche se l'update fallisce, procedi con la creazione varianti
+                  this.createVariants(pid);
+                }
+              });
+            },
+            error: (e) => {
+              console.warn('Rinomina immagine fallita, procedo comunque:', e);
+              this.saveProgress = 'Creazione varianti...';
+              this.createVariants(pid);
+            }
+          });
+      } else {
+        this.saveProgress = 'Creazione varianti...';
+        this.createVariants(pid);
+      }
     }, err => {
       this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Salvataggio fallito' });
       this.isSavingProduct = false;

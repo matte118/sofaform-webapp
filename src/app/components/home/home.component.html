@@ -80,7 +80,7 @@
                   {{ variant.mattressWidth }} cm
                 </div>
                 <div class="variant-detail-row">
-                  <strong>Modalità Prezzo:</strong> 
+                  <strong>Modalità Prezzo:</strong>
                   {{ isCustomPricingVariant(variant) ? 'Prezzo Custom' : 'Calcolato da Componenti' }}
                 </div>
 
@@ -121,7 +121,8 @@
                 </div>
 
                 <!-- No components message for custom pricing -->
-                <div class="no-components-message" *ngIf="isCustomPricingVariant(variant) && !hasComponentsToShow(variant)">
+                <div class="no-components-message"
+                  *ngIf="isCustomPricingVariant(variant) && !hasComponentsToShow(variant)">
                   <p class="p-text-secondary">
                     <i class="pi pi-info-circle"></i>
                     Questa variante utilizza un prezzo personalizzato senza componenti specifici.
@@ -143,11 +144,10 @@
 
   <!-- Template modificato: Dialog Configura Rivestimenti con Dropdown per ogni variante -->
   <p-dialog appendTo="body" [(visible)]="showRivestimentoDialog" header="Configura Rivestimenti per Varianti"
-    [modal]="true" [closable]="false" [baseZIndex]="10000" 
-    [style]="{ width: '900px', maxHeight: '90vh', overflow: 'visible' }"
-    styleClass="rivestimenti-config-dialog"
-    contentStyleClass="rivestimenti-dialog-content"
-    [draggable]="false" [resizable]="false" (onHide)="onRivestimentoHide()">
+    [modal]="true" [closable]="false" [baseZIndex]="10000"
+    [style]="{ width: '900px', maxHeight: '90vh', overflow: 'visible' }" styleClass="rivestimenti-config-dialog"
+    contentStyleClass="rivestimenti-dialog-content" [draggable]="false" [resizable]="false"
+    (onHide)="onRivestimentoHide()">
 
     <div class="rivestimenti-dialog-body">
       <div class="dialog-content-scrollable">
@@ -158,15 +158,9 @@
             <!-- Dropdown per selezionare la variante corrente -->
             <div class="p-field variant-selector-field">
               <label for="variantSelect">Seleziona Variante:</label>
-              <p-dropdown id="variantSelect" 
-                [options]="getProductVariants(selectedProduct.id)"
-                [(ngModel)]="selectedVariantForRivestimento" 
-                optionLabel="longName" 
-                placeholder="Scegli variante"
-                [showClear]="true" 
-                appendTo="body"
-                [style]="{ width: '100%' }"
-                styleClass="variant-dropdown">
+              <p-dropdown id="variantSelect" [options]="getProductVariants(selectedProduct.id)"
+                [(ngModel)]="selectedVariantForRivestimento" optionLabel="longName" placeholder="Scegli variante"
+                [showClear]="true" appendTo="body" [style]="{ width: '100%' }" styleClass="variant-dropdown">
               </p-dropdown>
             </div>
 
@@ -179,12 +173,8 @@
                 <label>Seleziona rivestimenti:</label>
                 <p-multiSelect [options]="availableRivestimenti"
                   [(ngModel)]="variantRivestimentiSelections[selectedVariantForRivestimento.id]" optionLabel="name"
-                  placeholder="Seleziona uno o più rivestimenti" 
-                  [showClear]="true" 
-                  [filter]="true" 
-                  filterBy="name,code"
-                  display="chip" 
-                  appendTo="body"
+                  placeholder="Seleziona uno o più rivestimenti" [showClear]="true" [filter]="true" filterBy="name,code"
+                  display="chip" appendTo="body"
                   (onChange)="onVariantRivestimentiChange(selectedVariantForRivestimento.id, $event.value)"
                   [style]="{ width: '100%' }">
                   <ng-template let-r pTemplate="item">
@@ -200,16 +190,17 @@
               </div>
 
               <!-- Metratura e subtotali -->
-              <div class="selected-rivestimenti" *ngIf="getVariantRivestimenti(selectedVariantForRivestimento.id).length">
+              <div class="selected-rivestimenti"
+                *ngIf="getVariantRivestimenti(selectedVariantForRivestimento.id).length">
 
                 <!-- Sezione per applicare metri uniformi -->
                 <div class="uniform-meters-section">
                   <h6>Applica metri uguali a tutti i rivestimenti:</h6>
                   <div class="uniform-meters-controls">
                     <p-inputNumber [ngModel]="getUniformMetersForVariant(selectedVariantForRivestimento.id)"
-                      (ngModelChange)="setUniformMetersForVariant(selectedVariantForRivestimento.id, $event)" [min]="0.1"
-                      [step]="0.1" mode="decimal" [minFractionDigits]="1" [maxFractionDigits]="2" suffix=" mt"
-                      placeholder="1.0" [style]="{ width: '140px' }">
+                      (ngModelChange)="setUniformMetersForVariant(selectedVariantForRivestimento.id, $event)"
+                      [min]="0.1" [step]="0.1" mode="decimal" [minFractionDigits]="1" [maxFractionDigits]="2"
+                      suffix=" mt" placeholder="1.0" [style]="{ width: '140px' }">
                     </p-inputNumber>
                     <p-button type="button" label="Applica a tutti" icon="pi pi-copy" size="small"
                       styleClass="p-button-outlined p-button-sm"
@@ -221,7 +212,8 @@
 
                 <h6>Specifica i metri per ogni rivestimento:</h6>
                 <div class="rivestimento-meters-row"
-                  *ngFor="let r of getVariantRivestimenti(selectedVariantForRivestimento.id)" style="padding-top: 15px;">
+                  *ngFor="let r of getVariantRivestimenti(selectedVariantForRivestimento.id)"
+                  style="padding-top: 15px;">
                   <div class="meters-label">
                     <span class="rivestimento-name">{{ r.name }}</span>
                     <span class="rivestimento-unit-price"><i>{{ r.mtPrice | number:'1.2-2' }} €/mt</i></span>
@@ -564,8 +556,9 @@
                     <!-- <p-button icon="pi pi-times" label="Annulla Modifica" styleClass="p-button-outlined cancel-edit-btn"
                       (click)="cancelVariantEdit()">
                     </p-button> -->
-                    <p-button icon="pi pi-times" label="Annulla" (onClick)="cancelVariantEdit()" styleClass="p-button-text">
-      </p-button>
+                    <p-button icon="pi pi-times" label="Annulla" (onClick)="cancelVariantEdit()"
+                      styleClass="p-button-text">
+                    </p-button>
                   </div>
 
                   <div class="variant-form-grid">
@@ -687,12 +680,12 @@
                                   <p-tag *ngIf="group.quantity > 1" [value]="'×' + group.quantity" severity="warning"
                                     styleClass="quantity-tag">
                                   </p-tag>
-                                  <p-button icon="pi pi-times"
-                                    styleClass="p-button-rounded p-button-text p-button-sm chip-remove"
+                                  <button pButton type="button" icon="pi pi-times"
+                                    class="p-button-rounded p-button-text p-button-sm p-button-danger chip-remove-btn"
                                     (click)="removeGroupedComponent(variant, group)"
                                     [pTooltip]="group.quantity > 1 ? 'Rimuovi tutte le occorrenze' : 'Rimuovi componente'"
                                     tooltipPosition="top">
-                                  </p-button>
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -711,8 +704,7 @@
 
     <ng-template pTemplate="footer">
       <div class="modern-dialog-footer">
-        <p-button label="Annulla" icon="pi pi-times" styleClass="btn-dialog-no"
-          (click)="cancelEditProduct()">
+        <p-button label="Annulla" icon="pi pi-times" styleClass="btn-dialog-no" (click)="cancelEditProduct()">
         </p-button>
         <p-button label="Salva Modifiche" icon="pi pi-check" styleClass="btn-dialog-yes"
           [disabled]="productForm?.invalid || saving" (click)="saveProductChanges()" [loading]="saving">
@@ -992,7 +984,7 @@
   </p-dialog>
 
   <p-toast></p-toast>
-  <p-confirmDialog [closable]="false"></p-confirmDialog>
+  <p-confirmDialog [closable]="false" appendTo="body" [baseZIndex]="12000"></p-confirmDialog>
 
   <p-dialog header="Conferma Eliminazione" [(visible)]="displayConfirmDelete" [modal]="true" [closable]="false"
     [style]="{ width: '40%' }">

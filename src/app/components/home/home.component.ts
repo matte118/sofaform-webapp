@@ -1275,8 +1275,23 @@ export class HomeComponent implements OnInit {
       header: 'Conferma rimozione',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        variant.components = variant.components.filter((_, i) => !group.indices.includes(i));
+        // Remove components locally - sort indices in descending order to avoid index shifting
+        const sortedIndices = [...group.indices].sort((a, b) => b - a);
+        sortedIndices.forEach(index => {
+          variant.components.splice(index, 1);
+        });
+
+        // Update price after removal
         variant.updatePrice();
+
+        // Show success message for local change
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Componente rimosso',
+          detail: `${group.component.name} rimosso dalla variante (modifiche non salvate)`
+        });
+
+        // Only trigger change detection for local changes
         this.cdr.detectChanges();
       }
     });
