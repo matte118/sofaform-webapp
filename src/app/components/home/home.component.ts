@@ -696,13 +696,13 @@ export class HomeComponent implements OnInit {
 
     // Get associated variants for deletion
     const variants = this.getProductVariants(this.productToDelete.id);
-    
+
     // Delete the product first
     this.sofaProductService.deleteSofaProduct(this.productToDelete.id).subscribe({
       next: () => {
         // After product deletion, delete all associated variants
         if (variants.length > 0) {
-          const variantDeletions = variants.map(variant => 
+          const variantDeletions = variants.map(variant =>
             this.variantService.deleteVariant(variant.id)
           );
 
@@ -725,13 +725,13 @@ export class HomeComponent implements OnInit {
         // Update local state
         this.products = this.products.filter(p => p.id !== this.productToDelete!.id);
         this.productVariants.delete(this.productToDelete!.id);
-        
+
         this.messageService.add({
           severity: 'success',
           summary: 'Prodotto eliminato',
           detail: `Il prodotto "${this.productToDelete!.name}" è stato eliminato${variants.length > 0 ? ` insieme a ${variants.length} varianti` : ''}`
         });
-        
+
         this.displayConfirmDelete = false;
         this.productToDelete = undefined;
         this.cdr.detectChanges();

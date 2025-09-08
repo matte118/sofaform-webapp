@@ -1070,15 +1070,15 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
           error: (error) => reject(error)
         });
       });
-      
+
       if (!allVariants || allVariants.length === 0) {
         console.log('No variants found to update');
         return;
       }
 
       // Filter variants that contain any of the updated components
-      const variantsToUpdate = allVariants.filter((variant: Variant) => 
-        variant.components && variant.components.some((component: ComponentModel) => 
+      const variantsToUpdate = allVariants.filter((variant: Variant) =>
+        variant.components && variant.components.some((component: ComponentModel) =>
           updatedComponentIds.includes(component.id)
         )
       );
