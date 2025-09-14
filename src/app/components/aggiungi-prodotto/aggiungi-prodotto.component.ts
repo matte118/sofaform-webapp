@@ -140,8 +140,8 @@ export class AggiungiProdottoComponent implements OnInit {
   newSupplier = new Supplier('', '', '');
 
   // Image upload
-  selectedFile: File | null = null;
-  imagePreview: string | null = null;
+  selectedFiles: File[] = [];
+  imagePreviews: string[] = [];
   isUploading = false;
   uploadComplete = false;
 
@@ -516,33 +516,37 @@ export class AggiungiProdottoComponent implements OnInit {
     this.sofaProductService.createProduct(this.newSofaProduct).subscribe(pid => {
       this.newSofaProduct.id = pid;
 
-      // Se è stata caricata un'immagine in anticipo con ID temporaneo, rinomina/sposta sotto products/{pid}/{filename}
-      if (this.uploadComplete && this.selectedFile && this.newSofaProduct.photoUrl) {
-        this.saveProgress = 'Allineamento immagine prodotto...';
-        this.uploadService
-          .renameProductImage(this.newSofaProduct.photoUrl, pid, this.selectedFile)
-          .subscribe({
-            next: (newUrl) => {
-              // Aggiorna l'URL nel prodotto e salva
-              this.newSofaProduct.photoUrl = newUrl;
-              this.saveProgress = 'Aggiornamento prodotto...';
-              this.sofaProductService.updateProduct(pid, this.newSofaProduct).subscribe({
-                next: () => {
-                  this.saveProgress = 'Creazione varianti...';
-                  this.createVariants(pid);
-                },
-                error: () => {
-                  // Anche se l'update fallisce, procedi con la creazione varianti
-                  this.createVariants(pid);
-                }
-              });
-            },
-            error: (e) => {
-              console.warn('Rinomina immagine fallita, procedo comunque:', e);
-              this.saveProgress = 'Creazione varianti...';
-              this.createVariants(pid);
-            }
-          });
+      // Se sono state caricate immagini in anticipo con ID temporaneo, rinomina/sposta sotto products/{pid}/
+      if (this.uploadComplete && this.selectedFiles.length > 0 && this.newSofaProduct.photoUrl && this.newSofaProduct.photoUrl.length > 0) {
+        this.saveProgress = 'Allineamento immagini prodotto...';
+
+        // Aggiorna tutte le URL delle immagini per spostarle nella cartella del prodotto
+        const renamePromises = this.newSofaProduct.photoUrl.map((url, index) =>
+          this.uploadService.renameProductImage(url, pid, this.selectedFiles[index])
+        );
+
+        forkJoin(renamePromises).subscribe({
+          next: (newUrls) => {
+            // Aggiorna tutte le URL nel prodotto e salva
+            this.newSofaProduct.photoUrl = newUrls;
+            this.saveProgress = 'Aggiornamento prodotto...';
+            this.sofaProductService.updateProduct(pid, this.newSofaProduct).subscribe({
+              next: () => {
+                this.saveProgress = 'Creazione varianti...';
+                this.createVariants(pid);
+              },
+              error: () => {
+                // Anche se l'update fallisce, procedi con la creazione varianti
+                this.createVariants(pid);
+              }
+            });
+          },
+          error: (e) => {
+            console.warn('Rinomina immagine fallita, procedo comunque:', e);
+            this.saveProgress = 'Creazione varianti...';
+            this.createVariants(pid);
+          }
+        });
       } else {
         this.saveProgress = 'Creazione varianti...';
         this.createVariants(pid);
@@ -592,39 +596,48 @@ export class AggiungiProdottoComponent implements OnInit {
   }
 
   removeImage(): void {
-    // Se l'immagine è già stata caricata, eliminala da Firebase Storage
-    if (this.newSofaProduct.photoUrl) {
-      this.uploadService.deleteImage(this.newSofaProduct.photoUrl).subscribe({
+    // Delete all images from Firebase Storage
+    if (this.newSofaProduct.photoUrl && this.newSofaProduct.photoUrl.length > 0) {
+      const deletePromises = this.newSofaProduct.photoUrl.map(url =>
+        this.uploadService.deleteImage(url)
+      );
+
+      forkJoin(deletePromises).subscribe({
         next: () => {
-          console.log('Image deleted from Firebase Storage');
+          console.log('All images deleted from Firebase Storage');
         },
         error: (error) => {
-          console.error('Error deleting image:', error);
+          console.error('Error deleting images:', error);
         },
       });
     }
 
-    this.selectedFile = null;
-    this.imagePreview = null;
-    this.newSofaProduct.photoUrl = '';
+    this.selectedFiles = [];
+    this.imagePreviews = [];
+    this.newSofaProduct.photoUrl = [];
     this.isUploading = false;
     this.uploadComplete = false;
   }
 
   onFileSelect(event: any): void {
-    const file = event.files[0];
-    if (file) {
-      this.selectedFile = file;
+    const files = event.files;
+    if (files && files.length > 0) {
+      // Limit to maximum 3 images
+      const filesToProcess = Array.from(files).slice(0, 3) as File[];
+      this.selectedFiles = filesToProcess;
+      this.imagePreviews = [];
 
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.imagePreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      // Create previews for all selected files
+      filesToProcess.forEach((file: File, index: number) => {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.imagePreviews[index] = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
 
-      // Carica immediatamente l'immagine
-      this.uploadImageImmediately(file);
+      // Upload all images immediately
+      this.uploadMultipleImagesImmediately(filesToProcess);
     }
   }
 
@@ -680,25 +693,34 @@ export class AggiungiProdottoComponent implements OnInit {
     );
   }
 
-  private uploadImageImmediately(file: File): void {
+  private uploadMultipleImagesImmediately(files: File[]): void {
     // Genera un ID temporaneo per il prodotto se non esiste
     const tempProductId = this.newSofaProduct.id || `temp_${Date.now()}`;
 
     this.isUploading = true;
     this.uploadComplete = false;
 
-    this.uploadService.uploadProductImage(file, tempProductId).subscribe({
-      next: (result) => {
-        // Se abbiamo ricevuto l'URL di download, l'upload è completato
-        if (result.downloadURL) {
-          this.newSofaProduct.photoUrl = result.downloadURL;
+    // Upload all files in parallel
+    const uploadPromises = files.map(file =>
+      this.uploadService.uploadProductImage(file, tempProductId)
+    );
+
+    forkJoin(uploadPromises).subscribe({
+      next: (results) => {
+        // Extract download URLs from results
+        const downloadUrls = results
+          .filter(result => result.downloadURL)
+          .map(result => result.downloadURL!);
+
+        if (downloadUrls.length > 0) {
+          this.newSofaProduct.photoUrl = downloadUrls;
           this.uploadComplete = true;
           this.isUploading = false;
 
           this.messageService.add({
             severity: 'success',
             summary: 'Successo',
-            detail: 'Immagine caricata con successo',
+            detail: `${downloadUrls.length} immagini caricate con successo`,
           });
         }
       },
@@ -708,11 +730,16 @@ export class AggiungiProdottoComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
-          detail: "Errore durante il caricamento dell'immagine",
+          detail: 'Errore durante il caricamento delle immagini',
         });
-        console.error('Error uploading image:', error);
-      },
+        console.error('Error uploading images:', error);
+      }
     });
+  }
+
+  private uploadImageImmediately(file: File): void {
+    // Legacy method - now calls the multiple upload method
+    this.uploadMultipleImagesImmediately([file]);
   }
 
   // Make method explicitly public for template access
@@ -984,7 +1011,7 @@ export class AggiungiProdottoComponent implements OnInit {
         id: this.newSofaProduct.id,
         name: this.newSofaProduct.name,
         description: this.newSofaProduct.description,
-        photoUrl: this.newSofaProduct.photoUrl,
+        photoUrl: this.newSofaProduct.photoUrl || [],
         seduta: this.newSofaProduct.seduta,
         schienale: this.newSofaProduct.schienale,
         meccanica: this.newSofaProduct.meccanica,
@@ -1029,7 +1056,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.currentStep = d.currentStep ?? 0;
     this.newSofaProduct.name = d.newSofaProduct?.name ?? '';
     this.newSofaProduct.description = d.newSofaProduct?.description ?? '';
-    this.newSofaProduct.photoUrl = d.newSofaProduct?.photoUrl ?? '';
+    this.newSofaProduct.photoUrl = d.newSofaProduct?.photoUrl ?? [];
     this.newSofaProduct.seduta = d.newSofaProduct?.seduta ?? '';
     this.newSofaProduct.schienale = d.newSofaProduct?.schienale ?? '';
     this.newSofaProduct.meccanica = d.newSofaProduct?.meccanica ?? '';

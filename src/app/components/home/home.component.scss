@@ -1334,7 +1334,205 @@
   }
 
   // Image Upload Modern Styling
-  .modern-image-upload {
+  .modern-images-upload {
+    .images-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+      max-width: 100%;
+
+      .image-slot {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f7fafc;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        aspect-ratio: 16/9;
+
+        &:hover {
+          border-color: #4299e1;
+          box-shadow: 0 8px 25px rgba(66, 153, 225, 0.15);
+
+          .image-overlay {
+            opacity: 1 !important;
+          }
+        }
+
+        // Force overlay visibility for better UX
+        &:active .image-overlay,
+        &:focus .image-overlay {
+          opacity: 1 !important;
+        }
+
+        .image-wrapper {
+          position: relative;
+          width: 100%;
+          height: 100%;
+
+          .product-preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+          }
+
+          .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            opacity: 0; // Visible only on hover
+            transition: opacity 0.3s ease;
+            pointer-events: auto;
+
+            &:hover {
+              opacity: 1; // Full opacity on direct hover
+            }
+
+            .image-edit-btn,
+            .image-delete-btn {
+              width: 3rem;
+              height: 3rem;
+              border-radius: 50%;
+              border: 3px solid white;
+              background: white;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              pointer-events: auto;
+              z-index: 1000;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+              i {
+                font-size: 1.2rem;
+                font-weight: bold;
+              }
+
+              &.image-edit-btn {
+                color: #4299e1;
+
+                &:hover {
+                  background: #4299e1;
+                  color: white;
+                  transform: scale(1.15);
+                  box-shadow: 0 6px 16px rgba(66, 153, 225, 0.5);
+                }
+              }
+
+              &.image-delete-btn {
+                color: #e53e3e;
+
+                &:hover {
+                  background: #e53e3e;
+                  color: white;
+                  transform: scale(1.15);
+                  box-shadow: 0 6px 16px rgba(229, 62, 62, 0.5);
+                }
+              }
+            }
+          }
+        }
+
+        &.add-slot {
+          background: #f7fafc;
+          border: 2px dashed #cbd5e0;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+
+          &:hover {
+            border-color: #4299e1;
+            background: #ebf8ff;
+            transform: translateY(-2px);
+          }
+
+          .add-image-content {
+            text-align: center;
+            color: #718096;
+            transition: color 0.3s ease;
+
+            i {
+              font-size: 2rem;
+              margin-bottom: 0.5rem;
+              display: block;
+            }
+
+            span {
+              font-size: 0.9rem;
+              font-weight: 500;
+            }
+          }
+
+          &:hover .add-image-content {
+            color: #4299e1;
+          }
+        }
+      }
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr 1fr;
+
+        .image-slot {
+          aspect-ratio: 1;
+
+          .image-overlay {
+            opacity: 0 !important;
+          }
+
+          &:hover .image-overlay,
+          &:active .image-overlay,
+          &:focus .image-overlay {
+            opacity: 1 !important;
+          }
+        }
+      }
+
+      // Media query for touch devices
+      @media (pointer: coarse) {
+        .image-slot .image-overlay {
+          opacity: 0.4 !important; // Always visible on touch devices
+        }
+
+        .image-slot:hover .image-overlay,
+        .image-slot:active .image-overlay {
+          opacity: 1 !important;
+        }
+      }
+
+      @media (max-width: 480px) {
+        grid-template-columns: 1fr;
+
+        .image-slot {
+          aspect-ratio: 16/9;
+
+          // Su mobile l'overlay è sempre leggermente visibile
+          .image-overlay {
+            opacity: 0.3 !important; // Più visibile su mobile
+          }
+
+          &:hover .image-overlay,
+          &:active .image-overlay,
+          &:focus .image-overlay {
+            opacity: 1 !important;
+          }
+        }
+      }
+    }
+
+    // Legacy single image support for backward compatibility
     .image-display-area {
       margin-bottom: 1rem;
 

@@ -6,7 +6,7 @@ export class SofaProduct {
     public name: string,
     public description?: string,
     public variants: string[] = [],
-    public photoUrl?: string,
+    public photoUrl?: string[],
     public seduta?: string,
     public schienale?: string,
     public meccanica?: string,

@@ -150,14 +150,14 @@ export class HomeComponent implements OnInit {
   deliveryPrice?: number;
   deliveryPriceListino: number = 0;   // Local state for listino flow
 
-  // Image handling
-  tempImageFile?: File;
-  tempImageUrl?: string;
-  tempImagePreview?: string;
-  imageRemoved = false;
-  imageChanged = false;
+  // Image handling for multiple images
+  tempImageFiles: (File | null)[] = [];
+  tempImageUrls: string[] = [];
+  tempImagePreviews: string[] = [];
+  imagesRemoved: boolean[] = [];
+  imagesChanged: boolean[] = [];
   isUploadMode = false;
-  uploadingNewImage = false;
+  uploadingNewImages = false;
   uploadProgress = 0;
   saving = false;
 
@@ -285,7 +285,20 @@ export class HomeComponent implements OnInit {
   }
 
   getProductImageUrl(productId: string): string | null {
-    return this.products.find(p => p.id === productId)?.photoUrl || null;
+    const product = this.products.find(p => p.id === productId);
+    if (product?.photoUrl) {
+      // Return first image if it's an array, or the string if it's legacy
+      return Array.isArray(product.photoUrl) ? product.photoUrl[0] || null : product.photoUrl;
+    }
+    return null;
+  }
+
+  getProductImages(productId: string): string[] {
+    const product = this.products.find(p => p.id === productId);
+    if (product?.photoUrl) {
+      return Array.isArray(product.photoUrl) ? product.photoUrl : [product.photoUrl];
+    }
+    return [];
   }
 
   hasProductImage(productId: string): boolean {
@@ -671,13 +684,26 @@ export class HomeComponent implements OnInit {
   }
 
   private resetEditDialog(): void {
-    this.tempImageFile = undefined;
-    this.tempImageUrl = undefined;
-    this.imageRemoved = false;
-    this.uploadingNewImage = false;
+    this.tempImageFiles = [];
+    this.tempImageUrls = [];
+    this.tempImagePreviews = [];
+    this.imagesRemoved = [];
+    this.imagesChanged = [];
+    this.uploadingNewImages = false;
     this.uploadProgress = 0;
     this.editingVariantIndex = -1;
     this.newVariant = new Variant('', '', '', 0);
+
+    // Initialize arrays based on current product images
+    if (this.editingProduct?.photoUrl) {
+      const images = Array.isArray(this.editingProduct.photoUrl)
+        ? this.editingProduct.photoUrl
+        : [this.editingProduct.photoUrl];
+
+      this.tempImageUrls = [...images];
+      this.imagesRemoved = new Array(images.length).fill(false);
+      this.imagesChanged = new Array(images.length).fill(false);
+    }
   }
 
   onDeleteClick(product: SofaProduct, event: Event) {
@@ -697,7 +723,7 @@ export class HomeComponent implements OnInit {
     // Get associated variants for deletion
     const variants = this.getProductVariants(this.productToDelete.id);
 
-    // Delete the product first
+    // Delete the product (the service will handle image deletion automatically)
     this.sofaProductService.deleteSofaProduct(this.productToDelete.id).subscribe({
       next: () => {
         // After product deletion, delete all associated variants
@@ -726,10 +752,11 @@ export class HomeComponent implements OnInit {
         this.products = this.products.filter(p => p.id !== this.productToDelete!.id);
         this.productVariants.delete(this.productToDelete!.id);
 
+        const imageCount = this.productToDelete!.photoUrl?.length || 0;
         this.messageService.add({
           severity: 'success',
           summary: 'Prodotto eliminato',
-          detail: `Il prodotto "${this.productToDelete!.name}" è stato eliminato${variants.length > 0 ? ` insieme a ${variants.length} varianti` : ''}`
+          detail: `Il prodotto "${this.productToDelete!.name}" è stato eliminato${variants.length > 0 ? ` insieme a ${variants.length} varianti` : ''}${imageCount > 0 ? ` e ${imageCount} immagini` : ''}`
         });
 
         this.displayConfirmDelete = false;
@@ -763,12 +790,52 @@ export class HomeComponent implements OnInit {
   }
 
   // === Image Management ===
-  get currentImageToShow(): string | undefined {
-    return this.tempImageUrl || this.editingProduct?.photoUrl;
+  get currentImagesToShow(): string[] {
+    const result: string[] = [];
+
+    // Start with existing product images or temp URLs
+    let baseImages: string[] = [];
+    if (this.tempImageUrls.length > 0) {
+      baseImages = [...this.tempImageUrls];
+    } else if (this.editingProduct?.photoUrl) {
+      baseImages = Array.isArray(this.editingProduct.photoUrl)
+        ? [...this.editingProduct.photoUrl]
+        : [this.editingProduct.photoUrl];
+    }
+
+    // Build final array considering removals and previews
+    const maxLength = Math.max(baseImages.length, this.tempImagePreviews.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      // Skip if image is marked as removed
+      if (this.imagesRemoved[i]) {
+        continue;
+      }
+
+      // Use preview if available (new/changed image)
+      if (this.tempImagePreviews[i]) {
+        result.push(this.tempImagePreviews[i]);
+      } else if (baseImages[i]) {
+        result.push(baseImages[i]);
+      }
+    }
+
+    return result;
   }
 
   get shouldShowImagePlaceholder(): boolean {
-    return !this.tempImageUrl && !this.editingProduct?.photoUrl;
+    return this.currentImagesToShow.length === 0;
+  }
+
+  // Get image at specific index for editing
+  getImageAtIndex(index: number): string | undefined {
+    const images = this.currentImagesToShow;
+    return images[index];
+  }
+
+  // Check if image at index is removed
+  isImageRemoved(index: number): boolean {
+    return this.imagesRemoved[index] || false;
   }
 
   showImageUpload(): void {
@@ -776,95 +843,129 @@ export class HomeComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  removeProductImage(): void {
-    console.log('removeProductImage called');
+  removeProductImage(index: number): void {
     this.confirmationService.confirm({
-      message: 'Sei sicuro di voler rimuovere l\'immagine del prodotto?',
+      message: 'Sei sicuro di voler rimuovere questa immagine del prodotto?',
       header: 'Conferma rimozione',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        console.log('Image removal confirmed');
-        this.imageRemoved = true;
-        this.tempImageFile = undefined;
-        this.tempImageUrl = undefined;
-        if (this.editingProduct) this.editingProduct.photoUrl = undefined;
-        this.isUploadMode = false;
+        this.imagesRemoved[index] = true;
+        this.imagesChanged[index] = true;
         this.cdr.detectChanges();
 
         this.messageService.add({
           severity: 'success',
           summary: 'Immagine rimossa',
-          detail: 'Immagine rimossa (modifiche non salvate)'
+          detail: 'Immagine sarà eliminata dal database al salvataggio'
         });
       }
     });
   }
 
-  triggerFileInput(): void {
-    console.log('triggerFileInput called');
-    console.log('hiddenFileInput:', this.hiddenFileInput);
+  triggerFileInput(index?: number): void {
+    // Create file input manually for better control
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+    fileInput.multiple = index === undefined; // Allow multiple only when adding new images
 
-    if (this.hiddenFileInput?.nativeElement) {
-      console.log('Clicking file input');
-      this.hiddenFileInput.nativeElement.click();
-    } else {
-      console.log('hiddenFileInput not found, creating manual input');
-      // Fallback: create file input manually
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = 'image/*';
-      fileInput.style.display = 'none';
+    fileInput.addEventListener('change', (event: any) => {
+      this.onFileSelected(event, index);
+    });
 
-      fileInput.addEventListener('change', (event: any) => {
-        const file = event.target.files[0];
-        if (file) {
-          this.onFileSelected(event);
-        }
-      });
-
-      document.body.appendChild(fileInput);
-      fileInput.click();
-      document.body.removeChild(fileInput);
-    }
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    document.body.removeChild(fileInput);
   }
 
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (!file) return;
+  onFileSelected(event: any, index?: number): void {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    if (!file.type.startsWith('image/')) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore',
-        detail: 'Seleziona un file immagine valido'
-      });
-      return;
+    // Process all selected files
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      if (!file.type.startsWith('image/')) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Seleziona solo file immagine validi'
+        });
+        continue;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'L\'immagine deve essere inferiore a 5MB'
+        });
+        continue;
+      }
+
+      // Determine target index
+      let targetIndex = index;
+      if (targetIndex === undefined) {
+        // Adding new image - check if we have space based on visible images
+        const currentVisibleCount = this.currentImagesToShow.length;
+        if (currentVisibleCount >= 3) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Limite raggiunto',
+            detail: 'Puoi caricare massimo 3 immagini'
+          });
+          break;
+        }
+
+        // Find the next available slot
+        targetIndex = currentVisibleCount;
+
+        // Expand arrays if needed
+        while (this.tempImageFiles.length <= targetIndex) {
+          this.tempImageFiles.push(null);
+          this.imagesChanged.push(false);
+          this.imagesRemoved.push(false);
+          this.tempImagePreviews.push('');
+          this.tempImageUrls.push('');
+        }
+
+        this.tempImageFiles[targetIndex] = file;
+        this.imagesChanged[targetIndex] = true;
+      } else {
+        // Replacing existing image
+        // Expand arrays if needed
+        while (this.tempImageFiles.length <= targetIndex) {
+          this.tempImageFiles.push(null);
+          this.imagesChanged.push(false);
+          this.imagesRemoved.push(false);
+          this.tempImagePreviews.push('');
+          this.tempImageUrls.push('');
+        }
+
+        this.tempImageFiles[targetIndex] = file;
+        this.imagesChanged[targetIndex] = true;
+      }
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.tempImagePreviews[targetIndex!] = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(file);
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Errore',
-        detail: 'L\'immagine deve essere inferiore a 5MB'
-      });
-      return;
-    }
-
-    this.tempImageFile = file;
-    this.imageRemoved = false;
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.tempImageUrl = e.target.result;
-      this.isUploadMode = false;
-      this.cdr.detectChanges();
-    };
-    reader.readAsDataURL(file);
+    this.isUploadMode = false;
   }
 
   cancelImageUpload(): void {
     this.isUploadMode = false;
-    this.tempImageFile = undefined;
-    this.tempImageUrl = undefined;
+    // Reset temporary image data
+    this.tempImageFiles = [];
+    this.tempImagePreviews = [];
+    this.imagesChanged = [];
     this.cdr.detectChanges();
   }
 
@@ -1191,31 +1292,127 @@ export class HomeComponent implements OnInit {
         );
     };
 
-    if (this.imageRemoved) {
-      if (this.editingProduct.photoUrl) this.editingProduct.photoUrl = undefined;
+    // Handle multiple image updates
+    const hasImageChanges = this.imagesChanged.some(changed => changed) ||
+      this.imagesRemoved.some(removed => removed) ||
+      this.tempImageFiles.some(file => file);
+
+    if (!hasImageChanges) {
       completeProductSave();
-    } else if (this.tempImageFile) {
-      const uploadTask = this.uploadService.uploadProductImage(this.tempImageFile, this.editingProduct.id);
-      uploadTask.subscribe({
-        next: progress => {
-          this.uploadProgress = Math.round(progress.progress || 0);
-          if (progress.downloadURL && progress.progress >= 100) {
-            this.editingProduct!.photoUrl = progress.downloadURL;
-            completeProductSave();
+      return;
+    }
+
+    // Initialize photoUrl array if not exists
+    if (!this.editingProduct.photoUrl) {
+      this.editingProduct.photoUrl = [];
+    }
+
+    let uploadPromises: Promise<void>[] = [];
+    let deletePromises: Promise<void>[] = [];
+    let uploadProgress = 0;
+    const totalUploads = this.tempImageFiles.filter(file => file).length;
+
+    // Build new image array based on current state
+    const newPhotoUrls: string[] = [];
+
+    // Process each image slot
+    for (let i = 0; i < Math.max(this.tempImageFiles.length, this.tempImageUrls.length); i++) {
+      if (this.imagesRemoved[i]) {
+        // Delete removed image from Firebase Storage
+        if (this.tempImageUrls[i]) {
+          const deletePromise = new Promise<void>((resolve, reject) => {
+            this.uploadService.deleteImage(this.tempImageUrls[i]).subscribe({
+              next: () => {
+                console.log(`Image deleted from Storage: ${this.tempImageUrls[i]}`);
+                resolve();
+              },
+              error: (err) => {
+                console.error(`Error deleting image from Storage: ${this.tempImageUrls[i]}`, err);
+                // Don't reject - continue even if deletion fails
+                resolve();
+              }
+            });
+          });
+          deletePromises.push(deletePromise);
+        }
+        continue; // Skip removed images from new array
+      } else if (this.tempImageFiles[i] && this.imagesChanged[i]) {
+        // Upload new image for this index
+        const file = this.tempImageFiles[i];
+        if (!file) continue; // Skip null files
+
+        // If we're replacing an existing image, delete the old one
+        if (this.tempImageUrls[i]) {
+          const deletePromise = new Promise<void>((resolve, reject) => {
+            this.uploadService.deleteImage(this.tempImageUrls[i]).subscribe({
+              next: () => {
+                console.log(`Old image deleted from Storage: ${this.tempImageUrls[i]}`);
+                resolve();
+              },
+              error: (err) => {
+                console.error(`Error deleting old image from Storage: ${this.tempImageUrls[i]}`, err);
+                // Don't reject - continue even if deletion fails
+                resolve();
+              }
+            });
+          });
+          deletePromises.push(deletePromise);
+        }
+
+        const uploadPromise = new Promise<void>((resolve, reject) => {
+          const uploadTask = this.uploadService.uploadProductImage(file, this.editingProduct!.id);
+          uploadTask.subscribe({
+            next: progress => {
+              uploadProgress += (progress.progress || 0) / totalUploads;
+              this.uploadProgress = Math.round(uploadProgress);
+
+              if (progress.downloadURL && progress.progress >= 100) {
+                newPhotoUrls[i] = progress.downloadURL;
+                resolve();
+              }
+            },
+            error: err => {
+              console.error('Errore upload:', err);
+              reject(err);
+            }
+          });
+        });
+        uploadPromises.push(uploadPromise);
+      } else if (this.tempImageUrls[i] && !this.imagesRemoved[i] && !this.imagesChanged[i]) {
+        // Keep existing image
+        newPhotoUrls[i] = this.tempImageUrls[i];
+      }
+    }
+
+    // Handle both uploads and deletions
+    const allPromises = [...uploadPromises, ...deletePromises];
+
+    if (allPromises.length > 0) {
+      Promise.all(allPromises)
+        .then(() => {
+          // Clean up undefined values and assign to product
+          this.editingProduct!.photoUrl = newPhotoUrls.filter(url => url);
+          if (this.editingProduct!.photoUrl.length === 0) {
+            this.editingProduct!.photoUrl = undefined;
           }
-        },
-        error: err => {
-          console.error('Errore upload:', err);
+          completeProductSave();
+        })
+        .catch(err => {
+          console.error('Errore durante le operazioni su immagini:', err);
           this.messageService.add({
             severity: 'error',
             summary: 'Errore',
-            detail: 'Impossibile caricare l\'immagine'
+            detail: 'Errore durante le operazioni sulle immagini'
           });
           this.saving = false;
           this.cdr.detectChanges();
-        }
-      });
+        });
     } else {
+      // No uploads or deletions needed, just update the URL array
+      this.editingProduct!.photoUrl = newPhotoUrls.filter(url => url);
+      if (this.editingProduct!.photoUrl.length === 0) {
+        this.editingProduct!.photoUrl = undefined;
+      }
       completeProductSave();
     }
   }

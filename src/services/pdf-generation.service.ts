@@ -11,9 +11,7 @@ import { I18nService } from './i18n.service';
 // Inizializza il Virtual File System per i font
 (pdfMake as any).vfs = pdfFonts.vfs;
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class PdfGenerationService {
   // --- Proprietà interne per l'adapter ---
   private productData!: SofaProduct;
@@ -83,30 +81,23 @@ export class PdfGenerationService {
       });
     } catch (error) {
       console.warn('Impossibile caricare il logo:', error);
-      // Fallback to placeholder if logo fails to load
+      // Fallback trasparente
       return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
     }
   }
 
   /**
-   * Genera e scarica il PDF sfruttando pdfmake
-   */
-  /**
-   * Genera e scarica il PDF sfruttando pdfmake con supporto per traduzioni.
-   * Se languageCode = 'it' usa i testi originali (identity mapping).
+   * Genera e scarica il PDF con layout aggiornato
    */
   async generateListinoPdf(productName: string, languageCode: string = 'it') {
-    // 1) Get static translations directly (no HTTP requests, no async)
+    // 1) Traduzioni statiche
     const staticTranslations = this.i18nService.getListinoTranslations(languageCode);
-    
-    // 2) Collect dynamic texts to translate (excluding static labels)
-    const textsToTranslate: string[] = [];
 
-    // Add dynamic content only (not static labels)
+    // 2) Raccogli testi dinamici da tradurre
+    const textsToTranslate: string[] = [];
     if (this.productData.name) textsToTranslate.push(this.productData.name);
     if (this.productData.description) textsToTranslate.push(this.productData.description);
-    
-    // Add actual content values (not labels) for technical specs
+
     if (this.productData.seduta) textsToTranslate.push(this.productData.seduta);
     if (this.productData.schienale) textsToTranslate.push(this.productData.schienale);
     if (this.productData.meccanica) textsToTranslate.push(this.productData.meccanica);
@@ -114,13 +105,15 @@ export class PdfGenerationService {
 
     this.variantsData.forEach(v => { if (v.longName) textsToTranslate.push(v.longName); });
 
+    const uniqueRivestimenti = new Set<string>();
     Object.values(this.rivestimentiByVariant).forEach(rivs => {
-      rivs.forEach(r => { if (r.rivestimento.name) textsToTranslate.push(r.rivestimento.name); });
+      rivs.forEach(r => { if (r.rivestimento.name) uniqueRivestimenti.add(r.rivestimento.name); });
     });
+    textsToTranslate.push(...Array.from(uniqueRivestimenti));
 
     this.extrasData.forEach(extra => { if (extra.name) textsToTranslate.push(extra.name); });
 
-    // 3) Get dynamic translations via ChatGPT (only if not Italian and has texts to translate)
+    // 3) Traduzioni dinamiche
     let dynamicTranslations: { [key: string]: string } = {};
     if (languageCode !== 'it' && textsToTranslate.length > 0) {
       try {
@@ -130,199 +123,347 @@ export class PdfGenerationService {
         textsToTranslate.forEach(t => dynamicTranslations[t] = t);
       }
     } else {
-      // For Italian or empty texts, use identity mapping
       textsToTranslate.forEach(t => dynamicTranslations[t] = t);
     }
-    
-    // 4) Combined translation function: static from JSON, dynamic from ChatGPT
+
+    // 4) Funzione t()
     const t = (text: string) => {
-      // Check if it's a static translation first (from JSON)
-      if (staticTranslations[text] !== undefined) {
-        return staticTranslations[text];
-      }
-      // Otherwise use dynamic translation (from ChatGPT)
+      if (staticTranslations[text] !== undefined) return staticTranslations[text];
       return dynamicTranslations[text] || text;
     };
 
-    // 3) DocDefinition (header/footer dinamici, stili, contenuti)
+    // DocDefinition
     const docDefinition: any = {
       pageSize: 'A4',
-      pageMargins: [35, 35, 35, 35],
-      defaultStyle: { fontSize: 10, lineHeight: 1.3, color: '#2d3748' },
+      pageOrientation: 'landscape',
+      pageMargins: [30, 30, 30, 30],
+      defaultStyle: { fontSize: 9, lineHeight: 1.2, color: '#2d3748' },
       styles: {
-        title: { fontSize: 24, bold: true, color: '#1a365d', margin: [0, 10, 0, 15], alignment: 'center' },
-        productName: { fontSize: 18, italics: true, color: '#2d3748', margin: [0, 15, 0, 15], alignment: 'center' },
-        description: { fontSize: 11, color: '#718096', margin: [0, 0, 0, 20], alignment: 'center', italics: true, lineHeight: 1.4 },
-        sectionHeader: { fontSize: 14, bold: true, color: '#1a365d', margin: [0, 20, 0, 12], fillColor: '#f7fafc', padding: [12, 8, 12, 8] },
-        variantName: { fontSize: 12, bold: true, color: '#1a365d', margin: [0, 15, 0, 5] },
-        tableHeader: { bold: true, fillColor: '#4299e1', color: '#ffffff', fontSize: 10, margin: [8, 6, 8, 6] },
-        tableCell: { margin: [8, 4, 8, 4], fontSize: 9, lineHeight: 1.2 },
-        small: { fontSize: 8, color: '#a0aec0' },
-        normal: { fontSize: 10, color: '#2d3748' },
-        bold: { fontSize: 10, bold: true, color: '#2d3748' },
-        italic: { fontSize: 10, italics: true, color: '#4a5568' }
-      },
-      header: (currentPage: number) => {
-        if (currentPage > 1) {
-          return {
-            columns: [
-              { text: '', width: '*' },
-              { text: t(this.productData.name), style: 'small', alignment: 'center', margin: [0, 12, 0, 0], color: '#718096' },
-              { text: '', width: '*' }
-            ]
-          };
-        }
-        return {};
+        coverTitle: { fontSize: 32, bold: true, color: '#1a365d', alignment: 'center' },
+        productName: { fontSize: 24, bold: true, color: '#2d3748', alignment: 'center', margin: [0, 10, 0, 15] },
+        description: { fontSize: 11, color: '#718096', alignment: 'center', italics: true, margin: [0, 5, 0, 5] },
+        matrixHeader: { bold: true, fillColor: '#1a365d', color: '#ffffff', fontSize: 9, alignment: 'center', margin: [3, 6, 3, 6] },
+        matrixCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4] },
+        variantCell: { fontSize: 8, bold: true, alignment: 'left', margin: [8, 4, 3, 4], color: '#1a365d' },
+        priceCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4], bold: true, color: '#38a169' },
+        techSpecs: { fontSize: 10, margin: [0, 10, 0, 10] },
+        small: { fontSize: 7, color: '#718096', alignment: 'center' },
+
+        // AGGIUNTE per il blocco citazione
+        quoteMark: { fontSize: 42, bold: true, color: '#000000', lineHeight: 0.8 },
+        quoteText: { fontSize: 12, color: '#4a5568', italics: true, alignment: 'left' }
       },
       footer: (currentPage: number, pageCount: number) => ({
-        columns: [{ text: `${currentPage} / ${pageCount}`, style: 'small', alignment: 'center', margin: [0, 12, 0, 0] }]
+        columns: [{ text: `${currentPage} / ${pageCount}`, style: 'small', margin: [0, 10, 0, 0] }]
       }),
       content: []
     };
 
-    // Logo
+    // PAGINA 1: Cover con logo
     const logoBase64 = await this.getLogoBase64();
-    docDefinition.content.push({ image: logoBase64, width: 300, alignment: 'center', margin: [0, 0, 0, 5] });
+    docDefinition.content.push({
+      stack: [
+        { text: '', margin: [0, 150, 0, 0] },
+        { image: logoBase64, width: 400, alignment: 'center' },
+        { text: '', margin: [0, 0, 0, 50] },
+        { text: t('LISTINO PREZZI'), style: 'coverTitle' }
+      ],
+      pageBreak: 'after'
+    });
 
-    // Nome prodotto (tradotto)
+    // PAGINA 2: Titolo prodotto + immagini/descrizione + matrice prezzi + servizi extra
     docDefinition.content.push({ text: t(this.productData.name), style: 'productName' });
 
-    // Immagine prodotto
-    if (this.productData.photoUrl) {
-      const imageBase64 = await this.urlToBase64(this.productData.photoUrl);
-      if (imageBase64) {
-        docDefinition.content.push({ image: imageBase64, width: 220, alignment: 'center', margin: [0, 0, 0, 20] });
-      }
-    }
+    await this.addProductImagesWithDescription(docDefinition, t);
+    await this.addMatrixPricingTable(docDefinition, t);
+    if (this.extrasData.length > 0) await this.addExtraServices(docDefinition, t);
 
-    // Descrizione (tradotta)
-    if (this.productData.description) {
-      docDefinition.content.push({ text: t(this.productData.description), style: 'description' });
-    }
-
-    // Scheda tecnica (con traduzioni statiche per le etichette)
-    const techSpecs = [
-      ['Seduta', this.productData.seduta || 'N/D'],
-      ['Schienale', this.productData.schienale || 'N/D'],
-      ['Meccanica', this.productData.meccanica || 'N/D'],
-      ['Materasso', this.productData.materasso || 'N/D']
-    ].filter(spec => spec[1] !== 'N/D');
-
-    if (techSpecs.length > 0) {
-      docDefinition.content.push(
-        { text: t('Scheda Tecnica'), style: 'sectionHeader' },
-        {
-          table: {
-            widths: ['30%', '70%'],
-            body: [
-              [{ text: t('Caratteristica'), style: 'tableHeader' }, { text: t('Dettaglio'), style: 'tableHeader' }],
-              ...techSpecs.map((spec, index) => [
-                // Use static translation for technical labels (spec[0])
-                { text: t(spec[0]), style: index % 2 === 0 ? 'bold' : 'normal', fillColor: index % 2 === 0 ? '#f8fafc' : '#ffffff' },
-                // Use dynamic translation for content values (spec[1])
-                { text: t(spec[1]), style: index % 2 === 0 ? 'italic' : 'normal', fillColor: index % 2 === 0 ? '#f8fafc' : '#ffffff' }
-              ])
-            ]
-          },
-          layout: {
-            hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-            hLineColor: () => '#e2e8f0', vLineColor: () => '#e2e8f0',
-            paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 4, paddingBottom: () => 4
-          },
-          margin: [0, 0, 0, 25]
-        }
-      );
-    }
-
-    // Varianti + rivestimenti (tradotti)
-    this.variantsData.forEach((variant) => {
-      docDefinition.content.push({ text: t(variant.longName), style: 'variantName' });
-
-      const variantRivestimenti = this.rivestimentiByVariant[variant.id] || [];
-      if (variantRivestimenti.length > 0) {
-        const rivestimentiBody: any[] = [
-          [{ text: t('Rivestimento'), style: 'tableHeader' }, { text: t('Prezzo'), style: 'tableHeader', alignment: 'right' }]
-        ];
-
-        variantRivestimenti.forEach((r, idx) => {
-          const rivestimentoCost = r.rivestimento.mtPrice * r.metri;
-          const variantTotalPrice = variant.price + rivestimentoCost + this.deliveryCost;
-          const finalPrice = this.applyMarkup(variantTotalPrice, this.markupPerc);
-
-          rivestimentiBody.push([
-            { text: t(r.rivestimento.name), style: 'bold', fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff' },
-            { text: `€ ${finalPrice.toFixed(2)}`, style: idx % 2 === 0 ? 'bold' : 'normal', alignment: 'right', color: '#38a169', fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff' }
-          ]);
-        });
-
-        docDefinition.content.push({
-          table: { widths: ['70%', '30%'], body: rivestimentiBody },
-          layout: {
-            hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-            hLineColor: () => '#e2e8f0', vLineColor: () => '#e2e8f0',
-            paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3
-          },
-          margin: [0, 0, 0, 8]
-        });
-      } else {
-        docDefinition.content.push({
-          text: t('Nessun rivestimento configurato per questa variante'),
-          style: 'italic',
-          color: '#718096',
-          margin: [0, 0, 0, 8]
-        });
-      }
-    });
-
-    // Servizi aggiuntivi (tradotti)
-    const hasExtras = this.extrasData.length > 0;
-    const hasDelivery = this.deliveryCost > 0;
-
-    if (hasExtras || hasDelivery) {
-      docDefinition.content.push({ text: t('Servizi Aggiuntivi'), style: 'sectionHeader' });
-
-      const servicesBody: any[] = [
-        [{ text: t('Servizio'), style: 'tableHeader' }, { text: t('Prezzo'), style: 'tableHeader', alignment: 'right' }]
-      ];
-
-      this.extrasData.forEach((extra, idx) => {
-        servicesBody.push([
-          { text: t(extra.name), style: idx % 2 === 0 ? 'bold' : 'italic', fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff' },
-          { text: `€ ${extra.price.toFixed(2)}`, style: idx % 2 === 0 ? 'bold' : 'normal', alignment: 'right', color: '#38a169', fillColor: idx % 2 === 0 ? '#f8fafc' : '#ffffff' }
-        ]);
-      });
-
-      docDefinition.content.push({
-        table: { widths: ['70%', '30%'], body: servicesBody },
-        layout: {
-          hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-          hLineColor: () => '#e2e8f0', vLineColor: () => '#e2e8f0',
-          paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3
-        },
-        margin: [0, 0, 0, 20]
-      });
-    }
-
-    // Footer minimal
-    docDefinition.content.push({
-      canvas: [{ type: 'rect', x: 0, y: 0, w: 515, h: 1, color: '#4299e1' }],
-      margin: [0, 15, 0, 0]
-    });
-
-    // 4) Download
     const filename = this.getFilename(productName, languageCode);
     pdfMake.createPdf(docDefinition).download(filename);
   }
 
+  /**
+   * Layout immagini/descrizione:
+   * - Sinistra: immagine grande
+   * - Destra: due immagini impilate + blocco citazione affiancato
+   */
+  /**
+   * Layout immagini/descrizione:
+   * - Sinistra: immagine grande
+   * - Destra: due immagini impilate + scheda tecnica affiancata
+   */
+  private async addProductImagesWithDescription(docDefinition: any, t: (text: string) => string): Promise<void> {
+    const images: string[] = [];
 
-  private sumRivestimenti(): number {
-    // Calculate total from rivestimentiByVariant structure
-    let total = 0;
-    Object.values(this.rivestimentiByVariant).forEach((variantRivestimenti: { rivestimento: Rivestimento; metri: number }[]) => {
-      total += variantRivestimenti.reduce((sum: number, r: { rivestimento: Rivestimento; metri: number }) =>
-        sum + (r.rivestimento.mtPrice * r.metri), 0);
+    // Colleziona immagini
+    if (this.productData.photoUrl && Array.isArray(this.productData.photoUrl)) {
+      for (const url of this.productData.photoUrl) {
+        const b64 = await this.urlToBase64(url);
+        if (b64) images.push(b64);
+      }
+    } else if (this.productData.photoUrl && typeof this.productData.photoUrl === 'string') {
+      const b64 = await this.urlToBase64(this.productData.photoUrl);
+      if (b64) images.push(b64);
+    }
+    if (images.length === 0) return;
+
+    // === Dimensioni 16:9 ===
+    const R = 16 / 9;
+    const largeW = 280, largeH = Math.round(largeW / R);
+    const smallW = 115, smallH = Math.round(smallW / R);
+
+    // Gaps più stretti per avvicinare le colonne
+    const innerGap = 10;   // tra le due piccole
+    const betweenCols = 4; // SPAZIO RIDOTTO tra immagine grande e colonna destra
+
+    // ---- Sinistra: immagine grande ----
+    const leftSide = {
+      width: '49%',
+      stack: [
+        { image: images[0], width: largeW, height: largeH, alignment: 'left' }
+      ]
+    };
+
+    // ---- Colonna immagini impilate (più stretta) ----
+    const columnA = {
+      width: '36%', // più stretta per dare più spazio alla tabella
+      stack: [
+        images[1] ? { image: images[1], width: smallW, height: smallH, margin: [0, 0, 0, innerGap], alignment: 'center' } : { text: '' },
+        images[2] ? { image: images[2], width: smallW, height: smallH, alignment: 'center' } : { text: '' }
+      ]
+    };
+
+    // ---- Dati scheda tecnica ----
+    const techSpecs = [
+      ['Seduta', this.productData.seduta],
+      ['Schienale', this.productData.schienale],
+      ['Meccanica', this.productData.meccanica],
+      ['Materasso', this.productData.materasso]
+    ].filter(spec => spec[1]);
+
+    // ---- Tabella scheda tecnica (più larga) con HEADER ROW ----
+    const techSpecStack = techSpecs.length > 0
+      ? {
+        width: '64%', // PIÙ LARGA della colonna immagini
+        stack: [
+          {
+            table: {
+              headerRows: 1,
+              widths: ['35%', '65%'],
+              body: [
+                // HEADER ROW richiesta
+                [
+                  {
+                    text: t('Scheda Tecnica'),
+                    colSpan: 2,
+                    alignment: 'center',
+                    bold: true,
+                    color: '#ffffff',
+                    fillColor: '#1a365d',
+                    margin: [0, 8, 0, 8],
+                    fontSize: 12
+                  },
+                  {}
+                ],
+                // Righe dati
+                ...techSpecs.map(([label, value]) => [
+                  {
+                    text: t(label || ''),
+                    bold: true,
+                    fontSize: 10,
+                    color: '#1a365d',
+                    fillColor: '#f7fafc',
+                    margin: [8, 6, 8, 6]
+                  },
+                  {
+                    text: t(value || ''),
+                    fontSize: 9,
+                    color: '#4a5568',
+                    margin: [8, 6, 8, 6]
+                  }
+                ])
+              ]
+            },
+            layout: {
+              hLineWidth: (i: number) => (i === 0 ? 0 : 1),
+              vLineWidth: () => 1,
+              hLineColor: () => '#e2e8f0',
+              vLineColor: () => '#e2e8f0',
+              paddingLeft: () => 0,
+              paddingRight: () => 0,
+              paddingTop: () => 0,
+              paddingBottom: () => 0
+            }
+          }
+        ],
+        margin: [6, 0, 0, 0] // micro-gap interno tra colonna immagini e tabella
+      }
+      : { width: '64%', text: '' };
+
+    // ---- Lato destro con due sotto-colonne: immagini + tabella ----
+    const rightSide = {
+      width: '51%',
+      columns: [
+        columnA,
+        techSpecStack
+      ],
+      columnGap: 6 // gap interno tra colonna immagini e tabella
+    };
+
+    // ---- Blocco complessivo ----
+    docDefinition.content.push({
+      columns: [leftSide, rightSide],
+      columnGap: betweenCols, // gap tra immagine grande e colonna destra (ridotto)
+      margin: [0, 0, 0, 22]
     });
-    return total;
+  }
+
+
+  /**
+   * Carica un'immagine quote come base64 (con fallback trasparente)
+   */
+  private async getQuoteImage(path: string): Promise<string> {
+    try {
+      const response = await fetch(path);
+      const blob = await response.blob();
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Errore nel caricamento quote'));
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.warn('Impossibile caricare l\'immagine quote:', error);
+      // Trasparente 1x1
+      return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+    }
+  }
+
+  /**
+   * Specifiche tecniche in orizzontale
+   */
+  private async addTechnicalSpecs(docDefinition: any, t: (text: string) => string): Promise<void> {
+    const techSpecs = [
+      ['Seduta', this.productData.seduta],
+      ['Schienale', this.productData.schienale],
+      ['Meccanica', this.productData.meccanica],
+      ['Materasso', this.productData.materasso]
+    ].filter(spec => spec[1]);
+
+    if (techSpecs.length === 0) return;
+
+    const specColumns: any[] = [];
+    techSpecs.forEach(([label, value]) => {
+      specColumns.push({
+        stack: [
+          { text: t(label || ''), bold: true, fontSize: 9, color: '#1a365d' },
+          { text: t(value || ''), fontSize: 8, color: '#4a5568', margin: [0, 2, 0, 0] }
+        ],
+        width: '*'
+      });
+    });
+
+    docDefinition.content.push({
+      columns: specColumns,
+      margin: [0, 0, 0, 15],
+      style: 'techSpecs'
+    });
+  }
+
+  /**
+   * Tabella matrice (varianti x rivestimenti)
+   */
+  private async addMatrixPricingTable(docDefinition: any, t: (text: string) => string): Promise<void> {
+    const allRivestimenti = new Map<string, Rivestimento>();
+    Object.values(this.rivestimentiByVariant).forEach(rivs => {
+      rivs.forEach(r => { allRivestimenti.set(r.rivestimento.id, r.rivestimento); });
+    });
+
+    const rivestimentiArray = Array.from(allRivestimenti.values());
+    if (rivestimentiArray.length === 0 || this.variantsData.length === 0) return;
+
+    const variantColWidth = '25%';
+    const rivestimentoColWidth = `${75 / rivestimentiArray.length}%`;
+
+    const headerRow: any[] = [{ text: t('Modello'), style: 'matrixHeader' }];
+    rivestimentiArray.forEach(riv => headerRow.push({ text: t(riv.name), style: 'matrixHeader' }));
+
+    const tableBody: any[] = [headerRow];
+
+    this.variantsData.forEach(variant => {
+      const row: any[] = [{ text: t(variant.longName), style: 'variantCell' }];
+      const variantRivestimenti = this.rivestimentiByVariant[variant.id] || [];
+
+      rivestimentiArray.forEach(rivestimento => {
+        const variantRiv = variantRivestimenti.find(vr => vr.rivestimento.id === rivestimento.id);
+        if (variantRiv) {
+          const rivestimentoCost = variantRiv.rivestimento.mtPrice * variantRiv.metri;
+          const totalPrice = variant.price + rivestimentoCost + this.deliveryCost;
+          const finalPrice = this.applyMarkup(totalPrice, this.markupPerc);
+
+          row.push({ text: `€ ${finalPrice.toFixed(2)}`, style: 'priceCell', fillColor: '#f0fff4' });
+        } else {
+          row.push({ text: '-', style: 'matrixCell', color: '#a0aec0' });
+        }
+      });
+
+      tableBody.push(row);
+    });
+
+    const widths = [variantColWidth, ...Array(rivestimentiArray.length).fill(rivestimentoColWidth)];
+
+    docDefinition.content.push({
+      table: { headerRows: 1, widths, body: tableBody },
+      layout: {
+        hLineWidth: (i: number, node: any) => (i === 0 || i === 1 || i === node.table.body.length ? 2 : 1),
+        vLineWidth: () => 1,
+        hLineColor: (i: number, node: any) => (i === 0 || i === 1 || i === node.table.body.length ? '#1a365d' : '#e2e8f0'),
+        vLineColor: () => '#e2e8f0',
+        paddingLeft: () => 4,
+        paddingRight: () => 4,
+        paddingTop: () => 4,
+        paddingBottom: () => 4
+      },
+      margin: [0, 0, 0, 25]
+    });
+  }
+
+  /**
+   * Servizi aggiuntivi
+   */
+  private async addExtraServices(docDefinition: any, t: (text: string) => string): Promise<void> {
+    if (this.extrasData.length === 0) return;
+
+    // Costruisci il testo del titolo con i prezzi
+    const extraTexts: any[] = [];
+    this.extrasData.forEach(extra => {
+      extraTexts.push(
+        { text: t(extra.name), fontSize: 12, bold: true, color: '#1a365d' },
+        { text: `: € ${extra.price.toFixed(2)}`, fontSize: 12, bold: true, color: '#38a169' }
+      );
+    });
+
+    if (this.deliveryCost > 0) {
+      if (extraTexts.length > 0) {
+        extraTexts.push({ text: ' | ', fontSize: 12, color: '#718096' });
+      }
+      extraTexts.push(
+        { text: t('Consegna'), fontSize: 12, bold: true, color: '#1a365d' },
+        { text: `: € ${this.deliveryCost.toFixed(2)}`, fontSize: 12, bold: true, color: '#c05621' }
+      );
+    }
+
+    docDefinition.content.push({
+      stack: [
+        {
+          text: extraTexts,
+          margin: [0, 0, 0, 0],
+          alignment: 'left'
+        }
+      ],
+      margin: [0, 15, 0, 0]
+    });
   }
 
   private applyMarkup(amount: number, perc: number): number {

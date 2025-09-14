@@ -353,42 +353,57 @@
 
           <!-- Left Column: Image and Basic Info -->
           <div class="left-column">
-            <!-- Modern Image Section Card -->
+            <!-- Modern Images Section Card -->
             <div class="modern-card image-card">
               <div class="card-header">
                 <h3 class="card-title">
                   <i class="pi pi-image"></i>
-                  Immagine Prodotto
+                  Immagini Prodotto (max 3)
                 </h3>
               </div>
               <div class="card-content">
-                <div class="modern-image-upload">
-                  <div class="image-display-area" *ngIf="currentImageToShow && !uploadingNewImage">
-                    <div class="image-wrapper">
-                      <img [src]="currentImageToShow" alt="Immagine prodotto" class="product-preview-image" />
-                      <div class="image-overlay">
-                        <button type="button" class="image-edit-btn" (click)="triggerFileInput()"
-                          title="Cambia immagine">
-                          <i class="pi pi-pencil"></i>
-                        </button>
-                        <button type="button" class="image-delete-btn" (click)="removeProductImage()"
-                          title="Rimuovi immagine">
-                          <i class="pi pi-trash"></i>
-                        </button>
+                <div class="modern-images-upload">
+                  <!-- Existing Images Grid -->
+                  <div class="images-grid" *ngIf="currentImagesToShow && currentImagesToShow.length > 0">
+                    <div class="image-slot" *ngFor="let imageUrl of currentImagesToShow; let i = index">
+                      <div class="image-wrapper">
+                        <img [src]="imageUrl" [alt]="'Immagine prodotto ' + (i + 1)" class="product-preview-image" />
+                        <div class="image-overlay">
+                          <button type="button" class="image-edit-btn" (click)="triggerFileInput(i)"
+                            title="Cambia immagine">
+                            <i class="pi pi-pencil"></i>
+                          </button>
+                          <button type="button" class="image-delete-btn" (click)="removeProductImage(i)"
+                            title="Rimuovi immagine">
+                            <i class="pi pi-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Add New Image Slot (if less than 3) -->
+                    <div class="image-slot add-slot"
+                      *ngIf="(!currentImagesToShow || currentImagesToShow.length < 3) && !uploadingNewImages"
+                      (click)="triggerFileInput()">
+                      <div class="add-image-content">
+                        <i class="pi pi-plus"></i>
+                        <span>Aggiungi</span>
                       </div>
                     </div>
                   </div>
 
+                  <!-- Upload Area (when no images or uploading) -->
                   <div class="upload-area"
-                    [ngClass]="{ 'active': isUploadMode, 'has-image': currentImageToShow && !uploadingNewImage }"
-                    *ngIf="shouldShowImagePlaceholder || uploadingNewImage || isUploadMode">
-                    <div class="upload-content" *ngIf="!uploadingNewImage">
+                    [ngClass]="{ 'active': isUploadMode, 'has-images': currentImagesToShow && currentImagesToShow.length > 0 }"
+                    *ngIf="shouldShowImagePlaceholder || uploadingNewImages || isUploadMode">
+                    <div class="upload-content" *ngIf="!uploadingNewImages">
                       <div class="upload-icon">
                         <i class="pi pi-cloud-upload"></i>
                       </div>
-                      <h4 class="upload-title">{{ shouldShowImagePlaceholder ? 'Carica immagine' : 'Cambia immagine' }}
+                      <h4 class="upload-title">
+                        {{ shouldShowImagePlaceholder ? 'Carica immagini' : 'Aggiungi immagini' }}
                       </h4>
-                      <p class="upload-subtitle">Trascina un file qui o clicca per selezionare</p>
+                      <p class="upload-subtitle">Trascina i file qui o clicca per selezionare (max 3)</p>
                       <div class="upload-actions">
                         <p-button label="Scegli File" icon="pi pi-upload" styleClass="p-button-primary upload-btn"
                           (click)="triggerFileInput()">
@@ -397,14 +412,14 @@
                           styleClass="p-button-outlined cancel-btn" (click)="cancelImageUpload()">
                         </p-button>
                       </div>
-                      <input #hiddenFileInput type="file" style="display: none" accept="image/*"
+                      <input #hiddenFileInput type="file" style="display: none" accept="image/*" multiple
                         (change)="onFileSelected($event)" />
                       <div class="upload-info">
-                        <small><i class="pi pi-info-circle"></i> JPG, PNG fino a 5MB</small>
+                        <small><i class="pi pi-info-circle"></i> JPG, PNG fino a 5MB ciascuna</small>
                       </div>
                     </div>
 
-                    <div class="upload-progress-area" *ngIf="uploadingNewImage">
+                    <div class="upload-progress-area" *ngIf="uploadingNewImages">
                       <div class="progress-content">
                         <i class="pi pi-spin pi-spinner upload-spinner"></i>
                         <h4>Caricamento in corso...</h4>

@@ -10,7 +10,7 @@ export interface AddProductDraft {
     id?: string;
     name: string;
     description?: string;
-    photoUrl?: string;
+    photoUrl?: string[];
     seduta?: string;
     schienale?: string;
     meccanica?: string;
@@ -58,7 +58,7 @@ export class AddProductDraftService {
     this.draft$.next(draft);
     try {
       localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
-    } catch {}
+    } catch { }
   }
 
   private loadFromStorage(): AddProductDraft | null {
@@ -76,6 +76,6 @@ export class AddProductDraftService {
 
   clear() {
     this.draft$.next(null);
-    try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch {}
+    try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch { }
   }
 }

@@ -31,18 +31,22 @@
 
           <div class="p-field p-col-12 p-md-6">
             <div class="image-upload-section">
-              <p-fileUpload *ngIf="!imagePreview && !isUploading" mode="basic" name="productImage" accept="image/*"
-                [maxFileSize]="5000000" (onSelect)="onFileSelect($event)" chooseLabel="Seleziona Immagine"
-                [auto]="false" styleClass="transparent-upload-btn">
+              <p-fileUpload *ngIf="imagePreviews.length === 0 && !isUploading" mode="basic" name="productImage"
+                accept="image/*" [maxFileSize]="5000000" (onSelect)="onFileSelect($event)"
+                chooseLabel="Seleziona Immagini (max 3)" [auto]="false" styleClass="transparent-upload-btn"
+                [multiple]="true">
               </p-fileUpload>
 
-
-              <!-- Preview dell'immagine -->
-              <div *ngIf="imagePreview && !isUploading" class="image-preview-container">
-                <img [src]="imagePreview" alt="Anteprima" class="image-preview" />
+              <!-- Preview delle immagini -->
+              <div *ngIf="imagePreviews.length > 0 && !isUploading" class="images-preview-container">
+                <div class="images-grid">
+                  <div *ngFor="let preview of imagePreviews; let i = index" class="image-preview-item">
+                    <img [src]="preview" alt="Anteprima {{i+1}}" class="image-preview" />
+                  </div>
+                </div>
                 <div class="image-actions">
                   <p-button icon="pi pi-times" (onClick)="removeImage()" styleClass="p-button-danger p-button-sm"
-                    pTooltip="Rimuovi immagine"></p-button>
+                    pTooltip="Rimuovi tutte le immagini"></p-button>
                 </div>
               </div>
 
@@ -141,18 +145,13 @@
           <div class="p-field p-col-12">
             <h3>Varianti del Prodotto</h3>
 
-<div style="padding-bottom: 15px;">
-  <p-selectButton
-  [options]="pricingOptions"
-  [(ngModel)]="selectedPricingMode"
-  optionLabel="label"
-  optionValue="value"
-  (onChange)="onPricingModeChange()"
-  name="pricingMode"
-  styleClass="segmented-control" >
-  
-</p-selectButton>
-</div>
+            <div style="padding-bottom: 15px;">
+              <p-selectButton [options]="pricingOptions" [(ngModel)]="selectedPricingMode" optionLabel="label"
+                optionValue="value" (onChange)="onPricingModeChange()" name="pricingMode"
+                styleClass="segmented-control">
+
+              </p-selectButton>
+            </div>
 
 
 
@@ -188,8 +187,8 @@
               <!-- Custom Price Field - only show if custom mode selected -->
               <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;" *ngIf="isCustomPricingMode()">
                 <p-floatLabel>
-                  <p-inputNumber id="customPrice" [(ngModel)]="customVariantPrice" name="customPrice" 
-                    mode="currency" currency="EUR" locale="it-IT" [min]="0.01"></p-inputNumber>
+                  <p-inputNumber id="customPrice" [(ngModel)]="customVariantPrice" name="customPrice" mode="currency"
+                    currency="EUR" locale="it-IT" [min]="0.01"></p-inputNumber>
                   <label>Custom</label>
                 </p-floatLabel>
                 <small *ngIf="variantFormSubmitted && customVariantPrice <= 0" class="p-error">
@@ -266,7 +265,7 @@
                       inputId="variantDropdown" placeholder="Scegli una variante"
                       (onChange)="selectVariantForComponents($event.value)" [style]="{ width: '100%' }">
                       <ng-template let-variant pTemplate="item">
-                        {{ variant.longName }} 
+                        {{ variant.longName }}
                         <span class="variant-mode-indicator">
                           ({{ variant.pricingMode === 'custom' ? 'Custom' : 'Componenti' }})
                         </span>
@@ -280,7 +279,7 @@
 
             <!-- Custom Price Warning -->
             <div *ngIf="shouldShowCustomPriceWarning()" class="custom-price-warning p-mb-4">
-              <p-message severity="info" 
+              <p-message severity="info"
                 text="Questa variante utilizza un prezzo custom. I componenti sono opzionali."></p-message>
             </div>
 

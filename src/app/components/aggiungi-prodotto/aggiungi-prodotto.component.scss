@@ -201,6 +201,42 @@
 
 /* Image upload styling */
 .image-upload-section {
+  .images-preview-container {
+    position: relative;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+
+    .images-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .image-preview-item {
+      position: relative;
+      border-radius: 6px;
+      overflow: hidden;
+
+      .image-preview {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        display: block;
+        border-radius: 6px;
+      }
+    }
+
+    .image-actions {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+  }
+
+  // Legacy single image support
   .image-preview-container {
     position: relative;
     display: inline-block;
@@ -734,7 +770,8 @@
 /* Annulla la larghezza 100% ereditata da p-fluid SOLO nel select button */
 :host ::ng-deep .pricing-mode-select .p-button {
   width: auto;
-  flex: 0 0 auto;   /* impedisce l'allargamento */
+  flex: 0 0 auto;
+  /* impedisce l'allargamento */
 }
 
 /* (opzionale) un po' di spazio tra i due bottoni */
@@ -744,19 +781,23 @@
 
 /* Segmented control “pill” */
 :host ::ng-deep .segmented-control.p-selectbutton {
-  display: inline-flex;           /* evita layout a colonna */
+  display: inline-flex;
+  /* evita layout a colonna */
   align-items: center;
-  gap: .25rem;                    /* piccolo spazio tra pill */
+  gap: .25rem;
+  /* piccolo spazio tra pill */
   padding: .25rem;
   border-radius: 12px;
-  background: var(--surface-100); /* sfondo “card” tenue */
-  white-space: nowrap;            /* non andare a capo */
+  background: var(--surface-100);
+  /* sfondo “card” tenue */
+  white-space: nowrap;
+  /* non andare a capo */
 }
 
 /* Bottoni interni */
 :host ::ng-deep .segmented-control .p-button {
   border: 0;
-  background: transparent; 
+  background: transparent;
   color: var(--text-color-secondary);
   box-shadow: none;
   border-radius: .75rem;
@@ -770,11 +811,6 @@
   background: #007bff;
   color: white;
   box-shadow:
-    0 1px 2px rgba(0,0,0,.06),
-    0 4px 10px rgba(0,0,0,.04);
+    0 1px 2px rgba(0, 0, 0, .06),
+    0 4px 10px rgba(0, 0, 0, .04);
 }
-
-
-
-
-
