@@ -8,12 +8,10 @@ import { ExtraMattress } from '../models/extra-mattress.model';
 import { TranslationService } from './translation.service';
 import { I18nService } from './i18n.service';
 
-// Inizializza il Virtual File System per i font
 (pdfMake as any).vfs = pdfFonts.vfs;
 
 @Injectable({ providedIn: 'root' })
 export class PdfGenerationService {
-  // --- Proprietà interne per l'adapter ---
   private productData!: SofaProduct;
   private variantsData: Variant[] = [];
   private rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] } = {};
@@ -26,9 +24,6 @@ export class PdfGenerationService {
     private i18nService: I18nService
   ) { }
 
-  /**
-   * Configura i dati da usare nel PDF con rivestimenti organizzati per variante
-   */
   setListinoData(
     product: SofaProduct,
     variants: Variant[],
@@ -45,9 +40,6 @@ export class PdfGenerationService {
     this.deliveryCost = delivery;
   }
 
-  /**
-   * Converte un'immagine da URL a base64
-   */
   private async urlToBase64(url: string): Promise<string | null> {
     try {
       const response = await fetch(url);
@@ -65,9 +57,6 @@ export class PdfGenerationService {
     }
   }
 
-  /**
-   * Converte il logo da base64
-   */
   private async getLogoBase64(): Promise<string> {
     try {
       const response = await fetch('/logo_sofaform_pdf.png');
@@ -81,19 +70,13 @@ export class PdfGenerationService {
       });
     } catch (error) {
       console.warn('Impossibile caricare il logo:', error);
-      // Fallback trasparente
       return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
     }
   }
 
-  /**
-   * Genera e scarica il PDF con layout aggiornato
-   */
   async generateListinoPdf(productName: string, languageCode: string = 'it') {
-    // 1) Traduzioni statiche
     const staticTranslations = this.i18nService.getListinoTranslations(languageCode);
 
-    // 2) Raccogli testi dinamici da tradurre
     const textsToTranslate: string[] = [];
     if (this.productData.name) textsToTranslate.push(this.productData.name);
     if (this.productData.description) textsToTranslate.push(this.productData.description);
@@ -113,7 +96,6 @@ export class PdfGenerationService {
 
     this.extrasData.forEach(extra => { if (extra.name) textsToTranslate.push(extra.name); });
 
-    // 3) Traduzioni dinamiche
     let dynamicTranslations: { [key: string]: string } = {};
     if (languageCode !== 'it' && textsToTranslate.length > 0) {
       try {
@@ -126,21 +108,18 @@ export class PdfGenerationService {
       textsToTranslate.forEach(t => dynamicTranslations[t] = t);
     }
 
-    // 4) Funzione t()
     const t = (text: string) => {
       if (staticTranslations[text] !== undefined) return staticTranslations[text];
       return dynamicTranslations[text] || text;
     };
 
-    // DocDefinition
     const docDefinition: any = {
       pageSize: 'A4',
       pageOrientation: 'landscape',
-      pageMargins: [30, 30, 30, 30],
       defaultStyle: { fontSize: 9, lineHeight: 1.2, color: '#2d3748' },
       styles: {
         coverTitle: { fontSize: 32, bold: true, color: '#1a365d', alignment: 'center' },
-        productName: { fontSize: 24, bold: true, color: '#2d3748', alignment: 'center', margin: [0, 10, 0, 15] },
+        productName: { fontSize: 24, bold: true, color: '#2d3748', alignment: 'center', margin: [0, 0, 0, 15] },
         description: { fontSize: 11, color: '#718096', alignment: 'center', italics: true, margin: [0, 5, 0, 5] },
         matrixHeader: { bold: true, fillColor: '#1a365d', color: '#ffffff', fontSize: 9, alignment: 'center', margin: [3, 6, 3, 6] },
         matrixCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4] },
@@ -149,7 +128,6 @@ export class PdfGenerationService {
         techSpecs: { fontSize: 10, margin: [0, 10, 0, 10] },
         small: { fontSize: 7, color: '#718096', alignment: 'center' },
 
-        // AGGIUNTE per il blocco citazione
         quoteMark: { fontSize: 42, bold: true, color: '#000000', lineHeight: 0.8 },
         quoteText: { fontSize: 12, color: '#4a5568', italics: true, alignment: 'left' }
       },
@@ -159,20 +137,43 @@ export class PdfGenerationService {
       content: []
     };
 
-    // PAGINA 1: Cover con logo
     const logoBase64 = await this.getLogoBase64();
+    const PAGE_H = 595.28;
+    const V_MARGINS = 60;
+    const IMG_H = 250;
+    const available = PAGE_H - V_MARGINS;
+
+    const EPS = 5;
+    const spacerTop = Math.max(0, Math.floor((available - IMG_H - EPS) / 2));
+    const spacerBottom = Math.max(0, available - IMG_H - EPS - spacerTop);
+
     docDefinition.content.push({
-      stack: [
-        { text: '', margin: [0, 150, 0, 0] },
-        { image: logoBase64, width: 400, alignment: 'center' },
-        { text: '', margin: [0, 0, 0, 50] },
-        { text: t('LISTINO PREZZI'), style: 'coverTitle' }
-      ],
+      table: {
+        widths: ['*'],
+        heights: [spacerTop, IMG_H, spacerBottom],
+        body: [
+          [{ text: '' }],
+          [{
+            image: logoBase64,
+            width: 500,
+            height: IMG_H,
+            alignment: 'center',
+            margin: [0, 0, 0, 0],
+          }],
+        ]
+      },
+      layout: 'noBorders',
       pageBreak: 'after'
     });
 
-    // PAGINA 2: Titolo prodotto + immagini/descrizione + matrice prezzi + servizi extra
-    docDefinition.content.push({ text: t(this.productData.name), style: 'productName' });
+    docDefinition.content.push({
+      text: t(this.productData.name),
+      style: 'productName',
+      margin: [0, 20, 0, 30] // Increased bottom margin from 15 to 30
+    });
+
+
+
 
     await this.addProductImagesWithDescription(docDefinition, t);
     await this.addMatrixPricingTable(docDefinition, t);
@@ -182,20 +183,10 @@ export class PdfGenerationService {
     pdfMake.createPdf(docDefinition).download(filename);
   }
 
-  /**
-   * Layout immagini/descrizione:
-   * - Sinistra: immagine grande
-   * - Destra: due immagini impilate + blocco citazione affiancato
-   */
-  /**
-   * Layout immagini/descrizione:
-   * - Sinistra: immagine grande
-   * - Destra: due immagini impilate + scheda tecnica affiancata
-   */
+
   private async addProductImagesWithDescription(docDefinition: any, t: (text: string) => string): Promise<void> {
     const images: string[] = [];
 
-    // Colleziona immagini
     if (this.productData.photoUrl && Array.isArray(this.productData.photoUrl)) {
       for (const url of this.productData.photoUrl) {
         const b64 = await this.urlToBase64(url);
@@ -207,33 +198,31 @@ export class PdfGenerationService {
     }
     if (images.length === 0) return;
 
-    // === Dimensioni 16:9 ===
     const R = 16 / 9;
     const largeW = 280, largeH = Math.round(largeW / R);
-    const smallW = 115, smallH = Math.round(smallW / R);
+    const smallW = 132, smallH = Math.round(smallW / R);
 
-    // Gaps più stretti per avvicinare le colonne
-    const innerGap = 10;   // tra le due piccole
-    const betweenCols = 4; // SPAZIO RIDOTTO tra immagine grande e colonna destra
+    const innerGap = 10;
+    const betweenCols = -100;
 
-    // ---- Sinistra: immagine grande ----
     const leftSide = {
-      width: '49%',
+      width: '45%',
       stack: [
         { image: images[0], width: largeW, height: largeH, alignment: 'left' }
       ]
     };
 
-    // ---- Colonna immagini impilate (più stretta) ----
     const columnA = {
-      width: '36%', // più stretta per dare più spazio alla tabella
-      stack: [
+      width: '36%',
+      stack: images.length === 2 ? [
+        { text: '', margin: [0, 0, 0, largeH - smallH] },
+        images[1] ? { image: images[1], width: smallW, height: smallH, alignment: 'center' } : { text: '' }
+      ] : [
         images[1] ? { image: images[1], width: smallW, height: smallH, margin: [0, 0, 0, innerGap], alignment: 'center' } : { text: '' },
         images[2] ? { image: images[2], width: smallW, height: smallH, alignment: 'center' } : { text: '' }
       ]
     };
 
-    // ---- Dati scheda tecnica ----
     const techSpecs = [
       ['Seduta', this.productData.seduta],
       ['Schienale', this.productData.schienale],
@@ -241,139 +230,90 @@ export class PdfGenerationService {
       ['Materasso', this.productData.materasso]
     ].filter(spec => spec[1]);
 
-    // ---- Tabella scheda tecnica (più larga) con HEADER ROW ----
     const techSpecStack = techSpecs.length > 0
       ? {
-        width: '64%', // PIÙ LARGA della colonna immagini
-        stack: [
-          {
-            table: {
-              headerRows: 1,
-              widths: ['35%', '65%'],
-              body: [
-                // HEADER ROW richiesta
-                [
-                  {
-                    text: t('Scheda Tecnica'),
-                    colSpan: 2,
-                    alignment: 'center',
-                    bold: true,
-                    color: '#ffffff',
-                    fillColor: '#1a365d',
-                    margin: [0, 8, 0, 8],
-                    fontSize: 12
-                  },
-                  {}
-                ],
-                // Righe dati
-                ...techSpecs.map(([label, value]) => [
-                  {
-                    text: t(label || ''),
-                    bold: true,
-                    fontSize: 10,
-                    color: '#1a365d',
-                    fillColor: '#f7fafc',
-                    margin: [8, 6, 8, 6]
-                  },
-                  {
-                    text: t(value || ''),
-                    fontSize: 9,
-                    color: '#4a5568',
-                    margin: [8, 6, 8, 6]
-                  }
-                ])
-              ]
-            },
-            layout: {
-              hLineWidth: (i: number) => (i === 0 ? 0 : 1),
-              vLineWidth: () => 1,
-              hLineColor: () => '#e2e8f0',
-              vLineColor: () => '#e2e8f0',
-              paddingLeft: () => 0,
-              paddingRight: () => 0,
-              paddingTop: () => 0,
-              paddingBottom: () => 0
+        width: '64%',
+        // Usa una tabella per controllare meglio l'allineamento verticale
+        table: {
+          widths: ['*'],
+          heights: [largeH], // Stessa altezza dell'immagine grande
+          body: [[
+            {
+              stack: [{
+                table: {
+                  headerRows: 1,
+                  widths: ['35%', '65%'],
+                  body: [
+                    [
+                      {
+                        text: t('Scheda Tecnica'),
+                        colSpan: 2,
+                        alignment: 'center',
+                        bold: true,
+                        color: '#ffffff',
+                        fillColor: '#1a365d',
+                        margin: [0, 8, 0, 8],
+                        fontSize: 12
+                      },
+                      {}
+                    ],
+                    ...techSpecs.map(([label, value]) => [
+                      {
+                        text: t(label || ''),
+                        bold: true,
+                        fontSize: 10,
+                        color: '#1a365d',
+                        fillColor: '#f7fafc',
+                        margin: [8, 6, 8, 6]
+                      },
+                      {
+                        text: t(value || ''),
+                        fontSize: 9,
+                        color: '#4a5568',
+                        margin: [8, 6, 8, 6]
+                      }
+                    ])
+                  ]
+                },
+                layout: {
+                  hLineWidth: (i: number) => (i === 0 ? 0 : 1),
+                  vLineWidth: () => 1,
+                  hLineColor: () => '#e2e8f0',
+                  vLineColor: () => '#e2e8f0',
+                  paddingLeft: () => 0,
+                  paddingRight: () => 0,
+                  paddingTop: () => 0,
+                  paddingBottom: () => 0
+                }
+              }],
+              alignment: 'bottom' // Allinea al fondo!
             }
-          }
-        ],
-        margin: [6, 0, 0, 0] // micro-gap interno tra colonna immagini e tabella
+          ]]
+        },
+        layout: 'noBorders',
+        margin: [6, 0, 0, 0]
       }
       : { width: '64%', text: '' };
 
-    // ---- Lato destro con due sotto-colonne: immagini + tabella ----
     const rightSide = {
-      width: '51%',
+      width: '55%',
       columns: [
         columnA,
         techSpecStack
       ],
-      columnGap: 6 // gap interno tra colonna immagini e tabella
+      columnGap: 6
     };
 
-    // ---- Blocco complessivo ----
     docDefinition.content.push({
       columns: [leftSide, rightSide],
-      columnGap: betweenCols, // gap tra immagine grande e colonna destra (ridotto)
-      margin: [0, 0, 0, 22]
+      columnGap: betweenCols,
+      margin: [0, 0, 0, 50]
     });
   }
 
 
-  /**
-   * Carica un'immagine quote come base64 (con fallback trasparente)
-   */
-  private async getQuoteImage(path: string): Promise<string> {
-    try {
-      const response = await fetch(path);
-      const blob = await response.blob();
 
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Errore nel caricamento quote'));
-        reader.readAsDataURL(blob);
-      });
-    } catch (error) {
-      console.warn('Impossibile caricare l\'immagine quote:', error);
-      // Trasparente 1x1
-      return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
-    }
-  }
 
-  /**
-   * Specifiche tecniche in orizzontale
-   */
-  private async addTechnicalSpecs(docDefinition: any, t: (text: string) => string): Promise<void> {
-    const techSpecs = [
-      ['Seduta', this.productData.seduta],
-      ['Schienale', this.productData.schienale],
-      ['Meccanica', this.productData.meccanica],
-      ['Materasso', this.productData.materasso]
-    ].filter(spec => spec[1]);
-
-    if (techSpecs.length === 0) return;
-
-    const specColumns: any[] = [];
-    techSpecs.forEach(([label, value]) => {
-      specColumns.push({
-        stack: [
-          { text: t(label || ''), bold: true, fontSize: 9, color: '#1a365d' },
-          { text: t(value || ''), fontSize: 8, color: '#4a5568', margin: [0, 2, 0, 0] }
-        ],
-        width: '*'
-      });
-    });
-
-    docDefinition.content.push({
-      columns: specColumns,
-      margin: [0, 0, 0, 15],
-      style: 'techSpecs'
-    });
-  }
-
-  /**
-   * Tabella matrice (varianti x rivestimenti)
-   */
   private async addMatrixPricingTable(docDefinition: any, t: (text: string) => string): Promise<void> {
     const allRivestimenti = new Map<string, Rivestimento>();
     Object.values(this.rivestimentiByVariant).forEach(rivs => {
@@ -429,13 +369,9 @@ export class PdfGenerationService {
     });
   }
 
-  /**
-   * Servizi aggiuntivi
-   */
   private async addExtraServices(docDefinition: any, t: (text: string) => string): Promise<void> {
     if (this.extrasData.length === 0) return;
 
-    // Costruisci il testo del titolo con i prezzi
     const extraTexts: any[] = [];
     this.extrasData.forEach(extra => {
       extraTexts.push(
