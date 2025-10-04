@@ -295,7 +295,7 @@
   </p-dialog>
 
   <!-- Dialog Configura Ricarico -->
-  <p-dialog appendTo="body" [(visible)]="showMarkupDialog" header="Configura Ricarico e Lingua" [modal]="true"
+  <p-dialog appendTo="body" [(visible)]="showMarkupDialog" header="Configurazione Listino" [modal]="true"
     [closable]="false" [baseZIndex]="11000" [draggable]="false" [style]="{ width: '800px', maxHeight: '90vh' }"
     [contentStyle]="{ overflow: 'visible', paddingBottom: '4.5rem' }" [resizable]="false" (onHide)="cancelMarkup()"
     [dismissableMask]="false" [closeOnEscape]="false">
@@ -304,6 +304,33 @@
         <label for="markup">Percentuale di ricarico:</label>
         <p-inputNumber id="markup" [(ngModel)]="markupPercentage" [min]="0" [max]="1000" suffix="%"
           placeholder="Inserisci la percentuale"></p-inputNumber>
+      </div>
+
+      <!-- Selezione Immagine Header -->
+      <div class="field">
+        <label for="headerImageSelect">Immagine listino:</label>
+        <p-dropdown id="headerImageSelect" [options]="availableHeaderImages" [(ngModel)]="selectedHeaderImage" 
+          optionLabel="name" placeholder="Seleziona immagine listino" [style]="{ width: '100%' }" 
+          styleClass="header-image-dropdown" appendTo="body" [autoZIndex]="true" [baseZIndex]="12000" 
+          [panelStyle]="{ 'max-height': '40vh', 'overflow': 'auto' }">
+          <ng-template let-headerImage pTemplate="item">
+            <div class="header-image-option">
+              <span class="header-image-name">{{ headerImage.name }}</span>
+              <small class="header-image-description">{{ headerImage.description }}</small>
+            </div>
+          </ng-template>
+
+          <ng-template let-selectedHeaderImage pTemplate="selectedItem">
+            <div class="header-image-option" *ngIf="selectedHeaderImage">
+              <span class="header-image-name">{{ selectedHeaderImage.name }}</span>
+            </div>
+          </ng-template>
+        </p-dropdown>
+
+        <small class="header-image-info" style="display:block; margin-top:1rem;">
+          <i class="pi pi-info-circle" style="color: #1976d2;"></i>
+          L'immagine selezionata apparirà come header nella prima pagina del listino PDF
+        </small>
       </div>
 
       <!-- Selezione Lingua -->
@@ -326,7 +353,7 @@
         </p-dropdown>
 
         <small class="language-info" style="display:block; margin-top:1rem;">
-          <i class="pi pi-info-circle"></i>
+          <i class="pi pi-info-circle" style="color: #1976d2;"></i>
           Il listino sarà tradotto automaticamente nella lingua selezionata
         </small>
       </div>

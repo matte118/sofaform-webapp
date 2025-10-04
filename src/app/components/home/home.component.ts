@@ -105,6 +105,10 @@ export class HomeComponent implements OnInit {
   selectedLanguage: LanguageOption = { code: 'it', name: 'Italiano', flag: '🇮🇹' };
   isTranslating = false;
 
+  // Header image selection for PDF
+  availableHeaderImages: { name: string; description: string; url: string }[] = [];
+  selectedHeaderImage: { name: string; description: string; url: string } | null = null;
+
   // Dialog states
   showMarkupDialog = false;
   showRivestimentoDialog = false;
@@ -216,6 +220,7 @@ export class HomeComponent implements OnInit {
       this.loadAvailableComponents();
       this.loadRivestimentiList();
       this.availableLanguages = this.translationService.getAvailableLanguages();
+      this.initializeHeaderImages();
     }
   }
 
@@ -621,7 +626,9 @@ export class HomeComponent implements OnInit {
     this.variantRivestimentiSelections = {};
     this.variantRivestimentiMeters = {};
     this.uniformMetersForVariant = {};
-    this.selectedVariantForRivestimento = undefined; // Reset selected variant
+    this.selectedVariantForRivestimento = undefined;
+    // Reset header image selection to default
+    this.selectedHeaderImage = this.availableHeaderImages[0] || null;
   }
 
   cancelMarkup() {
@@ -1739,5 +1746,27 @@ export class HomeComponent implements OnInit {
 
   getCurrentDate(): string {
     return new Date().toLocaleDateString('it-IT');
+  }
+
+  private initializeHeaderImages(): void {
+    // Initialize with two identical options pointing to the current default header image
+    // This matches the current PDF generation behavior
+    const defaultHeaderImageUrl = 'assets/images/default-header-image.png'; // Update this path to match your actual header image
+    
+    this.availableHeaderImages = [
+      {
+        name: 'Logo Aziendale Standard',
+        description: 'Logo principale dell\'azienda per il listino',
+        url: defaultHeaderImageUrl
+      },
+      {
+        name: 'Logo Aziendale Alternativo', 
+        description: 'Versione alternativa del logo aziendale',
+        url: defaultHeaderImageUrl
+      }
+    ];
+
+    // Set default selection to first option
+    this.selectedHeaderImage = this.availableHeaderImages[0];
   }
 }
