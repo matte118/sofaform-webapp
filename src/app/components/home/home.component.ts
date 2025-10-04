@@ -1124,19 +1124,22 @@ export class HomeComponent implements OnInit {
       message: 'Sei sicuro di voler eliminare questa variante?',
       header: 'Conferma eliminazione',
       icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Elimina',
+      rejectLabel: 'Annulla',
+      acceptButtonStyleClass: 'primary-button',
+      rejectButtonStyleClass: 'btn-dialog-no',
       accept: () => {
         this.editingVariants.splice(index, 1);
-        // Se stavamo modificando questa variante, annulla la modifica
         if (this.editingVariantIndex === index) {
           this.cancelVariantEdit();
         } else if (this.editingVariantIndex > index) {
-          // Aggiusta l'indice se necessario
           this.editingVariantIndex--;
         }
         this.cdr.detectChanges();
       }
     });
   }
+
 
   // === Component Management ===
   getComponentsByType(type: string): ComponentModel[] {

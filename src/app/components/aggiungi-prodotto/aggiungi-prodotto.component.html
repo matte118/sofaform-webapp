@@ -431,6 +431,32 @@
                 </div>
               </div>
 
+              <!-- Ferro Schienale -->
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6">
+                  <p-floatLabel>
+                    <p-dropdown [options]="getComponentsByType('ferro_schienale') || []" [(ngModel)]="selectedFerroSchienale"
+                      optionLabel="name" inputId="ferroSchienaleDropdown" placeholder="Seleziona Ferro Schienale"
+                      [showClear]="true" [disabled]="(getComponentsByType('ferro_schienale') || []).length === 0"
+                      (onChange)="onComponentSelected('ferro_schienale', $event.value)" name="ferro_schienale" filter="true"
+                      [ngStyle]="{ 'width': '100%' }">
+                      <ng-template let-item pTemplate="item">
+                        {{ formatComponentName(item) }}
+                      </ng-template>
+                      <ng-template let-selectedItem pTemplate="selectedItem">
+                        {{ formatComponentName(selectedItem) }}
+                      </ng-template>
+                    </p-dropdown>
+                    <label for="ferroSchienaleDropdown">
+                      Ferro Schienale <span class="required-field"></span>
+                    </label>
+                  </p-floatLabel>
+
+                  <small *ngIf="(getComponentsByType('ferro_schienale') || []).length === 0" class="p-error">
+                    Nessun componente di tipo ferro schienale disponibile
+                  </small>
+                </div>
+              </div>
 
               <!-- Tappezzeria -->
               <div class="p-field p-grid" style="padding-top: 10px;">

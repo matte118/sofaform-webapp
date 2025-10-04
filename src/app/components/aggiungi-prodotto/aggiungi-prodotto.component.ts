@@ -88,6 +88,7 @@ export class AggiungiProdottoComponent implements OnInit {
   selectedGomma?: ComponentModel;
   selectedRete?: ComponentModel;
   selectedMaterasso?: ComponentModel;
+  selectedFerroSchienale?: ComponentModel;
   selectedImballo?: ComponentModel;
   selectedScatola?: ComponentModel;
   selectedTelaMarchiata?: ComponentModel;
@@ -419,6 +420,7 @@ export class AggiungiProdottoComponent implements OnInit {
     return !!this.selectedFusto ||
       !!this.selectedGomma ||
       !!this.selectedMaterasso ||
+      !!this.selectedFerroSchienale ||
       !!this.selectedImballo ||
       !!this.selectedScatola ||
       !!this.selectedPiedini ||
@@ -431,7 +433,7 @@ export class AggiungiProdottoComponent implements OnInit {
 
     const missingComponents = [];
     if (!this.selectedFusto && !this.selectedGomma && !this.selectedRete && !this.selectedPiedini
-      && !this.selectedMaterasso && !this.selectedImballo &&
+      && !this.selectedMaterasso && !this.selectedFerroSchienale && !this.selectedImballo &&
       !this.selectedScatola && this.ferramentaList.length === 0 && this.varieList.length === 0 &&
       this.tappezzeriaList.length === 0 && !this.selectedTelaMarchiata && !this.selectedTrasporto) {
       missingComponents.push('almeno un componente');
@@ -450,7 +452,7 @@ export class AggiungiProdottoComponent implements OnInit {
     }
 
     const comps: ComponentModel[] = [];
-    [this.selectedFusto, this.selectedGomma, this.selectedRete, this.selectedMaterasso, this.selectedImballo, this.selectedScatola, this.selectedTelaMarchiata, this.selectedTrasporto]
+    [this.selectedFusto, this.selectedGomma, this.selectedRete, this.selectedMaterasso, this.selectedFerroSchienale, this.selectedImballo, this.selectedScatola, this.selectedTelaMarchiata, this.selectedTrasporto]
       .forEach(c => c && comps.push(c));
     if (this.selectedPiedini) for (let i = 0; i < Math.max(2, this.piediniQty!); i++) comps.push(this.selectedPiedini);
     this.ferramentaList.forEach(c => comps.push(c));
@@ -495,7 +497,7 @@ export class AggiungiProdottoComponent implements OnInit {
 
           // Only try to auto-apply if there are selected components
           const hasSelections = this.selectedFusto || this.selectedGomma || this.selectedPiedini ||
-            this.selectedMaterasso || this.selectedImballo || this.selectedScatola ||
+            this.selectedMaterasso || this.selectedFerroSchienale || this.selectedImballo || this.selectedScatola ||
             this.ferramentaList.length > 0 || this.varieList.length > 0;
 
           if (hasSelections) {
@@ -738,37 +740,31 @@ export class AggiungiProdottoComponent implements OnInit {
   }
 
   private uploadImageImmediately(file: File): void {
-    // Legacy method - now calls the multiple upload method
     this.uploadMultipleImagesImmediately([file]);
   }
 
-  // Make method explicitly public for template access
   public getComponentsByType(type: string): ComponentModel[] {
-    // Check cache first
     const lowerType = type.toLowerCase();
 
     if (!this.componentsByTypeCache.has(lowerType)) {
-      // Convert string to ComponentType enum for filtering
       const componentType = this.getComponentTypeFromString(type);
 
-      // Cache miss - filter the components and store in cache
       const filtered = this.availableComponents.filter(c =>
         c.type === componentType
       );
       this.componentsByTypeCache.set(lowerType, filtered);
     }
 
-    // Return from cache
     return this.componentsByTypeCache.get(lowerType) || [];
   }
 
-  // Helper method to convert string to ComponentType enum
   private getComponentTypeFromString(type: string): ComponentType | undefined {
     const typeMap: { [key: string]: ComponentType } = {
       'fusto': ComponentType.FUSTO,
       'gomma': ComponentType.GOMMA,
       'rete': ComponentType.RETE,
       'materasso': ComponentType.MATERASSO,
+      'ferro_schienale': ComponentType.FERRO_SCHIENALE,
       'tappezzeria': ComponentType.TAPPEZZERIA,
       'piedini': ComponentType.PIEDINI,
       'ferramenta': ComponentType.FERRAMENTA,
@@ -785,53 +781,42 @@ export class AggiungiProdottoComponent implements OnInit {
     console.log(`Componente ${type} selezionato:`, component);
   }
 
-  /**
-   * Format component name with measure if available
-   * @param component The component to format
-   * @returns Formatted name with measure
-   */
   formatComponentName(component: ComponentModel): string {
     if (!component) return '';
 
     const hasMeasure = !!component.measure?.trim();
     const key = this.buildNameMeasureKey(component);
 
-    // Base (senza fornitore)
     let base = component.name;
 
     if (hasMeasure) {
       base += ` (${component.measure})`;
     }
 
-    // Se non è un duplicato (stesso nome+misura), ritorna base
     if (!this.duplicateNameMeasureKeys.has(key)) {
       return base;
     }
 
-    // È duplicato: aggiungi il fornitore
     const supplierName = this.getSupplierNameForComponent(component);
     if (supplierName) {
       if (hasMeasure) {
-        // Formato richiesto: Nome (Misura) (Fornitore)
         return `${component.name} (${component.measure}) (${supplierName})`;
       } else {
-        // Nessuna misura -> Nome (Fornitore)
         return `${component.name} (${supplierName})`;
       }
     }
 
-    // Duplicato ma non abbiamo il fornitore: lasciamo base (oppure aggiungi placeholder se vuoi)
     return base;
   }
 
 
-  // Add method to get ComponentType display name for table
   getComponentTypeDisplayName(type: ComponentType): string {
     const typeNames: { [key in ComponentType]: string } = {
       [ComponentType.FUSTO]: 'Fusto',
       [ComponentType.GOMMA]: 'Gomma',
       [ComponentType.RETE]: 'Rete',
       [ComponentType.MATERASSO]: 'Materasso',
+      [ComponentType.FERRO_SCHIENALE]: 'Ferro Schienale',
       [ComponentType.TAPPEZZERIA]: 'Tappezzeria',
       [ComponentType.PIEDINI]: 'Piedini',
       [ComponentType.FERRAMENTA]: 'Ferramenta',
@@ -880,6 +865,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.selectedGomma = undefined;
     this.selectedRete = undefined;
     this.selectedMaterasso = undefined;
+    this.selectedFerroSchienale = undefined;
     this.selectedImballo = undefined;
     this.selectedScatola = undefined;
     this.selectedPiedini = undefined;
@@ -948,6 +934,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.selectedGomma = this.findMatchingComponent('gomma', compsByType);
     this.selectedRete = this.findMatchingComponent('rete', compsByType);
     this.selectedMaterasso = this.findMatchingComponent('materasso', compsByType);
+    this.selectedFerroSchienale = this.findMatchingComponent('ferro_schienale', compsByType);
     this.selectedImballo = this.findMatchingComponent('imballo', compsByType);
     this.selectedScatola = this.findMatchingComponent('scatola', compsByType);
     this.selectedTelaMarchiata = this.findMatchingComponent('tela_marchiata', compsByType);
@@ -984,6 +971,7 @@ export class AggiungiProdottoComponent implements OnInit {
       this.selectedRete ||
       this.selectedPiedini ||
       this.selectedMaterasso ||
+      this.selectedFerroSchienale ||
       this.selectedImballo ||
       this.selectedScatola ||
       this.selectedTelaMarchiata ||
@@ -1034,6 +1022,7 @@ export class AggiungiProdottoComponent implements OnInit {
         selectedGommaId: id(this.selectedGomma),
         selectedReteId: id(this.selectedRete),
         selectedMaterassoId: id(this.selectedMaterasso),
+        selectedFerroSchienaleId: id(this.selectedFerroSchienale),
         selectedImballoId: id(this.selectedImballo),
         selectedScatolaId: id(this.selectedScatola),
         selectedTelaMarchiataId: id(this.selectedTelaMarchiata),
@@ -1100,6 +1089,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.selectedGomma = this.availableComponents.find(c => c.id === sel.selectedGommaId);
     this.selectedRete = this.availableComponents.find(c => c.id === sel.selectedReteId);
     this.selectedMaterasso = this.availableComponents.find(c => c.id === sel.selectedMaterassoId);
+    this.selectedFerroSchienale = this.availableComponents.find(c => c.id === sel.selectedFerroSchienaleId);
     this.selectedImballo = this.availableComponents.find(c => c.id === sel.selectedImballoId);
     this.selectedScatola = this.availableComponents.find(c => c.id === sel.selectedScatolaId);
     this.selectedTelaMarchiata = this.availableComponents.find(c => c.id === sel.selectedTelaMarchiataId);

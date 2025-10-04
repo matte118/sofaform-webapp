@@ -25,6 +25,7 @@ export interface AddProductDraft {
     selectedGommaId?: string | null;
     selectedReteId?: string | null;
     selectedMaterassoId?: string | null;
+    selectedFerroSchienaleId?: string | null;
     selectedImballoId?: string | null;
     selectedScatolaId?: string | null;
     selectedTelaMarchiataId?: string | null;

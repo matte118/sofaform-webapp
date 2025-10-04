@@ -256,6 +256,7 @@ export class ComponentService {
       [ComponentType.GOMMA]: 'Gomma',
       [ComponentType.RETE]: 'Rete',
       [ComponentType.MATERASSO]: 'Materasso',
+      [ComponentType.FERRO_SCHIENALE]: 'Ferro Schienale',
       [ComponentType.TAPPEZZERIA]: 'Tappezzeria',
       [ComponentType.PIEDINI]: 'Piedini',
       [ComponentType.FERRAMENTA]: 'Ferramenta',

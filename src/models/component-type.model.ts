@@ -3,6 +3,7 @@ export enum ComponentType {
   GOMMA,
   RETE,
   MATERASSO,
+  FERRO_SCHIENALE,
   TAPPEZZERIA,
   PIEDINI,
   FERRAMENTA,
@@ -11,4 +12,5 @@ export enum ComponentType {
   SCATOLA,
   TELA_MARCHIATA,
   TRASPORTO,
+
 }
