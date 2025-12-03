@@ -25,7 +25,9 @@ export class I18nService {
           rivestimento: "Rivestimento",
           prezzo: "Prezzo",
           servizio: "Servizio",
-          serviziAggiuntivi: "Servizi Aggiuntivi"
+          serviziAggiuntivi: "Servizi Aggiuntivi",
+          modello: "Modello",
+          consegna: "Consegna"
         },
         messages: {
           noRivestimento: "Nessun rivestimento configurato per questa variante"
@@ -47,7 +49,9 @@ export class I18nService {
           rivestimento: "Upholstery",
           prezzo: "Price",
           servizio: "Service",
-          serviziAggiuntivi: "Additional Services"
+          serviziAggiuntivi: "Additional Services",
+          modello: "Model",
+          consegna: "Delivery"
         },
         messages: {
           noRivestimento: "No upholstery configured for this variant"
@@ -69,7 +73,9 @@ export class I18nService {
           rivestimento: "Revêtement",
           prezzo: "Prix",
           servizio: "Service",
-          serviziAggiuntivi: "Services Supplémentaires"
+          serviziAggiuntivi: "Services Supplémentaires",
+          modello: "Modèle",
+          consegna: "Livraison"
         },
         messages: {
           noRivestimento: "Aucun revêtement configuré pour cette variante"
@@ -91,7 +97,9 @@ export class I18nService {
           rivestimento: "Bezug",
           prezzo: "Preis",
           servizio: "Service",
-          serviziAggiuntivi: "Zusätzliche Services"
+          serviziAggiuntivi: "Zusätzliche Services",
+          modello: "Modell",
+          consegna: "Lieferung"
         },
         messages: {
           noRivestimento: "Kein Bezug für diese Variante konfiguriert"
@@ -113,7 +121,9 @@ export class I18nService {
           rivestimento: "Revestimiento",
           prezzo: "Precio",
           servizio: "Servicio",
-          serviziAggiuntivi: "Servicios Adicionales"
+          serviziAggiuntivi: "Servicios Adicionales",
+          modello: "Modelo",
+          consegna: "Entrega"
         },
         messages: {
           noRivestimento: "Ningún revestimiento configurado para esta variante"
@@ -135,7 +145,9 @@ export class I18nService {
           rivestimento: "Revestimento",
           prezzo: "Preço",
           servizio: "Serviço",
-          serviziAggiuntivi: "Serviços Adicionais"
+          serviziAggiuntivi: "Serviços Adicionais",
+          modello: "Modelo",
+          consegna: "Entrega"
         },
         messages: {
           noRivestimento: "Nenhum revestimento configurado para esta variante"
@@ -185,6 +197,8 @@ export class I18nService {
     staticTranslations['Prezzo'] = this.translate('listino.pricing.prezzo', lang);
     staticTranslations['Servizio'] = this.translate('listino.pricing.servizio', lang);
     staticTranslations['Servizi Aggiuntivi'] = this.translate('listino.pricing.serviziAggiuntivi', lang);
+    staticTranslations['Modello'] = this.translate('listino.pricing.modello', lang);
+    staticTranslations['Consegna'] = this.translate('listino.pricing.consegna', lang);
     
     // Messages
     staticTranslations['Nessun rivestimento configurato per questa variante'] = this.translate('listino.messages.noRivestimento', lang);

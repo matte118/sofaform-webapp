@@ -27,6 +27,7 @@ export class TranslationService {
     'Scheda Tecnica', 'Caratteristica', 'Dettaglio',
     'Seduta', 'Schienale', 'Meccanica', 'Materasso',
     'Rivestimento', 'Prezzo', 'Servizio', 'Servizi Aggiuntivi',
+    'Modello', 'Consegna',
     'Nessun rivestimento configurato per questa variante'
   ];
 

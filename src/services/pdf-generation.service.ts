@@ -18,6 +18,7 @@ export class PdfGenerationService {
   private extrasData: ExtraMattress[] = [];
   private markupPerc = 0;
   private deliveryCost = 0;
+  private currentLang = 'it';
 
   constructor(
     private translationService: TranslationService,
@@ -75,6 +76,7 @@ export class PdfGenerationService {
   }
 
   async generateListinoPdf(productName: string, languageCode: string = 'it') {
+    this.currentLang = languageCode || 'it';
     const staticTranslations = this.i18nService.getListinoTranslations(languageCode);
 
     const textsToTranslate: string[] = [];
@@ -342,7 +344,7 @@ export class PdfGenerationService {
           const totalPrice = variant.price + rivestimentoCost + this.deliveryCost;
           const finalPrice = this.applyMarkup(totalPrice, this.markupPerc);
 
-          row.push({ text: `€ ${finalPrice.toFixed(2)}`, style: 'priceCell', fillColor: '#f0fff4' });
+          row.push({ text: this.formatCurrency(finalPrice), style: 'priceCell', fillColor: '#f0fff4' });
         } else {
           row.push({ text: '-', style: 'matrixCell', color: '#a0aec0' });
         }
@@ -376,7 +378,7 @@ export class PdfGenerationService {
     this.extrasData.forEach(extra => {
       extraTexts.push(
         { text: t(extra.name), fontSize: 12, bold: true, color: '#1a365d' },
-        { text: `: € ${extra.price.toFixed(2)}`, fontSize: 12, bold: true, color: '#38a169' }
+        { text: `: ${this.formatCurrency(extra.price)}`, fontSize: 12, bold: true, color: '#38a169' }
       );
     });
 
@@ -386,7 +388,7 @@ export class PdfGenerationService {
       }
       extraTexts.push(
         { text: t('Consegna'), fontSize: 12, bold: true, color: '#1a365d' },
-        { text: `: € ${this.deliveryCost.toFixed(2)}`, fontSize: 12, bold: true, color: '#c05621' }
+        { text: `: ${this.formatCurrency(this.deliveryCost)}`, fontSize: 12, bold: true, color: '#c05621' }
       );
     }
 
@@ -405,6 +407,15 @@ export class PdfGenerationService {
   private applyMarkup(amount: number, perc: number): number {
     const factor = (100 - perc) / 100;
     return factor > 0 ? amount / factor : amount;
+  }
+
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat(this.currentLang || 'it', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
   }
 
   getFilename(productName: string, languageCode: string = 'it'): string {
