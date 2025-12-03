@@ -80,8 +80,8 @@
                       : (showSedutaDialog = true)
                   " [styleClass]="
                     newSofaProduct.seduta
-                      ? 'gradient-filled optional-btn'
-                      : 'p-button-outlined optional-btn'
+                      ? 'btn-confirm optional-btn'
+                      : 'btn-neutral optional-btn'
                   " pTooltip="{{
                     newSofaProduct.seduta
                       ? 'Rimuovi contenuto'
@@ -96,8 +96,8 @@
                       : (showSchienaleDialog = true)
                   " [styleClass]="
                     newSofaProduct.schienale
-                      ? 'gradient-filled optional-btn'
-                      : 'p-button-outlined optional-btn'
+                      ? 'btn-confirm optional-btn'
+                      : 'btn-neutral optional-btn'
                   " pTooltip="{{
                     newSofaProduct.schienale
                       ? 'Rimuovi contenuto'
@@ -112,8 +112,8 @@
                       : (showMeccanicaDialog = true)
                   " [styleClass]="
                     newSofaProduct.meccanica
-                      ? 'gradient-filled optional-btn'
-                      : 'p-button-outlined optional-btn'
+                      ? 'btn-confirm optional-btn'
+                      : 'btn-neutral optional-btn'
                   " pTooltip="{{
                     newSofaProduct.meccanica
                       ? 'Rimuovi contenuto'
@@ -128,8 +128,8 @@
                       : (showMaterassoDialog = true)
                   " [styleClass]="
                     newSofaProduct.materasso
-                      ? 'gradient-filled optional-btn'
-                      : 'p-button-outlined optional-btn'
+                      ? 'btn-confirm optional-btn'
+                      : 'btn-neutral optional-btn'
                   " pTooltip="{{
                     newSofaProduct.materasso
                       ? 'Rimuovi contenuto'
@@ -745,7 +745,7 @@
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button label="Salva" icon="pi pi-check" (onClick)="showSedutaDialog = false"></p-button>
+      <p-button label="Salva" icon="pi pi-check" styleClass="btn-confirm" (onClick)="showSedutaDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 
@@ -760,7 +760,7 @@
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button label="Salva" icon="pi pi-check" (onClick)="showSchienaleDialog = false"></p-button>
+      <p-button label="Salva" icon="pi pi-check" styleClass="btn-confirm" (onClick)="showSchienaleDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 
@@ -775,7 +775,7 @@
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button label="Salva" icon="pi pi-check" (onClick)="showMeccanicaDialog = false"></p-button>
+      <p-button label="Salva" icon="pi pi-check" styleClass="btn-confirm" (onClick)="showMeccanicaDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 
@@ -790,7 +790,7 @@
       </div>
     </div>
     <ng-template pTemplate="footer">
-      <p-button label="Salva" icon="pi pi-check" (onClick)="showMaterassoDialog = false"></p-button>
+      <p-button label="Salva" icon="pi pi-check" styleClass="btn-confirm" (onClick)="showMaterassoDialog = false"></p-button>
     </ng-template>
   </p-dialog>
 </div>

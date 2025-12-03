@@ -20,6 +20,9 @@ body {
   --btn-neutral-hover: #374151;
   --btn-radius: 10px;
   --btn-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  --surface: #ffffff;
+  --muted: #6b7280;
+  --border: #e5e7eb;
 }
 
 /* Base PrimeNG button look */
@@ -44,6 +47,94 @@ body {
 .segmented-control .p-button,
 .pricing-mode-select .p-button {
   margin: 0;
+}
+
+/* Form + card cleanup */
+.card,
+.p-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.04);
+}
+
+.form-row,
+.p-field {
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  width: 100%;
+}
+
+.p-inputtext,
+.p-dropdown,
+.p-multiselect,
+.p-inputnumber,
+.p-inputtextarea {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.p-dropdown,
+.p-multiselect {
+  border: 1px solid var(--border);
+}
+
+.p-inputtext:focus,
+.p-dropdown:focus,
+.p-multiselect:focus,
+.p-inputnumber:focus-within,
+.p-inputtextarea:focus {
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.12);
+  border-color: #0d6efd;
+}
+
+/* Table polish */
+.p-datatable {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.p-datatable .p-datatable-header {
+  padding: 1rem 1.25rem;
+  background: #f9fafb;
+}
+
+.p-datatable table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.p-datatable thead th {
+  background: #f3f4f6;
+  font-weight: 600;
+  color: #111827;
+}
+
+.p-datatable tbody td {
+  padding: 0.85rem 1rem;
+}
+
+/* Dialog spacing */
+.p-dialog .p-dialog-header,
+.p-dialog .p-dialog-content,
+.p-dialog .p-dialog-footer {
+  padding: 1.25rem 1.5rem;
+}
+
+.p-dialog .p-dialog-content {
+  max-height: 70vh;
+  overflow: auto;
+}
+
+/* Misc spacing utilities */
+.actions-cell .p-button {
+  margin-right: 0.25rem;
+}
+
+.w-100 {
+  width: 100%;
 }
 
 /* Confirm / primary */
