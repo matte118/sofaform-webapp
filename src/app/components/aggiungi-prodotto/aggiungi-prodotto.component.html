@@ -160,15 +160,15 @@
             <div class="p-grid p-nogutter p-align-end" style="padding-top: 15px;">
               <div class="p-field p-col-12 p-md-2">
                 <p-floatLabel>
-                  <input id="variantName" pInputText [(ngModel)]="newVariant.longName" name="nomeVariante" required
-                    [class.ng-invalid]="shouldShowVariantFieldError(newVariant.longName)" />
+                  <p-dropdown id="variantName" [options]="sofaTypeOptions" optionLabel="label" optionValue="value"
+                    [(ngModel)]="newVariant.longName" name="nomeVariante"
+                    [class.ng-invalid]="shouldShowVariantFieldError(newVariant.longName)"></p-dropdown>
                   <label>Nome Variante</label>
                 </p-floatLabel>
                 <small *ngIf="shouldShowVariantFieldError(newVariant.longName)" class="p-error">
                   Il nome della variante è obbligatorio
                 </small>
               </div>
-
               <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
                 <p-floatLabel>
                   <p-inputNumber id="seatsCount" [(ngModel)]="newVariant.seatsCount" name="postiSeduta"></p-inputNumber>
@@ -198,10 +198,9 @@
 
               <div class="p-field p-col-12 p-md-1">
                 <p-button [label]="editingVariantIndex >= 0 ? 'Aggiorna' : 'Aggiungi'" (onClick)="addVariant()"
-                  [disabled]="!newVariant.longName.trim() || (isCustomPricingMode() && customVariantPrice <= 0)"
+                  [disabled]="!newVariant.longName || (isCustomPricingMode() && customVariantPrice <= 0)"
                   [styleClass]="editingVariantIndex >= 0 ? 'p-button-success' : 'variant-add-btn'">
                 </p-button>
-
               </div>
             </div>
 
@@ -218,7 +217,7 @@
               </ng-template>
               <ng-template pTemplate="body" let-variant let-i="rowIndex">
                 <tr>
-                  <td>{{ variant.longName }}</td>
+                  <td>{{ getSofaTypeDisplayName(variant.longName) }}</td>
                   <td>
                     <span [class]="variant.pricingMode === 'custom' ? 'custom-mode-badge' : 'components-mode-badge'">
                       {{ variant.pricingMode === 'custom' ? 'Custom' : 'Componenti' }}
@@ -265,7 +264,7 @@
                       inputId="variantDropdown" placeholder="Scegli una variante"
                       (onChange)="selectVariantForComponents($event.value)" [style]="{ width: '100%' }">
                       <ng-template let-variant pTemplate="item">
-                        {{ variant.longName }}
+                        {{ getSofaTypeDisplayName(variant.longName) }}
                         <span class="variant-mode-indicator">
                           ({{ variant.pricingMode === 'custom' ? 'Custom' : 'Componenti' }})
                         </span>
@@ -648,7 +647,7 @@
               <!-- Tabella componenti aggiunti alla variante -->
               <div class="p-field p-col-12" *ngIf="selectedVariant && selectedVariant.components.length > 0">
                 <p-divider></p-divider>
-                <h4>Componenti applicati a "{{ selectedVariant.longName }}"</h4>
+                <h4>Componenti applicati a "{{ getSofaTypeDisplayName(selectedVariant.longName) }}"</h4>
                 <p-table [value]="getGroupedComponents()">
                   <ng-template pTemplate="header">
                     <tr>

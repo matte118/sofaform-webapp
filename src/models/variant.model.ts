@@ -1,12 +1,13 @@
 import { Component } from './component.model';
 import { Rivestimento } from './rivestimento.model';
+import { SofaType } from './sofa-type.model';
 
 export type PricingMode = 'components' | 'custom';
 
 export class Variant {
   public id: string;
   public sofaId: string;
-  public longName: string;
+  public longName: SofaType;
   public price: number;
   public components: Component[];
   public seatsCount?: number;
@@ -18,7 +19,7 @@ export class Variant {
   constructor(
     id: string,
     sofaId: string,
-    longName: string,
+    longName: SofaType,
     price: number,
     components: Component[] = [],
     seatsCount?: number,

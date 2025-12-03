@@ -147,7 +147,7 @@ export class HomeComponent implements OnInit {
   editingProduct?: SofaProduct;
   editingVariants: Variant[] = [];
   editingVariantIndex = -1;
-  newVariant: Variant = new Variant('', '', '', 0);
+  newVariant: Variant = new Variant('', '', SofaType.DIVANO_3_PL, 0);
 
   // Extra options
   extraMattresses: ExtraMattress[] = [];
@@ -192,6 +192,11 @@ export class HomeComponent implements OnInit {
   private componentsByTypeCache = new Map<string, ComponentModel[]>();
   private componentNameMeasureCount = new Map<string, number>();
   private duplicateNameMeasureKeys = new Set<string>();
+  sofaTypeOptions = [
+    { label: 'Divano 3 PL Maxi', value: SofaType.DIVANO_3_PL_MAXI },
+    { label: 'Divano 3 PL', value: SofaType.DIVANO_3_PL },
+    { label: 'Divano 2 PL', value: SofaType.DIVANO_2_PL },
+  ];
 
   isBrowser: boolean;
 
@@ -700,7 +705,7 @@ export class HomeComponent implements OnInit {
     this.uploadingNewImages = false;
     this.uploadProgress = 0;
     this.editingVariantIndex = -1;
-    this.newVariant = new Variant('', '', '', 0);
+    this.newVariant = new Variant('', '', SofaType.DIVANO_3_PL, 0);
 
     // Initialize arrays based on current product images
     if (this.editingProduct?.photoUrl) {
@@ -986,7 +991,7 @@ export class HomeComponent implements OnInit {
 
   // === Variant Management ===
   addVariantToProduct(): void {
-    if (!this.newVariant.longName.trim()) {
+    if (!this.newVariant.longName) {
       this.messageService.add({
         severity: 'error',
         summary: 'Errore',
@@ -1007,12 +1012,12 @@ export class HomeComponent implements OnInit {
       );
       this.editingVariants[this.editingVariantIndex] = variant;
       this.editingVariantIndex = -1;
-      this.newVariant = new Variant('', '', '', 0);
+      this.newVariant = new Variant('', '', SofaType.DIVANO_3_PL, 0);
       this.cdr.detectChanges();
       return;
     }
 
-    this.variantComponentsDialogTitle = `Configura componenti per "${this.newVariant.longName}"`;
+    this.variantComponentsDialogTitle = `Configura componenti per "${this.getSofaTypeLabel(this.newVariant.longName)}"`;
     this.resetVariantComponentSelections();
     this.showVariantComponentsDialog = true;
   }
@@ -1098,7 +1103,7 @@ export class HomeComponent implements OnInit {
 
     variant.updatePrice();
     this.editingVariants.push(variant);
-    this.newVariant = new Variant('', '', '', 0);
+    this.newVariant = new Variant('', '', SofaType.DIVANO_3_PL, 0);
     this.showVariantComponentsDialog = false;
     this.resetVariantComponentSelections();
 
@@ -1126,7 +1131,7 @@ export class HomeComponent implements OnInit {
 
   cancelVariantEdit(): void {
     this.editingVariantIndex = -1;
-    this.newVariant = new Variant('', '', '', 0);
+    this.newVariant = new Variant('', '', SofaType.DIVANO_3_PL, 0);
   }
 
   deleteVariantFromProduct(index: number): void {
@@ -1616,6 +1621,16 @@ export class HomeComponent implements OnInit {
   private getSupplierName(c: ComponentModel): string | undefined {
     if (!c?.supplier) return undefined;
     return c.supplier.name;
+  }
+
+  getSofaTypeLabel(type: SofaType | null): string {
+    if (!type) return '';
+    const map: Record<SofaType, string> = {
+      [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
+      [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
+      [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+    };
+    return map[type] ?? String(type);
   }
 
   private getSofaTypeDisplayName(type: SofaType | null): string {

@@ -5,6 +5,7 @@ import { Database, ref, update, onValue, get } from '@angular/fire/database';
 import { RealtimeDbService } from './realtime-db.service';
 import { Variant } from '../models/variant.model';
 import { Rivestimento } from '../models/rivestimento.model';
+import { SofaType } from '../models/sofa-type.model';
 
 @Injectable({
   providedIn: 'root',
@@ -227,7 +228,7 @@ export class VariantService {
     const variant = new Variant(
       id,
       data.sofaId || '',
-      data.longName || '',
+      (data.longName as SofaType) || SofaType.DIVANO_3_PL,
       0, // Initialize with 0, will set properly below
       data.components || [],
       data.seatsCount,

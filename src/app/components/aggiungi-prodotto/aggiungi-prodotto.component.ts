@@ -118,7 +118,7 @@ export class AggiungiProdottoComponent implements OnInit {
 
   // Variants management
   variants: Variant[] = [];
-  newVariant = new Variant('', '', '', 0);
+  newVariant = new Variant('', '', SofaType.DIVANO_3_PL, 0);
   selectedVariant?: Variant;
   editingVariantIndex = -1;
 
@@ -184,6 +184,11 @@ export class AggiungiProdottoComponent implements OnInit {
   // Add pricing mode properties
   selectedPricingMode: PricingMode = 'components';
   customVariantPrice: number = 0;
+  sofaTypeOptions = [
+    { label: 'Divano 3 PL Maxi', value: SofaType.DIVANO_3_PL_MAXI },
+    { label: 'Divano 3 PL', value: SofaType.DIVANO_3_PL },
+    { label: 'Divano 2 PL', value: SofaType.DIVANO_2_PL },
+  ];
 
   constructor(
     private sofaProductService: SofaProductService,
@@ -272,7 +277,7 @@ export class AggiungiProdottoComponent implements OnInit {
 
   addVariant(): void {
     this.variantFormSubmitted = true;
-    if (!this.newVariant.longName.trim()) {
+    if (!this.newVariant.longName) {
       this.variantFormValid = false;
       this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Completa tutti i campi obbligatori' });
       return;
@@ -348,7 +353,7 @@ export class AggiungiProdottoComponent implements OnInit {
   }
 
   private resetVariantForm(): void {
-    this.newVariant = new Variant('', '', '', 0);
+    this.newVariant = new Variant('', '', SofaType.DIVANO_3_PL, 0);
     this.selectedPricingMode = 'components';
     this.customVariantPrice = 0;
     this.variantFormSubmitted = false;
@@ -599,7 +604,7 @@ export class AggiungiProdottoComponent implements OnInit {
   }
 
   shouldShowVariantFieldError(fieldValue: any): boolean {
-    return this.variantFormSubmitted && !this.variantFormValid && !fieldValue?.trim();
+    return this.variantFormSubmitted && !this.variantFormValid && !fieldValue;
   }
 
   shouldShowComponentFieldError(fieldValue: any): boolean {
@@ -841,7 +846,7 @@ export class AggiungiProdottoComponent implements OnInit {
     return typeNames[type] || 'Sconosciuto';
   }
 
-  private getSofaTypeDisplayName(type: SofaType | null): string {
+  getSofaTypeDisplayName(type: SofaType | null): string {
     if (!type) return '';
     const map: Record<SofaType, string> = {
       [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
@@ -1084,7 +1089,7 @@ export class AggiungiProdottoComponent implements OnInit {
       const variant = new Variant(
         v.id ?? '',
         v.sofaId ?? '',
-        v.longName ?? '',
+        (v.longName as SofaType) ?? SofaType.DIVANO_3_PL,
         v.price ?? 0,
         [],
         v.seatsCount,
