@@ -420,8 +420,9 @@ export class RealtimeDbService {
         id: c.id,
         name: c.name,
         price: c.price,
-        measure: c.measure,
-        supplier: c.supplier
+        // Ensure optional fields are never undefined for Firebase
+        measure: c.measure ?? null,
+        supplier: c.supplier ?? null
       }))
     };
 

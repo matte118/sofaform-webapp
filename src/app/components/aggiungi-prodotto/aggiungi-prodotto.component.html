@@ -481,6 +481,28 @@
                 </div>
               </div>
 
+              <!-- Tappezzeria -->
+              <div class="p-field p-grid" style="padding-top: 10px;">
+                <div class="p-col-12 p-md-6">
+                  <p-floatLabel>
+                    <p-multiSelect [options]="getComponentsByType('imbottitura_cuscinetti')" [(ngModel)]="imbottituraCuscinettiList"
+                      optionLabel="name" inputId="imbottituraCuscinettiSelect" placeholder="Scegli Imbottitura Cuscinetti"
+                      name="imbottituraCuscinettiList" filter="true" [disabled]="getComponentsByType('imbottitura_cuscinetti').length === 0"
+                      [ngStyle]="{ 'width': '100%' }">
+                      <ng-template let-item pTemplate="item">
+                        {{ formatComponentName(item) }}
+                      </ng-template>
+                      <ng-template let-selectedItem pTemplate="selectedItem">
+                        {{ formatComponentName(selectedItem) }}
+                      </ng-template>
+                    </p-multiSelect>
+                    <label for="imbottituraCuscinettiSelect">Imbottitura Cuscinetti</label>
+                  </p-floatLabel>
+                  <small *ngIf="getComponentsByType('imbottitura_cuscinetti').length === 0" class="p-error">
+                    Nessun componente di tipo imbottitura cuscinetti disponibile
+                  </small>
+                </div>
+              </div>
 
               <!-- Ferramenta (multi-select) -->
               <div class="p-field p-grid" style="padding-top: 10px;">

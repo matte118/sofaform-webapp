@@ -35,6 +35,7 @@ export interface AddProductDraft {
     ferramentaIds: string[];
     varieIds: string[];
     tappezzeriaIds: string[];
+    imbottituraCuscinettiIds: string[];
   };
 
   ui: {

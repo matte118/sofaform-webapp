@@ -4,6 +4,7 @@ export enum ComponentType {
   RETE,
   MATERASSO,
   FERRO_SCHIENALE,
+  IMBOTTITURA_CUSCINETTI,
   TAPPEZZERIA,
   PIEDINI,
   FERRAMENTA,
@@ -12,5 +13,6 @@ export enum ComponentType {
   SCATOLA,
   TELA_MARCHIATA,
   TRASPORTO,
+  
 
 }

@@ -103,6 +103,8 @@ export class AggiungiProdottoComponent implements OnInit {
   ferramentaList: ComponentModel[] = [];
   varieList: ComponentModel[] = [];
   tappezzeriaList: ComponentModel[] = [];
+  imbottituraCuscinettiList: ComponentModel[] = [];
+
 
   // 4) Remove rivestimenti properties - completely removed
   // No longer needed as rivestimenti are handled separately
@@ -419,11 +421,16 @@ export class AggiungiProdottoComponent implements OnInit {
 
     return !!this.selectedFusto ||
       !!this.selectedGomma ||
+      !!this.selectedRete ||
       !!this.selectedMaterasso ||
       !!this.selectedFerroSchienale ||
       !!this.selectedImballo ||
       !!this.selectedScatola ||
       !!this.selectedPiedini ||
+      !!this.selectedTelaMarchiata ||
+      !!this.selectedTrasporto ||
+      this.tappezzeriaList.length > 0 ||
+      this.imbottituraCuscinettiList.length > 0 ||
       this.ferramentaList.length > 0 ||
       this.varieList.length > 0;
   }
@@ -435,7 +442,7 @@ export class AggiungiProdottoComponent implements OnInit {
     if (!this.selectedFusto && !this.selectedGomma && !this.selectedRete && !this.selectedPiedini
       && !this.selectedMaterasso && !this.selectedFerroSchienale && !this.selectedImballo &&
       !this.selectedScatola && this.ferramentaList.length === 0 && this.varieList.length === 0 &&
-      this.tappezzeriaList.length === 0 && !this.selectedTelaMarchiata && !this.selectedTrasporto) {
+      this.tappezzeriaList.length === 0 && this.imbottituraCuscinettiList.length === 0 && !this.selectedTelaMarchiata && !this.selectedTrasporto) {
       missingComponents.push('almeno un componente');
     }
 
@@ -458,6 +465,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.ferramentaList.forEach(c => comps.push(c));
     this.varieList.forEach(c => comps.push(c));
     this.tappezzeriaList.forEach(c => comps.push(c));
+    this.imbottituraCuscinettiList.forEach(c => comps.push(c));
 
     this.selectedVariant.components = comps;
     this.selectedVariant.updatePrice();
@@ -764,6 +772,7 @@ export class AggiungiProdottoComponent implements OnInit {
       'gomma': ComponentType.GOMMA,
       'rete': ComponentType.RETE,
       'materasso': ComponentType.MATERASSO,
+      'imbottitura_cuscinetti': ComponentType.IMBOTTITURA_CUSCINETTI,
       'ferro_schienale': ComponentType.FERRO_SCHIENALE,
       'tappezzeria': ComponentType.TAPPEZZERIA,
       'piedini': ComponentType.PIEDINI,
@@ -817,6 +826,7 @@ export class AggiungiProdottoComponent implements OnInit {
       [ComponentType.RETE]: 'Rete',
       [ComponentType.MATERASSO]: 'Materasso',
       [ComponentType.FERRO_SCHIENALE]: 'Ferro Schienale',
+      [ComponentType.IMBOTTITURA_CUSCINETTI]: 'Imbottitura Cuscinetti',
       [ComponentType.TAPPEZZERIA]: 'Tappezzeria',
       [ComponentType.PIEDINI]: 'Piedini',
       [ComponentType.FERRAMENTA]: 'Ferramenta',
@@ -875,6 +885,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.ferramentaList = [];
     this.varieList = [];
     this.tappezzeriaList = [];
+    this.imbottituraCuscinettiList = [];
   }
 
   // Helper to populate component selections from existing components
@@ -897,6 +908,9 @@ export class AggiungiProdottoComponent implements OnInit {
           break;
         case ComponentType.MATERASSO:
           typeString = 'materasso';
+          break;
+        case ComponentType.IMBOTTITURA_CUSCINETTI:
+          typeString = 'imbottitura_cuscinetti';
           break;
         case ComponentType.TAPPEZZERIA:
           typeString = 'tappezzeria';
@@ -949,6 +963,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.ferramentaList = compsByType.get('ferramenta') || [];
     this.varieList = compsByType.get('varie') || [];
     this.tappezzeriaList = compsByType.get('tappezzeria') || [];
+    this.imbottituraCuscinettiList = compsByType.get('imbottitura_cuscinetti') || [];
   }
 
   // Helper to find a component in the availableComponents list
@@ -976,6 +991,7 @@ export class AggiungiProdottoComponent implements OnInit {
       this.selectedScatola ||
       this.selectedTelaMarchiata ||
       this.selectedTrasporto ||
+      this.imbottituraCuscinettiList.length > 0 ||
       this.ferramentaList.length > 0 ||
       this.varieList.length > 0 ||
       this.tappezzeriaList.length > 0
@@ -1032,6 +1048,7 @@ export class AggiungiProdottoComponent implements OnInit {
         ferramentaIds: (this.ferramentaList || []).map(id),
         varieIds: (this.varieList || []).map(id),
         tappezzeriaIds: (this.tappezzeriaList || []).map(id),
+        imbottituraCuscinettiIds: (this.imbottituraCuscinettiList || []).map(id),
       },
       ui: {
         selectedPricingMode: this.selectedPricingMode,
@@ -1100,6 +1117,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.ferramentaList = mapById(sel.ferramentaIds);
     this.varieList = mapById(sel.varieIds);
     this.tappezzeriaList = mapById(sel.tappezzeriaIds);
+    this.imbottituraCuscinettiList = mapById(sel.imbottituraCuscinettiIds);
 
     d.variants?.forEach((v, idx) => {
       const ids = (v.components || []).filter(Boolean) as string[];
