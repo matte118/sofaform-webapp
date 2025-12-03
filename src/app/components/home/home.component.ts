@@ -856,6 +856,8 @@ export class HomeComponent implements OnInit {
       message: 'Sei sicuro di voler rimuovere questa immagine del prodotto?',
       header: 'Conferma rimozione',
       icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'btn-confirm',
+      rejectButtonStyleClass: 'btn-cancel',
       accept: () => {
         this.imagesRemoved[index] = true;
         this.imagesChanged[index] = true;
@@ -1134,8 +1136,8 @@ export class HomeComponent implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Elimina',
       rejectLabel: 'Annulla',
-      acceptButtonStyleClass: 'primary-button',
-      rejectButtonStyleClass: 'btn-dialog-no',
+      acceptButtonStyleClass: 'btn-confirm',
+      rejectButtonStyleClass: 'btn-cancel',
       accept: () => {
         this.editingVariants.splice(index, 1);
         if (this.editingVariantIndex === index) {
@@ -1546,6 +1548,8 @@ export class HomeComponent implements OnInit {
         : `Rimuovere il componente "${group.component.name}"?`,
       header: 'Conferma rimozione',
       icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'btn-confirm',
+      rejectButtonStyleClass: 'btn-cancel',
       accept: () => {
         // Remove components locally - sort indices in descending order to avoid index shifting
         const sortedIndices = [...group.indices].sort((a, b) => b - a);

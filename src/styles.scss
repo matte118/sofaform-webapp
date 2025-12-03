@@ -11,6 +11,87 @@ body {
   background-color: #f8f9fa;
 }
 
+:root {
+  --btn-confirm-bg: #0d6efd;
+  --btn-confirm-hover: #0b5ed7;
+  --btn-cancel-bg: #d93025;
+  --btn-cancel-hover: #b52a1f;
+  --btn-neutral-bg: #4b5563;
+  --btn-neutral-hover: #374151;
+  --btn-radius: 10px;
+  --btn-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Base PrimeNG button look */
+.p-button {
+  border-radius: var(--btn-radius);
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  box-shadow: var(--btn-shadow);
+  transition: all 0.18s ease;
+  margin-right: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.p-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Keep grouped/segmented buttons tight */
+.p-buttonset .p-button,
+.segmented-control .p-button,
+.pricing-mode-select .p-button {
+  margin: 0;
+}
+
+/* Confirm / primary */
+.p-button.btn-confirm,
+.p-button.primary-button,
+.p-button.p-button-primary {
+  background: var(--btn-confirm-bg);
+  color: #fff;
+}
+
+.p-button.btn-confirm:hover,
+.p-button.primary-button:hover,
+.p-button.p-button-primary:hover {
+  background: var(--btn-confirm-hover);
+  color: #fff;
+}
+
+/* Cancel / danger */
+.p-button.btn-cancel,
+.p-button.p-button-danger,
+.p-button.btn-no {
+  background: var(--btn-cancel-bg);
+  color: #fff;
+}
+
+.p-button.btn-cancel:hover,
+.p-button.p-button-danger:hover,
+.p-button.btn-no:hover {
+  background: var(--btn-cancel-hover);
+  color: #fff;
+}
+
+/* Neutral / tertiary */
+.p-button.btn-neutral,
+.p-button.secondary-button,
+.p-button.p-button-outlined {
+  background: var(--btn-neutral-bg);
+  color: #fff;
+  border: none;
+}
+
+.p-button.btn-neutral:hover,
+.p-button.secondary-button:hover,
+.p-button.p-button-outlined:hover {
+  background: var(--btn-neutral-hover);
+  color: #fff;
+}
+
 .p-button.gradient-success {
   background: linear-gradient(90deg, #4c8d62 0%, #8ac8a2 100%) !important;
   color: #fff !important;
