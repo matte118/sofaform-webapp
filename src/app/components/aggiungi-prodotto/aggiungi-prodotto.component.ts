@@ -39,6 +39,7 @@ import { ComponentService } from '../../../services/component.service';
 import { SupplierService } from '../../../services/supplier.service';
 import { PhotoUploadService } from '../../../services/upload.service';
 import { AddProductDraft, AddProductDraftService } from '../../../services/add-product-draft.service';
+import { SofaType } from '../../../models/sofa-type.model';
 
 @NgComponent({
   selector: 'app-aggiungi-prodotto',
@@ -248,8 +249,8 @@ export class AggiungiProdottoComponent implements OnInit {
 
   private buildNameMeasureKey(c: ComponentModel): string {
     const name = (c.name || '').trim().toLowerCase();
-    const measure = (c.measure || '').trim().toLowerCase();
-    return `${name}|${measure}`;
+    const sofaType = c.sofaType ? this.getSofaTypeDisplayName(c.sofaType).toLowerCase() : '';
+    return `${name}|${sofaType}`;
   }
 
   private getSupplierNameForComponent(c: ComponentModel): string | undefined {
@@ -793,13 +794,14 @@ export class AggiungiProdottoComponent implements OnInit {
   formatComponentName(component: ComponentModel): string {
     if (!component) return '';
 
-    const hasMeasure = !!component.measure?.trim();
+    const sofaTypeLabel = component.sofaType ? this.getSofaTypeDisplayName(component.sofaType) : '';
+    const hasSofaType = !!sofaTypeLabel.trim();
     const key = this.buildNameMeasureKey(component);
 
     let base = component.name;
 
-    if (hasMeasure) {
-      base += ` (${component.measure})`;
+    if (hasSofaType) {
+      base += ` (${sofaTypeLabel})`;
     }
 
     if (!this.duplicateNameMeasureKeys.has(key)) {
@@ -808,8 +810,8 @@ export class AggiungiProdottoComponent implements OnInit {
 
     const supplierName = this.getSupplierNameForComponent(component);
     if (supplierName) {
-      if (hasMeasure) {
-        return `${component.name} (${component.measure}) (${supplierName})`;
+      if (hasSofaType) {
+        return `${component.name} (${sofaTypeLabel}) (${supplierName})`;
       } else {
         return `${component.name} (${supplierName})`;
       }
@@ -837,6 +839,16 @@ export class AggiungiProdottoComponent implements OnInit {
       [ComponentType.TRASPORTO]: 'Trasporto'
     };
     return typeNames[type] || 'Sconosciuto';
+  }
+
+  private getSofaTypeDisplayName(type: SofaType | null): string {
+    if (!type) return '';
+    const map: Record<SofaType, string> = {
+      [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
+      [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
+      [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+    };
+    return map[type] ?? String(type);
   }
 
   getGroupedComponents() {

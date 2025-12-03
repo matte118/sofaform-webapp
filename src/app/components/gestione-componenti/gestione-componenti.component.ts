@@ -35,6 +35,7 @@ import { SupplierService } from '../../../services/supplier.service';
 import { VariantService } from '../../../services/variant.service';
 import { SofaProductService } from '../../../services/sofa-product.service';
 import { Variant } from '../../../models/variant.model';
+import { SofaType } from '../../../models/sofa-type.model';
 
 import { forkJoin, of, Subject } from 'rxjs';
 import { finalize, tap, catchError } from 'rxjs/operators';
@@ -81,6 +82,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     ComponentModel & {
       supplierName: string;
       typeLabel: string;
+      sofaTypeLabel: string;
       priceText: string;
       priceTextComma: string;
     }
@@ -95,6 +97,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   availableComponentTypes: { value: ComponentType; label: string }[] = [];
   selectedComponentType: ComponentType | null = null;
+  availableSofaTypes: { value: SofaType; label: string }[] = [];
 
   editingIndex: number = -1;
 
@@ -119,7 +122,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     supplier: null
   };
   bulkVariableData: BulkComponentVariableData[] = [
-    { measure: '', price: null as any, name: '' }
+    { sofaType: null, price: null as any, name: '' }
   ];
 
   bulkFormSubmitted = false;
@@ -127,7 +130,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   activeTabIndex = 0;
 
   showMultipleMeasuresDialog = false;
-  measureEntries: { measure: string; price: number }[] = [{ measure: '', price: 0 }];
+  measureEntries: { sofaType: SofaType | null; price: number }[] = [{ sofaType: null, price: 0 }];
   multipleMeasuresFormSubmitted = false;
 
   displayConfirmDelete = false;
@@ -242,6 +245,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         ...c,
         supplierName: c.supplier?.name ?? 'Nessuno',
         typeLabel: this.getComponentTypeDisplayName(c.type ?? null),
+        sofaTypeLabel: this.getSofaTypeDisplayName(c.sofaType ?? null),
         priceText,
         priceTextComma
       };
@@ -267,6 +271,11 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       { value: ComponentType.SCATOLA, label: 'Scatola' },
       { value: ComponentType.TELA_MARCHIATA, label: 'Tela Marchiata' },
       { value: ComponentType.TRASPORTO, label: 'Trasporto' }
+    ];
+    this.availableSofaTypes = [
+      { value: SofaType.DIVANO_3_PL_MAXI, label: 'Divano 3 PL Maxi' },
+      { value: SofaType.DIVANO_3_PL, label: 'Divano 3 PL' },
+      { value: SofaType.DIVANO_2_PL, label: 'Divano 2 PL' },
     ];
     this.cd.detectChanges();
   }
@@ -299,7 +308,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       this.newComponent.price ?? 0,
       this.selectedSupplier || undefined,
       this.selectedComponentType !== null ? this.selectedComponentType : undefined,
-      this.newComponent.measure
+      this.newComponent.sofaType ?? null
     );
 
     const op$ = this.isEditing
@@ -329,12 +338,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     );
   }
 
-  // Add method to handle measure change
-  onMeasureChange(): void {
-    this.updateComponentName();
-  }
-
-  // Update method to automatically generate component name including measure
+  // Update method to automatically generate component name including sofa type
   private updateComponentName(): void {
     // Only auto-generate if not editing an existing component
     if (this.isEditing) {
@@ -344,11 +348,11 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.newComponent.name = this.generateComponentName(
       this.selectedComponentType,
       this.selectedSupplier,
-      this.newComponent.measure
+      this.newComponent.sofaType ?? null
     );
   }
 
-  generateComponentName(type: ComponentType | null, supplier: Supplier | null, measure?: string): string {
+  generateComponentName(type: ComponentType | null, supplier: Supplier | null, sofaType?: SofaType | null): string {
     const parts: string[] = [];
 
     if (type !== null) {
@@ -359,8 +363,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       parts.push(supplier.name);
     }
 
-    if (measure && measure.trim()) {
-      parts.push(measure.trim());
+    if (sofaType) {
+      parts.push(this.getSofaTypeDisplayName(sofaType));
     }
 
     return parts.join(' ') || '';
@@ -373,18 +377,18 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    this.measureEntries = [{ measure: '', price: 0 }];
+    this.measureEntries = [{ sofaType: null, price: 0 }];
     this.multipleMeasuresFormSubmitted = false;
     this.showMultipleMeasuresDialog = true;
   }
 
   onMultipleMeasuresDialogHide(): void {
-    this.measureEntries = [{ measure: '', price: 0 }];
+    this.measureEntries = [{ sofaType: null, price: 0 }];
     this.multipleMeasuresFormSubmitted = false;
   }
 
   addMeasureEntry(): void {
-    this.measureEntries.push({ measure: '', price: 0 });
+    this.measureEntries.push({ sofaType: null, price: 0 });
   }
 
   removeMeasureEntry(index: number): void {
@@ -393,8 +397,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     }
   }
 
-  shouldShowMeasureEntryError(measure: string): boolean {
-    return this.multipleMeasuresFormSubmitted && !measure?.trim();
+  shouldShowMeasureEntryError(sofaType: SofaType | null): boolean {
+    return this.multipleMeasuresFormSubmitted && !sofaType;
   }
 
   shouldShowMeasureEntryPriceError(price: number): boolean {
@@ -403,7 +407,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   canSaveMultipleMeasures(): boolean {
     return this.measureEntries.every(entry =>
-      entry.measure?.trim() && entry.price >= 0
+      entry.sofaType !== null && entry.sofaType !== undefined && entry.price >= 0
     );
   }
 
@@ -416,7 +420,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.multipleMeasuresFormSubmitted = true;
 
     if (!this.canSaveMultipleMeasures()) {
-      this.addError('Compila tutti i campi obbligatori per ogni misura');
+      this.addError('Compila tutti i campi obbligatori per ogni tipologia divano');
       return;
     }
 
@@ -425,11 +429,11 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     const componentPromises = this.measureEntries.map(entry => {
       const component = new ComponentModel(
         '', // ID will be generated
-        this.generateComponentName(this.selectedComponentType, this.selectedSupplier, entry.measure),
+        this.generateComponentName(this.selectedComponentType, this.selectedSupplier, entry.sofaType ?? null),
         entry.price,
         this.selectedSupplier || undefined,
         this.selectedComponentType !== null ? this.selectedComponentType : undefined,
-        entry.measure.trim()
+        entry.sofaType ?? null
       );
 
       return this.componentService.addComponent(component).toPromise();
@@ -465,7 +469,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       component.price,
       component.supplier ? JSON.parse(JSON.stringify(component.supplier)) : undefined,
       component.type,
-      component.measure
+      component.sofaType ?? null
     );
 
     this.selectedSupplier = component.supplier || null;
@@ -476,7 +480,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
     console.log('Selected component type for editing:', this.selectedComponentType);
     console.log('Selected supplier for editing:', this.selectedSupplier);
-    console.log('Component measure for editing:', this.newComponent.measure);
+    console.log('Component sofa type for editing:', this.newComponent.sofaType);
 
     this.editingIndex = index;
 
@@ -570,8 +574,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.updateAllVariantNames();
   }
 
-  onBulkMeasureChange(index: number): void {
-    // Update the specific variant name when measure changes
+  onBulkSofaTypeChange(index: number): void {
+    // Update the specific variant name when sofa type changes
     this.updateVariantName(index);
     setTimeout(() => this.cd.detectChanges(), 0);
   }
@@ -592,7 +596,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     variableData.name = this.generateComponentName(
       this.bulkFixedData.type,
       this.bulkFixedData.supplier,
-      variableData.measure
+      variableData.sofaType ?? null
     );
   }
 
@@ -615,8 +619,9 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     const baseName = this.getBulkBaseName();
     if (!baseName) return '';
 
-    if (variableData.measure && variableData.measure.trim()) {
-      return `${baseName} ${variableData.measure.trim()}`;
+    const sofaTypeLabel = variableData.sofaType ? this.getSofaTypeDisplayName(variableData.sofaType) : '';
+    if (sofaTypeLabel) {
+      return `${baseName} ${sofaTypeLabel}`;
     }
 
     return baseName;
@@ -624,7 +629,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   getValidBulkVariants(): BulkComponentVariableData[] {
     return this.bulkVariableData.filter(vd =>
-      vd.price >= 0
+      vd.sofaType !== null && vd.sofaType !== undefined && vd.price >= 0
     );
   }
 
@@ -634,12 +639,12 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     }
 
     return this.bulkVariableData.some(vd =>
-      vd.measure?.trim() && vd.price >= 0
+      vd.sofaType !== null && vd.sofaType !== undefined && vd.price >= 0
     );
   }
 
-  shouldShowBulkMeasureError(measure: string): boolean {
-    return this.bulkFormSubmitted && !measure?.trim();
+  shouldShowBulkMeasureError(sofaType: SofaType | null): boolean {
+    return this.bulkFormSubmitted && !sofaType;
   }
 
   saveBulkComponents() {
@@ -663,7 +668,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         vd.price,                     // prezzo
         this.bulkFixedData.supplier!, // fornitore (sicuro non nullo, validato sopra)
         this.bulkFixedData.type,      // tipo
-        vd.measure?.trim()            // misura (opzionale)
+        vd.sofaType ?? null           // sofa type (obbligatorio in questo flusso)
       );
 
       return this.componentService.addComponent(component).toPromise();
@@ -687,9 +692,9 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   addVariableDataEntry() {
     const newVariant = {
-      measure: '',
+      sofaType: null as SofaType | null,
       price: 0,
-      name: this.generateComponentName(this.bulkFixedData.type, this.bulkFixedData.supplier, '')
+      name: this.generateComponentName(this.bulkFixedData.type, this.bulkFixedData.supplier, null)
     };
     this.bulkVariableData.push(newVariant);
     setTimeout(() => {
@@ -703,7 +708,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   resetBulkForm() {
     this.bulkFixedData = { name: '', type: ComponentType.FUSTO, supplier: null };
     this.bulkVariableData = [
-      { measure: '', price: null as any, name: '' }
+      { sofaType: null, price: null as any, name: '' }
     ];
     this.bulkFormSubmitted = false;
   }
@@ -735,7 +740,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     const validVariants = this.getValidBulkVariants();
     // Almeno una variante valida
     if (validVariants.length === 0) {
-      this.addError('Aggiungi almeno una variante con misura, prezzo e nome validi', 'Errore di Validazione');
+      this.addError('Aggiungi almeno una variante con tipo divano, prezzo e nome validi', 'Errore di Validazione');
       return false;
     }
 
@@ -763,7 +768,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       );
       if (exists) {
         this.addError(
-          `Esiste già un componente con il nome "${vd.name!.trim()}"`,
+          `Esiste gia un componente con il nome "${vd.name!.trim()}"`,
           'Errore di Validazione'
         );
         return false;
@@ -804,12 +809,12 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       if (sameId) return false;
 
       const isSameName = comp.name.trim().toLowerCase() === this.newComponent.name.trim().toLowerCase();
-      const isSameMeasure = (comp.measure || '').trim().toLowerCase() === (this.newComponent.measure || '').trim().toLowerCase();
-      return isSameName && isSameMeasure;
+      const isSameSofaType = (comp.sofaType ?? null) === (this.newComponent.sofaType ?? null);
+      return isSameName && isSameSofaType;
     });
 
     if (duplicate) {
-      this.addError('Esiste già un componente con questo nome e misura', 'Errore di Validazione');
+      this.addError('Esiste gia un componente con questo nome e tipo divano', 'Errore di Validazione');
       return false;
     }
 
@@ -869,6 +874,18 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     return typeNames[type] || 'Sconosciuto';
   }
 
+  getSofaTypeDisplayName(type: SofaType | null): string {
+    if (!type) return '-';
+
+    const typeNames: Record<SofaType, string> = {
+      [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
+      [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
+      [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+    };
+
+    return typeNames[type] || String(type);
+  }
+
   // Add missing shouldShowFieldError method
   shouldShowFieldError(fieldValue: any): boolean {
     return this.formSubmitted && !this.formValid && !fieldValue?.trim();
@@ -920,6 +937,12 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
     // Update component name when supplier changes
     this.updateComponentName();
+  }
+
+  onSofaTypeChange(event: any) {
+    this.newComponent.sofaType = event.value;
+    this.updateComponentName();
+    this.updateAllVariantNames();
   }
 
   // Update method to work with enum

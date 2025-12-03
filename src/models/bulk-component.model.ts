@@ -1,5 +1,6 @@
 import { ComponentType } from './component-type.model';
 import { Supplier } from './supplier.model';
+import { SofaType } from './sofa-type.model';
 
 export interface BulkComponentFixedData {
   name: string;
@@ -9,7 +10,7 @@ export interface BulkComponentFixedData {
 }
 
 export interface BulkComponentVariableData {
-  measure?: string;
+  sofaType?: SofaType | null;
   price: number;
   name: string;
 }

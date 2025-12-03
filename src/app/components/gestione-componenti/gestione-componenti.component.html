@@ -37,7 +37,7 @@
             </div>
           </div>
 
-          <!-- Seconda riga: nome e misura -->
+          <!-- Seconda riga: nome e tipo divano -->
           <div class="form-row" style="padding-top: 20px;">
             <div class="form-group">
               <p-floatLabel>
@@ -53,15 +53,16 @@
 
               <div class="field-hint">
                 <i class="pi pi-info-circle info-icon"></i>
-                Il nome viene generato automaticamente in base al tipo, fornitore e misura
+                Il nome viene generato automaticamente in base al tipo, fornitore e tipo divano
               </div>
             </div>
 
             <div class="form-group">
               <p-floatLabel>
-                <input pInputText id="componentMeasure" type="text" [(ngModel)]="newComponent.measure" name="measure"
-                  placeholder="es: 120x80 cm" (ngModelChange)="onMeasureChange()" />
-                <label for="componentMeasure">Misura</label>
+                <p-dropdown id="componentSofaType" [options]="availableSofaTypes" [(ngModel)]="newComponent.sofaType"
+                  name="sofaType" optionLabel="label" optionValue="value" [showClear]="true" class="w-100"
+                  placeholder="Tipo divano" (onChange)="onSofaTypeChange($event)"></p-dropdown>
+                <label for="componentSofaType">Tipo Divano</label>
               </p-floatLabel>
             </div>
           </div>
@@ -130,7 +131,7 @@
           <div class="section-header">
             <h3><i class="pi pi-list"></i> Varianti ({{ bulkVariableData.length }})</h3>
           </div>
-          <p class="section-description">Ogni variante creerà un componente separato con misura e prezzo diversi</p>
+          <p class="section-description">Ogni variante creerà un componente separato con tipo divano e prezzo diversi</p>
 
           <div #variantEntriesContainer class="variable-entries">
             <div *ngFor="let variableData of bulkVariableData; let i = index" class="variable-entry"
@@ -145,10 +146,11 @@
               <div class="form-row" style="padding-top: 20px;">
                 <div class="form-group">
                   <p-floatLabel>
-                    <input pInputText [id]="'bulkMeasure_' + i" type="text" [(ngModel)]="variableData.measure"
-                      [name]="'bulkMeasure_' + i" placeholder="es: 120x80 cm"
-                      (ngModelChange)="onBulkMeasureChange(i)" />
-                    <label [for]="'bulkMeasure_' + i">Misura</label>
+                    <p-dropdown [id]="'bulkSofaType_' + i" [options]="availableSofaTypes"
+                      [(ngModel)]="variableData.sofaType" [name]="'bulkSofaType_' + i" optionLabel="label"
+                      optionValue="value" [showClear]="true" placeholder="Tipo divano"
+                      (onChange)="onBulkSofaTypeChange(i)"></p-dropdown>
+                    <label [for]="'bulkSofaType_' + i">Tipo Divano</label>
                   </p-floatLabel>
                 </div>
 
@@ -179,7 +181,7 @@
                   </small>
                   <div class="field-hint" style="padding-top: 10px;">
                     <i class="pi pi-info-circle info-icon"></i>
-                    Il nome viene generato automaticamente in base al tipo, fornitore e misura
+                    Il nome viene generato automaticamente in base al tipo, fornitore e tipo divano
                   </div>
                 </div>
               </div>
@@ -207,7 +209,7 @@
                 <span class="preview-details">
                   - {{ getComponentTypeDisplayName(bulkFixedData.type) }}
                   - {{ bulkFixedData.supplier.name }}
-                  <span *ngIf="variableData.measure"> - {{ variableData.measure }}</span>
+                  <span *ngIf="variableData.sofaType"> - {{ getSofaTypeDisplayName(variableData.sofaType) }}</span>
                   - {{ variableData.price | currency:'EUR' }}
                 </span>
               </div>
@@ -349,7 +351,7 @@
     'priceText',
     'priceTextComma',
     'typeLabel',
-    'measure',
+    'sofaTypeLabel',
     'supplierName'
   ]"
   [rowHover]="true"
@@ -373,9 +375,9 @@
         <p-sortIcon field="typeLabel"></p-sortIcon>
       </th>
 
-      <th pSortableColumn="measure">
-        Misura
-        <p-sortIcon field="measure"></p-sortIcon>
+      <th pSortableColumn="sofaTypeLabel">
+        Tipo Divano
+        <p-sortIcon field="sofaTypeLabel"></p-sortIcon>
       </th>
 
       <th pSortableColumn="supplierName">
@@ -411,7 +413,7 @@
       <td>{{ component.name }}</td>
       <td>{{ component.price | currency:'EUR' }}</td>
       <td>{{ component.typeLabel }}</td>
-      <td>{{ component.measure || '-' }}</td>
+      <td>{{ component.sofaTypeLabel || '-' }}</td>
       <td>{{ component.supplierName }}</td>
       <td class="actions-cell">
         <p-button type="button" icon="pi pi-pencil"

@@ -4,6 +4,7 @@ import { RealtimeDbService } from './realtime-db.service';
 import { Component } from '../models/component.model';
 import { ComponentType } from '../models/component-type.model';
 import { BulkComponentCreation } from '../models/bulk-component.model';
+import { SofaType } from '../models/sofa-type.model';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +33,7 @@ export class ComponentService {
       price: component.price,
       supplier: component.supplier || null,
       type: typeToSave,
-      measure: component.measure || null
+      sofaType: component.sofaType ?? null
     };
 
     // Add explicit logging to see what's being saved
@@ -53,7 +54,7 @@ export class ComponentService {
               c.data.price,
               c.data.supplier || undefined,
               this.parseComponentType(c.data.type),
-              c.data.measure
+              this.parseSofaType(c.data.sofaType ?? c.data.measure)
             )
         );
         console.log('ComponentService: Mapped components', mappedComponents);
@@ -74,7 +75,7 @@ export class ComponentService {
                 c.data.price,
                 c.data.supplier || undefined,
                 this.parseComponentType(c.data.type),
-                c.data.measure
+                this.parseSofaType(c.data.sofaType ?? c.data.measure)
               )
           );
           observer.next(mappedComponents);
@@ -103,7 +104,7 @@ export class ComponentService {
       price: component.price,
       supplier: component.supplier || null,
       type: typeToSave,
-      measure: component.measure || null
+      sofaType: component.sofaType ?? null
     };
 
     // Add explicit logging to see what's being saved
@@ -160,6 +161,19 @@ export class ComponentService {
     return undefined;
   }
 
+  private parseSofaType(raw: any): SofaType | null {
+    if (raw === null || raw === undefined) return null;
+
+    const value = String(raw).trim();
+    if (!value) return null;
+
+    const match = (Object.values(SofaType) as string[]).find(
+      v => v.toLowerCase() === value.toLowerCase()
+    );
+
+    return match ? (match as SofaType) : null;
+  }
+
 
   deleteComponent(id: string): Observable<void> {
     return new Observable((observer) => {
@@ -196,7 +210,7 @@ export class ComponentService {
               c.data.price,
               c.data.supplier || undefined,
               this.parseComponentType(c.data.type),
-              c.data.measure
+              this.parseSofaType(c.data.sofaType ?? c.data.measure)
             )
         );
 
@@ -217,12 +231,12 @@ export class ComponentService {
       // Generate unique ID for each component
       const componentId = this.generateComponentId();
 
-      // Generate component name: Type + Supplier + Measure
+      // Generate component name: Type + Supplier + SofaType
       const typeName = this.getComponentTypeDisplayName(bulkData.fixedData.type);
       const supplierName = bulkData.fixedData.supplier?.name || '';
-      const measure = variableData.measure?.trim() || '';
+      const sofaTypeLabel = this.getSofaTypeDisplayName(variableData.sofaType ?? null);
 
-      const componentName = [typeName, supplierName, measure]
+      const componentName = [typeName, supplierName, sofaTypeLabel]
         .filter(part => part)
         .join(' ');
 
@@ -233,7 +247,7 @@ export class ComponentService {
         variableData.price,
         bulkData.fixedData.supplier || undefined, // Convert null to undefined
         bulkData.fixedData.type,
-        variableData.measure
+        variableData.sofaType ?? null
       );
 
       // Create plain object for database storage
@@ -243,7 +257,7 @@ export class ComponentService {
         price: component.price,
         supplier: component.supplier || undefined,
         type: component.type !== undefined ? ComponentType[component.type] : undefined,
-        measure: component.measure
+        sofaType: component.sofaType ?? null
       };
 
       return this.dbService.addComponent(componentData);
@@ -271,6 +285,16 @@ export class ComponentService {
     };
 
     return typeNames[type] || 'Sconosciuto';
+  }
+
+  private getSofaTypeDisplayName(type: SofaType | null): string {
+    if (!type) return '';
+    const map: Record<SofaType, string> = {
+      [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
+      [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
+      [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+    };
+    return map[type] ?? type;
   }
 
   private generateComponentId(): string {
@@ -306,7 +330,7 @@ export class ComponentService {
           price: newPrice,
           supplier: component.supplier || null,
           type: component.type !== null && component.type !== undefined ? ComponentType[component.type] : null,
-          measure: component.measure || null
+          sofaType: component.sofaType ?? null
         };
 
         return this.dbService.updateComponent(component.id, updatedComponentData);

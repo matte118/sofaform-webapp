@@ -46,6 +46,7 @@ import { ExtraMattress } from '../../../models/extra-mattress.model';
 import { PdfGenerationService } from '../../../services/pdf-generation.service';
 import { TranslationService, LanguageOption } from '../../../services/translation.service';
 import { firstValueFrom, forkJoin } from 'rxjs';
+import { SofaType } from '../../../models/sofa-type.model';
 
 interface GroupedComponent {
   component: ComponentModel;
@@ -1466,14 +1467,15 @@ export class HomeComponent implements OnInit {
 
   formatComponentName(component: ComponentModel): string {
     if (!component) return '';
-    const hasMeasure = !!component.measure?.trim();
+    const sofaTypeLabel = component.sofaType ? this.getSofaTypeDisplayName(component.sofaType) : '';
+    const hasSofaType = !!sofaTypeLabel.trim();
     const key = this.buildNameMeasureKey(component);
     let base = component.name;
-    if (hasMeasure) base += ` (${component.measure})`;
+    if (hasSofaType) base += ` (${sofaTypeLabel})`;
     if (!this.duplicateNameMeasureKeys.has(key)) return base;
     const supplier = this.getSupplierName(component);
     if (supplier) {
-      return hasMeasure ? `${component.name} (${component.measure}) (${supplier})` : `${component.name} (${supplier})`;
+      return hasSofaType ? `${component.name} (${sofaTypeLabel}) (${supplier})` : `${component.name} (${supplier})`;
     }
     return base;
   }
@@ -1571,7 +1573,7 @@ export class HomeComponent implements OnInit {
   private areComponentsEqual(a: ComponentModel, b: ComponentModel): boolean {
     if (a === b) return true;
     return a.id === b.id && a.name === b.name && a.price === b.price &&
-      a.measure === b.measure && a.type === b.type && this.sameSupplier(a, b);
+      a.sofaType === b.sofaType && a.type === b.type && this.sameSupplier(a, b);
   }
 
   private sameSupplier(a: ComponentModel, b: ComponentModel): boolean {
@@ -1586,8 +1588,8 @@ export class HomeComponent implements OnInit {
 
   private buildNameMeasureKey(c: ComponentModel): string {
     const name = (c.name || '').trim().toLowerCase();
-    const measure = (c.measure || '').trim().toLowerCase();
-    return `${name}|${measure}`;
+    const sofaType = c.sofaType ? this.getSofaTypeDisplayName(c.sofaType).toLowerCase() : '';
+    return `${name}|${sofaType}`;
   }
 
   private rebuildDuplicateIndex(): void {
@@ -1610,6 +1612,16 @@ export class HomeComponent implements OnInit {
   private getSupplierName(c: ComponentModel): string | undefined {
     if (!c?.supplier) return undefined;
     return c.supplier.name;
+  }
+
+  private getSofaTypeDisplayName(type: SofaType | null): string {
+    if (!type) return '';
+    const map: Record<SofaType, string> = {
+      [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
+      [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
+      [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+    };
+    return map[type] ?? String(type);
   }
 
   cancelRivestimento() {

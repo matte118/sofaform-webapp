@@ -1,5 +1,6 @@
 import { ComponentType } from './component-type.model';
 import { Supplier } from './supplier.model';
+import { SofaType } from './sofa-type.model';
 
 export class Component {
   constructor(
@@ -8,6 +9,6 @@ export class Component {
     public price: number,
     public supplier?: Supplier,
     public type?: ComponentType,
-    public measure?: string,
+    public sofaType?: SofaType | null,
   ) {}
 }

@@ -421,7 +421,7 @@ export class RealtimeDbService {
         name: c.name,
         price: c.price,
         // Ensure optional fields are never undefined for Firebase
-        measure: c.measure ?? null,
+        sofaType: (c as any).sofaType ?? null,
         supplier: c.supplier ?? null
       }))
     };
