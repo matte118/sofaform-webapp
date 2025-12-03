@@ -103,9 +103,9 @@
           <div class="form-row" style="padding-top: 20px;">
             <div class="form-group">
               <p-floatLabel>
-                <p-dropdown id="componentType" [options]="availableComponentTypes" [(ngModel)]="selectedComponentType"
+                <p-dropdown id="componentType" [options]="availableComponentTypes" [(ngModel)]="bulkFixedData.type"
                   name="componentType" optionLabel="label" optionValue="value" [showClear]="true" class="w-100"
-                  placeholder="Tipo di componente" (onChange)="onComponentTypeChange($event)"
+                  placeholder="Tipo di componente" (onChange)="onBulkTypeChange($event)"
                   [ngModelOptions]="{ standalone: true }"
                   [class.ng-invalid]="shouldShowComponentTypeError()"></p-dropdown>
                 <label for="componentType">
