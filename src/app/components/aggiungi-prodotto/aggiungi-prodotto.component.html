@@ -267,20 +267,20 @@
               <div class="p-grid">
                 <div class="p-col-12 p-md-6" style="padding-top: 10px;">
                   <p-floatLabel>
-                    <p-dropdown [options]="variants" [(ngModel)]="selectedVariant" optionLabel="longName"
-                      inputId="variantDropdown" placeholder="Scegli una variante"
-                      (onChange)="selectVariantForComponents($event.value)" [style]="{ width: '100%' }">
-                      <ng-template let-variant pTemplate="item">
+                  <p-dropdown [options]="variants" [(ngModel)]="selectedVariant" optionLabel="longName"
+                    inputId="variantDropdown" placeholder="Scegli una variante"
+                    (onChange)="selectVariantForComponents($event.value)" [style]="{ width: '100%' }">
+                    <ng-template let-variant pTemplate="item">
                         {{ getSofaTypeDisplayName(variant.longName) }}
-                        <span class="variant-mode-indicator">
-                          ({{ variant.pricingMode === 'custom' ? 'Custom' : 'Componenti' }})
-                        </span>
-                      </ng-template>
-                    </p-dropdown>
-                    <label for="variantDropdown">Scegli una variante</label>
-                  </p-floatLabel>
-                </div>
+                    </ng-template>
+                    <ng-template let-variant pTemplate="selectedItem">
+                      {{ getSofaTypeDisplayName(variant?.longName) }}
+                    </ng-template>
+                  </p-dropdown>
+                  <label for="variantDropdown">Scegli una variante</label>
+                </p-floatLabel>
               </div>
+            </div>
             </div>
 
             <!-- Custom Price Warning -->

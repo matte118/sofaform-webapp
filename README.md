@@ -20,6 +20,7 @@ Rappresenta un modello di divano.
 *   `photoUrl` (string[]): Array di URL delle immagini del prodotto.
 *   `seduta`, `schienale`, `meccanica`, `materasso` (string, opzionali): Specifiche tecniche descrittive.
 *   `materassiExtra` (ExtraMattress[], opzionale): Lista di opzioni extra per i materassi.
+*   `meccanismiExtra` (ExtraMeccanismo[], opzionale): Lista di opzioni extra per meccanismi aggiuntivi.
 *   `deliveryPrice` (number, opzionale): Costo di consegna specifico.
 *   `ricarico` (number, opzionale): Percentuale di ricarico da applicare al prezzo finale.
 
@@ -66,6 +67,7 @@ Rappresenta un utente del sistema.
 
 ### **Altre Entità di Supporto**
 *   **ExtraMattress**: `{ name: string, price: number }` - Opzioni aggiuntive per materassi.
+*   **ExtraMeccanismo**: `{ name: string, price: number }` - Opzioni aggiuntive per meccanismi.
 *   **ComponentType** (Enum): Categorie fisse per i componenti (FUSTO, GOMMA, RETE, MATERASSO, TAPPEZZERIA, PIEDINI, FERRAMENTA, VARIE, IMBALLO, SCATOLA, TELA_MARCHIATA, TRASPORTO).
 *   **SofaType** (Enum): Tipologia del divano (DIVANO_3PL_MAXI, DIVANO_3PL, DIVANO_2PL).
 

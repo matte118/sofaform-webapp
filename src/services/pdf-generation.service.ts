@@ -4,7 +4,6 @@ import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { SofaProduct } from '../models/sofa-product.model';
 import { Variant } from '../models/variant.model';
 import { Rivestimento } from '../models/rivestimento.model';
-import { ExtraMattress } from '../models/extra-mattress.model';
 import { TranslationService } from './translation.service';
 import { I18nService } from './i18n.service';
 
@@ -15,7 +14,7 @@ export class PdfGenerationService {
   private productData!: SofaProduct;
   private variantsData: Variant[] = [];
   private rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] } = {};
-  private extrasData: ExtraMattress[] = [];
+  private extrasData: { name: string; price: number }[] = [];
   private markupPerc = 0;
   private deliveryCost = 0;
   private currentLang = 'it';
@@ -29,7 +28,7 @@ export class PdfGenerationService {
     product: SofaProduct,
     variants: Variant[],
     rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] },
-    extras: ExtraMattress[],
+    extras: { name: string; price: number }[],
     markup: number,
     delivery: number
   ): void {

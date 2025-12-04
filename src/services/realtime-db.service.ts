@@ -66,6 +66,7 @@ export class RealtimeDbService {
     const sanitizedProduct = this.sanitizeData({
       ...product,
       materassiExtra: product.materassiExtra ?? null,
+      meccanismiExtra: product.meccanismiExtra ?? null,
       deliveryPrice: product.deliveryPrice ?? null,
       ricarico: product.ricarico ?? null,
     });
@@ -98,6 +99,7 @@ export class RealtimeDbService {
     const sanitizedProduct = this.sanitizeData({
       ...product,
       materassiExtra: product.materassiExtra ?? null,
+      meccanismiExtra: product.meccanismiExtra ?? null,
       deliveryPrice: product.deliveryPrice ?? null,
       ricarico: product.ricarico ?? null,
     });
@@ -123,6 +125,7 @@ export class RealtimeDbService {
             const sanitizedData = this.sanitizeData({
               ...data,
               materassiExtra: data.materassiExtra ?? null,
+              meccanismiExtra: data.meccanismiExtra ?? null,
               deliveryPrice: data.deliveryPrice ?? null,
               rivestimenti: data.rivestimenti ?? null,
               ricarico: data.ricarico ?? null,
@@ -392,6 +395,7 @@ export class RealtimeDbService {
     const sanitizedProduct = this.sanitizeData({
       ...product,
       materassiExtra: product.materassiExtra ?? null,
+      meccanismiExtra: product.meccanismiExtra ?? null,
       deliveryPrice: product.deliveryPrice ?? null,
       rivestimenti: product.rivestimenti ?? null,
       ricarico: product.ricarico ?? null,

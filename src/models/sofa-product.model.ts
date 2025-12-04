@@ -1,4 +1,5 @@
 import { ExtraMattress } from "./extra-mattress.model";
+import { ExtraMeccanismo } from "./extra-meccanismo.model";
 
 export class SofaProduct {
   constructor(
@@ -14,6 +15,7 @@ export class SofaProduct {
 
     // Optional fields
     public materassiExtra?: ExtraMattress[],
+    public meccanismiExtra?: ExtraMeccanismo[],
     public deliveryPrice?: number,
     public ricarico?: number,
   ) { }

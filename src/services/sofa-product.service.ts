@@ -70,6 +70,7 @@ export class SofaProductService {
             p.data.meccanica || '',
             p.data.materasso || '',
             p.data.materassiExtra || [],
+            p.data.meccanismiExtra || [],
             p.data.deliveryPrice ?? 0,
             p.data.ricarico ?? 30
           );

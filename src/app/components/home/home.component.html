@@ -265,7 +265,7 @@
 
 
   <!-- Dialog Materassi Extra (Listino) -->
-  <p-dialog [(visible)]="showListinoExtraMattressDialog" header="Materassi Extra" [modal]="true" [closable]="false"
+  <p-dialog [(visible)]="showListinoExtraMattressDialog" header="Extra (Materassi e Meccanismi)" [modal]="true" [closable]="false"
     [baseZIndex]="10000" [style]="{ width: '700px', maxHeight: '90vh' }" [draggable]="false" [resizable]="false">
     <div class="p-fluid">
       <div class="extra-mattress-section">
@@ -296,6 +296,39 @@
         <div class="add-mattress-section">
           <button pButton type="button" label="Aggiungi Materasso" icon="pi pi-plus"
             class="p-button-outlined p-button-primary" (click)="addNewExtraMattressForListino()"></button>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <div class="extra-mattress-section">
+        <h4 *ngIf="extraMechanismsForListino.length === 0"
+          style="text-align: center; color: #6c757d; margin-bottom: 1.5rem;">
+          Nessun meccanismo extra configurato
+        </h4>
+
+        <div class="extra-mattress-list" *ngIf="extraMechanismsForListino.length > 0">
+          <div class="extra-mattress-row" *ngFor="let mech of extraMechanismsForListino; let i = index">
+            <div class="mattress-name-field">
+              <label>Nome meccanismo <span class="required-field">*</span></label>
+              <input pInputText [(ngModel)]="mech.name" placeholder="Es. Meccanismo elettrico" class="full-width" />
+            </div>
+            <div class="mattress-price-field">
+              <label>Prezzo</label>
+              <p-inputNumber [(ngModel)]="mech.price" mode="currency" currency="EUR" locale="it-IT" placeholder="€0,00"
+                [min]="0" [style]="{ width: '100%' }"></p-inputNumber>
+            </div>
+            <div class="mattress-actions">
+              <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-outlined"
+                (click)="extraMechanismsForListino.splice(i,1)" pTooltip="Rimuovi meccanismo"
+                tooltipPosition="top"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="add-mattress-section">
+          <button pButton type="button" label="Aggiungi Meccanismo" icon="pi pi-plus"
+            class="p-button-outlined p-button-primary" (click)="addNewExtraMechanismForListino()"></button>
         </div>
       </div>
     </div>

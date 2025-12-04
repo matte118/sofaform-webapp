@@ -30,6 +30,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
+import { DividerModule } from 'primeng/divider';
 
 
 import { SofaProduct } from '../../../models/sofa-product.model';
@@ -43,6 +44,7 @@ import { PhotoUploadService } from '../../../services/upload.service';
 import { Component as ComponentModel } from '../../../models/component.model';
 import { ComponentService } from '../../../services/component.service';
 import { ExtraMattress } from '../../../models/extra-mattress.model';
+import { ExtraMeccanismo } from '../../../models/extra-meccanismo.model';
 import { PdfGenerationService } from '../../../services/pdf-generation.service';
 import { TranslationService, LanguageOption } from '../../../services/translation.service';
 import { firstValueFrom, forkJoin } from 'rxjs';
@@ -81,8 +83,8 @@ interface EditGroupedComponent {
     TooltipModule,
     MultiSelectModule,
     FloatLabelModule,
-    InputNumberModule,
-    TagModule
+    TagModule,
+    DividerModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -152,6 +154,8 @@ export class HomeComponent implements OnInit {
   // Extra options
   extraMattresses: ExtraMattress[] = [];
   extraMattressesForListino: ExtraMattress[] = [];
+  extraMechanisms: ExtraMeccanismo[] = [];
+  extraMechanismsForListino: ExtraMeccanismo[] = [];
   deliveryPrice?: number;
   deliveryPriceListino: number = 0;   // Local state for listino flow
 
@@ -339,11 +343,13 @@ export class HomeComponent implements OnInit {
       product.meccanica,
       product.materasso,
       [...(product.materassiExtra || [])],
+      [...(product.meccanismiExtra || [])],
       product.deliveryPrice,
       product.ricarico
     );
 
     this.extraMattressesForListino = [...(product.materassiExtra as any as ExtraMattress[]) || []];
+    this.extraMechanismsForListino = [...(product.meccanismiExtra as any as ExtraMeccanismo[]) || []];
     this.deliveryPriceListino = product.deliveryPrice ?? 0;
     this.markupPercentage = product.ricarico ?? 30;
 
@@ -516,6 +522,7 @@ export class HomeComponent implements OnInit {
       const updatedProduct: SofaProduct = {
         ...this.selectedProduct,
         materassiExtra: [...this.extraMattressesForListino],
+        meccanismiExtra: [...this.extraMechanismsForListino],
         deliveryPrice: this.deliveryPriceListino,
         ricarico: this.markupPercentage
       };
@@ -551,7 +558,10 @@ export class HomeComponent implements OnInit {
         updatedProduct,
         this.getProductVariants(updatedProduct.id),
         rivestimentiByVariant,
-        this.extraMattressesForListino,
+        [
+          ...this.extraMattressesForListino,
+          ...this.extraMechanismsForListino
+        ],
         this.markupPercentage,
         this.deliveryPriceListino
       );
@@ -627,6 +637,7 @@ export class HomeComponent implements OnInit {
     this.selectedProduct = undefined;
     this.selectedRivestimentiForListino = [];
     this.extraMattressesForListino = [];
+    this.extraMechanismsForListino = [];
     this.deliveryPriceListino = 0;
     this.markupPercentage = 30;
     this.variantRivestimentiSelections = {};
@@ -678,11 +689,13 @@ export class HomeComponent implements OnInit {
       product.meccanica,
       product.materasso,
       (product.materassiExtra as any) || [],
+      (product.meccanismiExtra as any) || [],
       product.deliveryPrice,
       product.ricarico
     );
 
     this.extraMattresses = (product.materassiExtra as any as ExtraMattress[]) || [];
+    this.extraMechanisms = (product.meccanismiExtra as any as ExtraMeccanismo[]) || [];
     this.deliveryPrice = product.deliveryPrice;
 
     this.variantService.getVariantsBySofaId(product.id).subscribe(variants => {
@@ -1236,6 +1249,16 @@ export class HomeComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  addNewExtraMechanism(): void {
+    this.extraMechanisms.push(new ExtraMeccanismo('', 0));
+    this.cdr.detectChanges();
+  }
+
+  addNewExtraMechanismForListino(): void {
+    this.extraMechanismsForListino.push(new ExtraMeccanismo('', 0));
+    this.cdr.detectChanges();
+  }
+
   cancelExtraMattressListino(): void {
     this.showListinoExtraMattressDialog = false;
     this.resetListinoWizard();
@@ -1251,6 +1274,7 @@ export class HomeComponent implements OnInit {
 
     // Update only the in-memory copy, don't save to database yet
     this.selectedProduct.materassiExtra = [...this.extraMattressesForListino];
+    this.selectedProduct.meccanismiExtra = [...this.extraMechanismsForListino];
     // Delivery price remains in deliveryPriceListino local state
 
     // Close extra mattress dialog and open markup dialog
@@ -1265,6 +1289,7 @@ export class HomeComponent implements OnInit {
     this.saving = true;
 
     this.editingProduct.materassiExtra = this.extraMattresses as any;
+    this.editingProduct.meccanismiExtra = this.extraMechanisms as any;
     this.editingProduct.deliveryPrice = this.deliveryPrice;
 
     const saveVariants = () => {
@@ -1774,7 +1799,9 @@ export class HomeComponent implements OnInit {
   }
 
   getExtraMattressesTotal(): number {
-    return this.extraMattressesForListino.reduce((sum, m) => sum + (m.price || 0), 0);
+    const mattressesTotal = this.extraMattressesForListino.reduce((sum, m) => sum + (m.price || 0), 0);
+    const mechanismsTotal = this.extraMechanismsForListino.reduce((sum, m) => sum + (m.price || 0), 0);
+    return mattressesTotal + mechanismsTotal;
   }
 
   formatPrice(price: number): string {
@@ -1789,7 +1816,7 @@ export class HomeComponent implements OnInit {
     // Initialize with two identical options pointing to the current default header image
     // This matches the current PDF generation behavior
     const defaultHeaderImageUrl = 'assets/images/default-header-image.png'; // Update this path to match your actual header image
-    
+
     this.availableHeaderImages = [
       {
         name: 'Logo Aziendale Standard',
@@ -1797,7 +1824,7 @@ export class HomeComponent implements OnInit {
         url: defaultHeaderImageUrl
       },
       {
-        name: 'Logo Aziendale Alternativo', 
+        name: 'Logo Aziendale Alternativo',
         description: 'Versione alternativa del logo aziendale',
         url: defaultHeaderImageUrl
       }

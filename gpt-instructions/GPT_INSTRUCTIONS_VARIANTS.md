@@ -3,7 +3,7 @@
 **Goal**: Generate `variants.json` using the provided **Component IDs**.
 
 ## Input Data
-*   **Image 1**: Price Table (for composition).
+*   **Image 1**: Price Table (for composition) from Step 1.
 *   **Image 2**: **Dimensions Table** (for `mattressWidth`, `depth`, `height`).
 *   **Component IDs**: List/JSON mapping Component Names to DB IDs.
 
@@ -73,4 +73,4 @@ Return **ONLY** a valid JSON array in a code block.
 ```
 
 ## NEXT STEP
-**STOP**. Do not proceed to SofaProduct. Wait for the user to provide the **Variant IDs** generated from the database import.
+**STOP**. Do not proceed to SofaProduct. Wait for the user to provide the **Variant IDs** generated from the database import and the pictures containing the **Extra Mattresses** + **Extra Meccanismi** and the **Technical Sheet**. 
