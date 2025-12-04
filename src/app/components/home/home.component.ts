@@ -179,6 +179,7 @@ export class HomeComponent implements OnInit {
   componentQuantityForVariant = 1;
   currentEditingVariant?: Variant;
   variantComponentsDialogTitle = '';
+  searchTerm = '';
 
   // Component selections for variant
   selectedFusto?: ComponentModel;
@@ -298,6 +299,12 @@ export class HomeComponent implements OnInit {
   // === Utility Methods ===
   trackById(_: number, item: SofaProduct) {
     return item.id;
+  }
+
+  get filteredProducts(): SofaProduct[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) return this.products;
+    return this.products.filter(p => p.name?.toLowerCase().includes(term));
   }
 
   getProductVariants(productId: string): Variant[] {

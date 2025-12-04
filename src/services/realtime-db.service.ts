@@ -251,7 +251,9 @@ export class RealtimeDbService {
 
   updateSupplier(id: string, supplier: Supplier): Promise<void> {
     const sanitizedSupplier = this.sanitizeData(supplier);
-    return set(ref(this.db, `suppliers/${id}`), sanitizedSupplier);
+    return set(ref(this.db, `suppliers/${id}`), sanitizedSupplier).then(() =>
+      this.updateSupplierReferences(id, sanitizedSupplier)
+    );
   }
 
   deleteSupplier(id: string): Promise<void> {
@@ -539,5 +541,47 @@ export class RealtimeDbService {
   // Generic method to remove data from any path
   remove(path: string): Promise<void> {
     return remove(ref(this.db, path));
+  }
+
+  private async updateSupplierReferences(supplierId: string, supplierData: any): Promise<void> {
+    // Aggiorna i componenti con questo supplier
+    const componentsSnap = await get(ref(this.db, 'components'));
+    const componentsVal = componentsSnap.val() || {};
+    const componentPromises: Promise<void>[] = [];
+
+    Object.entries(componentsVal).forEach(([compId, compData]: [string, any]) => {
+      if (compData?.supplier?.id === supplierId) {
+        const updated = {
+          ...compData,
+          supplier: supplierData
+        };
+        const sanitized = this.sanitizeData(updated);
+        componentPromises.push(set(ref(this.db, `components/${compId}`), sanitized));
+      }
+    });
+
+    // Aggiorna i componenti all'interno delle varianti
+    const variantsSnap = await get(ref(this.db, 'variants'));
+    const variantsVal = variantsSnap.val() || {};
+    const variantPromises: Promise<void>[] = [];
+
+    Object.entries(variantsVal).forEach(([variantId, variantData]: [string, any]) => {
+      const comps = Array.isArray(variantData.components) ? variantData.components : [];
+      let touched = false;
+      const updatedComponents = comps.map((comp: any) => {
+        if (comp?.supplier?.id === supplierId) {
+          touched = true;
+          return { ...comp, supplier: supplierData };
+        }
+        return comp;
+      });
+
+      if (touched) {
+        const payload = this.sanitizeData({ components: updatedComponents });
+        variantPromises.push(update(ref(this.db, `variants/${variantId}`), payload));
+      }
+    });
+
+    await Promise.all([...componentPromises, ...variantPromises]);
   }
 }

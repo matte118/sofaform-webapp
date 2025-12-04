@@ -3,39 +3,39 @@
         "sofaId": "",
         "longName": "divano_3_pl_maxi",
         "seatsCount": 3,
-        "mattressWidth": 190,
-        "depth": 96,
+        "mattressWidth": 204,
+        "depth": 218,
         "height": 85,
-        "price": 510.15,
+        "price": 699.9,
         "components": [
             {
-                "id": "-OfegurnQqtNbK4KuBIK",
-                "name": "Fusto The73 Deauville Divano 3 PL Maxi",
-                "price": 60,
+                "id": "-OffI6z4U6FXMQROEdO1",
+                "name": "Fusto Redael Matisse Divano 3 PL Maxi",
+                "price": 62,
                 "type": "FUSTO",
                 "supplier": {
-                    "id": "-Ofdx3OE88EJe0SfdNvF",
-                    "name": "The73"
+                    "id": "-OfdYCfSHUkpVOswO3nW",
+                    "name": "Redael"
                 }
             },
             {
-                "id": "-OfegutLObpfuOb9a0t1",
-                "name": "Gomma Nuova Linea Gomma Deauvil Divano 3 PL Maxi",
-                "price": 67.9,
+                "id": "-OffI7-dWN1BEPG29ng4",
+                "name": "Gomma Diflex Matisse Divano 3 PL Maxi",
+                "price": 147.04,
                 "type": "GOMMA",
                 "supplier": {
-                    "id": "-Ofdx3TlX5A7SfHid4h6",
-                    "name": "Nuova Linea"
+                    "id": "-OfdYCo6LjM3gxk5Erpr",
+                    "name": "Diflex"
                 }
             },
             {
-                "id": "-OfdxSSG0vdD4aedLEyZ",
-                "name": "Rete D’Aniello Std Ferro Divano 3 PL Maxi",
-                "price": 110.5,
+                "id": "-Ofe-3HFzP_UibU2qf47",
+                "name": "Rete Lampolet BL 8 H13 Ferro Divano 3 PL Maxi",
+                "price": 168.64,
                 "type": "RETE",
                 "supplier": {
-                    "id": "-Ofdu6Gkn2InteBncG6p",
-                    "name": "D’Aniello"
+                    "id": "-OfeWuxUagVIcMp-QHcn",
+                    "name": "Lampolet"
                 }
             },
             {
@@ -49,9 +49,9 @@
                 }
             },
             {
-                "id": "-OfeguuoGKfA5CusBtEI",
-                "name": "Tappezzeria Power Sofa Tappezzeria",
-                "price": 81,
+                "id": "-OffI72kUKRZFcojgovL",
+                "name": "Tappezzeria Power Sofa Matisse",
+                "price": 97,
                 "type": "TAPPEZZERIA",
                 "supplier": {
                     "id": "-Ofdu6Mv_6bYvHygSezW",
@@ -59,8 +59,28 @@
                 }
             },
             {
+                "id": "-OfeecSS1y9enOtbHwMG",
+                "name": "Piedini Davanzo Marais",
+                "price": 4.24,
+                "type": "PIEDINI",
+                "supplier": {
+                    "id": "-Ofdx3UGPJy2ck-r5mbm",
+                    "name": "Davanzo"
+                }
+            },
+            {
+                "id": "-OffI71BuZskT0Y0cvmt",
+                "name": "Ferro Schienale D’Aniello Mykonos Divano 3 PL Maxi",
+                "price": 24,
+                "type": "FERRO_SCHIENALE",
+                "supplier": {
+                    "id": "-Ofdu6Gkn2InteBncG6p",
+                    "name": "D’Aniello"
+                }
+            },
+            {
                 "id": "-OfdmKZUtiIWu5f8tmz0",
-                "name": "Imbottitura Cuscinetti Corbetta Bagatelle",
+                "name": "Imbottitura Cuscinetti Corbetta",
                 "price": 3.1,
                 "type": "IMBOTTITURA_CUSCINETTI",
                 "supplier": {
@@ -89,13 +109,13 @@
                 }
             },
             {
-                "id": "-OfdxSWE2n57XnDbjzXu",
-                "name": "Tela Marchiata Nerini Spa Economica",
-                "price": 1.47,
+                "id": "-OfdmKaR8w8gt_jy-8-E",
+                "name": "Tela Marchiata Ipea Made In Italy",
+                "price": 7.7,
                 "type": "TELA_MARCHIATA",
                 "supplier": {
-                    "id": "-Ofdx3UkUcDhcyCXTMUY",
-                    "name": "Nerini Spa"
+                    "id": "-OfdYCuVKyxQVLP9qvMV",
+                    "name": "Ipea"
                 }
             },
             {
@@ -111,39 +131,39 @@
         "sofaId": "",
         "longName": "divano_3_pl",
         "seatsCount": 3,
-        "mattressWidth": 170,
-        "depth": 96,
+        "mattressWidth": 184,
+        "depth": 218,
         "height": 85,
-        "price": 470.45,
+        "price": 646.81,
         "components": [
             {
-                "id": "-OfegusLl8YEhZ3MF2Ae",
-                "name": "Fusto The73 Deauville Divano 3 PL",
-                "price": 55,
+                "id": "-OffI6zbiiUfOwiztfLk",
+                "name": "Fusto Redael Matisse Divano 3 PL",
+                "price": 58,
                 "type": "FUSTO",
                 "supplier": {
-                    "id": "-Ofdx3OE88EJe0SfdNvF",
-                    "name": "The73"
+                    "id": "-OfdYCfSHUkpVOswO3nW",
+                    "name": "Redael"
                 }
             },
             {
-                "id": "-Ofegutq7jJpwJYsGmt_",
-                "name": "Gomma Nuova Linea Gomma Deauvil Divano 3 PL",
-                "price": 60.5,
+                "id": "-OffI709Mxl0dUk9JwGf",
+                "name": "Gomma Diflex Matisse Divano 3 PL",
+                "price": 129.81,
                 "type": "GOMMA",
                 "supplier": {
-                    "id": "-Ofdx3TlX5A7SfHid4h6",
-                    "name": "Nuova Linea"
+                    "id": "-OfdYCo6LjM3gxk5Erpr",
+                    "name": "Diflex"
                 }
             },
             {
-                "id": "-OfdxSSkicvNj2SpQCEp",
-                "name": "Rete D’Aniello Std Ferro Divano 3 PL",
-                "price": 102.5,
+                "id": "-Ofe-3Hj8zxUAV5gBtBN",
+                "name": "Rete Lampolet BL 8 H13 Ferro Divano 3 PL",
+                "price": 157.08,
                 "type": "RETE",
                 "supplier": {
-                    "id": "-Ofdu6Gkn2InteBncG6p",
-                    "name": "D’Aniello"
+                    "id": "-OfeWuxUagVIcMp-QHcn",
+                    "name": "Lampolet"
                 }
             },
             {
@@ -157,9 +177,9 @@
                 }
             },
             {
-                "id": "-OfeguuoGKfA5CusBtEI",
-                "name": "Tappezzeria Power Sofa Tappezzeria",
-                "price": 81,
+                "id": "-OffI72kUKRZFcojgovL",
+                "name": "Tappezzeria Power Sofa Matisse",
+                "price": 97,
                 "type": "TAPPEZZERIA",
                 "supplier": {
                     "id": "-Ofdu6Mv_6bYvHygSezW",
@@ -167,8 +187,28 @@
                 }
             },
             {
+                "id": "-OfeecSS1y9enOtbHwMG",
+                "name": "Piedini Davanzo Marais",
+                "price": 4.24,
+                "type": "PIEDINI",
+                "supplier": {
+                    "id": "-Ofdx3UGPJy2ck-r5mbm",
+                    "name": "Davanzo"
+                }
+            },
+            {
+                "id": "-OffI71h8rzeyb-C-E4H",
+                "name": "Ferro Schienale D’Aniello Mykonos Divano 3 PL",
+                "price": 23,
+                "type": "FERRO_SCHIENALE",
+                "supplier": {
+                    "id": "-Ofdu6Gkn2InteBncG6p",
+                    "name": "D’Aniello"
+                }
+            },
+            {
                 "id": "-OfdmKZUtiIWu5f8tmz0",
-                "name": "Imbottitura Cuscinetti Corbetta Bagatelle",
+                "name": "Imbottitura Cuscinetti Corbetta",
                 "price": 3.1,
                 "type": "IMBOTTITURA_CUSCINETTI",
                 "supplier": {
@@ -197,13 +237,13 @@
                 }
             },
             {
-                "id": "-OfdxSWE2n57XnDbjzXu",
-                "name": "Tela Marchiata Nerini Spa Economica",
-                "price": 1.47,
+                "id": "-OfdmKaR8w8gt_jy-8-E",
+                "name": "Tela Marchiata Ipea Made In Italy",
+                "price": 7.7,
                 "type": "TELA_MARCHIATA",
                 "supplier": {
-                    "id": "-Ofdx3UkUcDhcyCXTMUY",
-                    "name": "Nerini Spa"
+                    "id": "-OfdYCuVKyxQVLP9qvMV",
+                    "name": "Ipea"
                 }
             },
             {
@@ -219,39 +259,39 @@
         "sofaId": "",
         "longName": "divano_2_pl",
         "seatsCount": 2,
-        "mattressWidth": 150,
-        "depth": 96,
+        "mattressWidth": 164,
+        "depth": 218,
         "height": 85,
-        "price": 433.25,
+        "price": 601.63,
         "components": [
             {
-                "id": "-Ofegusqz6uUqZjS1JcZ",
-                "name": "Fusto The73 Deauville Divano 2 PL",
-                "price": 50,
+                "id": "-OffI7-7Yd97YTACJ4IW",
+                "name": "Fusto Redael Matisse Divano 2 PL",
+                "price": 54,
                 "type": "FUSTO",
                 "supplier": {
-                    "id": "-Ofdx3OE88EJe0SfdNvF",
-                    "name": "The73"
+                    "id": "-OfdYCfSHUkpVOswO3nW",
+                    "name": "Redael"
                 }
             },
             {
-                "id": "-OfeguuKRQp40h7GydGW",
-                "name": "Gomma Nuova Linea Gomma Deauvil Divano 2 PL",
-                "price": 54.5,
+                "id": "-OffI70i4Z8G_MKO_qxn",
+                "name": "Gomma Diflex Matisse Divano 2 PL",
+                "price": 117.51,
                 "type": "GOMMA",
                 "supplier": {
-                    "id": "-Ofdx3TlX5A7SfHid4h6",
-                    "name": "Nuova Linea"
+                    "id": "-OfdYCo6LjM3gxk5Erpr",
+                    "name": "Diflex"
                 }
             },
             {
-                "id": "-OfdxSTGQIMbo0CVVtH8",
-                "name": "Rete D’Aniello Std Ferro Divano 2 PL",
-                "price": 101.5,
+                "id": "-Ofe-3IDdc6p73LXSZ-Y",
+                "name": "Rete Lampolet BL 8 H13 Ferro Divano 2 PL",
+                "price": 155.4,
                 "type": "RETE",
                 "supplier": {
-                    "id": "-Ofdu6Gkn2InteBncG6p",
-                    "name": "D’Aniello"
+                    "id": "-OfeWuxUagVIcMp-QHcn",
+                    "name": "Lampolet"
                 }
             },
             {
@@ -265,9 +305,9 @@
                 }
             },
             {
-                "id": "-OfeguuoGKfA5CusBtEI",
-                "name": "Tappezzeria Power Sofa Tappezzeria",
-                "price": 81,
+                "id": "-OffI72kUKRZFcojgovL",
+                "name": "Tappezzeria Power Sofa Matisse",
+                "price": 97,
                 "type": "TAPPEZZERIA",
                 "supplier": {
                     "id": "-Ofdu6Mv_6bYvHygSezW",
@@ -275,8 +315,28 @@
                 }
             },
             {
+                "id": "-OfeecSS1y9enOtbHwMG",
+                "name": "Piedini Davanzo Marais",
+                "price": 4.24,
+                "type": "PIEDINI",
+                "supplier": {
+                    "id": "-Ofdx3UGPJy2ck-r5mbm",
+                    "name": "Davanzo"
+                }
+            },
+            {
+                "id": "-OffI72Ds3XijVFvFjM8",
+                "name": "Ferro Schienale D’Aniello Mykonos Divano 2 PL",
+                "price": 21,
+                "type": "FERRO_SCHIENALE",
+                "supplier": {
+                    "id": "-Ofdu6Gkn2InteBncG6p",
+                    "name": "D’Aniello"
+                }
+            },
+            {
                 "id": "-OfdmKZUtiIWu5f8tmz0",
-                "name": "Imbottitura Cuscinetti Corbetta Bagatelle",
+                "name": "Imbottitura Cuscinetti Corbetta",
                 "price": 3.1,
                 "type": "IMBOTTITURA_CUSCINETTI",
                 "supplier": {
@@ -305,13 +365,13 @@
                 }
             },
             {
-                "id": "-OfdxSWE2n57XnDbjzXu",
-                "name": "Tela Marchiata Nerini Spa Economica",
-                "price": 1.47,
+                "id": "-OfdmKaR8w8gt_jy-8-E",
+                "name": "Tela Marchiata Ipea Made In Italy",
+                "price": 7.7,
                 "type": "TELA_MARCHIATA",
                 "supplier": {
-                    "id": "-Ofdx3UkUcDhcyCXTMUY",
-                    "name": "Nerini Spa"
+                    "id": "-OfdYCuVKyxQVLP9qvMV",
+                    "name": "Ipea"
                 }
             },
             {

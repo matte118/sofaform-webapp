@@ -1,4 +1,4 @@
-# GPT Instructions - Step 4: SofaProduct
+# GPT Instructions - Step 5: SofaProduct
 
 **Goal**: Generate `sofaProduct.json` using the provided **Variant IDs** and **Extra Options**.
 
@@ -27,75 +27,103 @@
 *   **Variant IDs**: List/JSON mapping Variant Names/Types to their database IDs.
 
 ## Instructions
-1.  **Verify Input**: Ensure all required inputs have been provided by the user.
-2.  Create the `SofaProduct` object.
-3.  **Map Variants**: Populate the `variants` array with the provided **Variant IDs**.
-4.  **Extract Technical Specs** (from Technical Sheet image):
-    *   `seduta`: Extract text from "ASSISE" or "Seduta" row.
-    *   `schienale`: Extract text from "DOSSIER" or "Schienale" row.
-    *   `meccanica`: Extract text from "MECANIQUE" or "Meccanica" row.
-    *   `materasso`: Extract text from "MATELAS" or "Materasso" row.
-5.  **Extract Extra Mattresses** (from Extra Mattresses image):
-    *   `materassiExtra`: For each row in the table, create an object with `name` and `price`.
-    *   Example: `{ "name": "REVES 30kg", "price": 40 }`
-6.  **Extract Extra Mechanisms** (from Extra Mechanisms image, if provided):
-    *   `meccanismiExtra`: For each row in the table, create an object with `name` and `price`.
-    *   Example: `{ "name": "LA 13", "price": 60 }`
-    *   **NOTE**: This field is optional. If the image is not provided, omit this field entirely.
-7.  **Other Fields**:
-    *   `name`: Extract product name from the original price table header (e.g., "Bagatelle").
-    *   `description`: Create a brief Italian description of the sofa bed.
-    *   `photoUrl`: Empty array `[]`.
 
-## Data Model: SofaProduct
-```typescript
-{
-  // id: string; // OMITTED (Auto-generated)
-  name: string;
-  description?: string;
-  variants: string[]; // List of Variant IDs
-  photoUrl: string[];
-  seduta?: string;
-  schienale?: string;
-  meccanica?: string;
-  materasso?: string;
-  materassiExtra?: { name: string; price: number }[];
-  meccanismiExtra?: { name: string; price: number }[];
-}
-```
+**Before you start, create this bullet-point plan:**
 
-## Output Format
-Return **ONLY** a valid JSON array in a code block.
-**DO NOT** include the `id` field.
+1. Verify ALL required inputs have been provided by user
+2. Extract product name from original price table header
+3. Create Italian description of the product
+4. Extract technical specifications from Technical Sheet image
+5. Parse Extra Mattresses table and create `materassiExtra` array
+6. Parse Extra Mechanisms table (if provided) and create `meccanismiExtra` array
+7. Map all Variant IDs to the `variants` array
+8. Build complete SofaProduct object with ALL fields in correct order
+9. Validate JSON structure matches required format exactly
+10. Return ONLY the new SofaProduct entries
 
-**Filename**: `sofaProduct.json`
+---
 
-```json
-[
-  {
-    "name": "CG 32 New Brooklyn",
-    "description": "...",
-    "variants": [
-      "VAR_ID_1",
-      "VAR_ID_2",
-      "VAR_ID_3"
-    ],
-    "photoUrl": [],
-    "seduta": "Poliurethane Expansé densité 30 kg",
-    "schienale": "Poliurethane Expansé densité 18 kg",
-    "meccanica": "Positano avec sommier...",
-    "materasso": "Classic h 17 en polyurethane...",
+### Detailed Instructions
+
+1. **Create the SofaProduct object** with fields in THIS EXACT ORDER:
+   - `name` (string)
+   - `description` (string)
+   - `variants` (array of string IDs)
+   - `photoUrl` (empty array)
+   - `seduta` (string)
+   - `schienale` (string)
+   - `meccanica` (string)
+   - `materasso` (string)
+   - `materassiExtra` (array of objects with `name` and `price`)
+   - `meccanismiExtra` (array of objects with `name` and `price`, optional)
+
+2. **Extract `name`**:
+   - Use the product name from the original price table header (e.g., "Deauville", "Bagatelle")
+   - This should match the product model you've been working with throughout all steps
+
+3. **Create `description`**:
+   - Write a professional Italian description of the sofa bed
+   - Include key features: type of mechanism, mattress type, seat padding, comfort level
+   - Example: "Divano letto Deauville con meccanica Positano a rete elettrosaldata, materasso in poliuretano espanso e seduta ad alta densità per massimo comfort."
+
+4. **Map `variants`**:
+   - Use the Variant IDs provided by the user (e.g., "-OfehqdupQ9PipRGTAWL", "-Ofehqk7oB8Y1Kkbo0Kh")
+   - These are the database IDs generated after importing variants.json
+   - Create an array with EXACTLY the IDs provided, in the order given
+
+5. **Set `photoUrl`**:
+   - Always an empty array: `[]`
+
+6. **Extract `seduta`** (from Technical Sheet):
+   - Look for row labeled "ASSISE" or "Seduta" or "Seat"
+   - Extract the full text description (e.g., "Poliuretano espanso densità 30 kg")
+
+7. **Extract `schienale`** (from Technical Sheet):
+   - Look for row labeled "DOSSIER" or "Schienale" or "Backrest"
+   - Extract the full text description (e.g., "Poliuretano espanso densità 18 kg")
+
+8. **Extract `meccanica`** (from Technical Sheet):
+   - Look for row labeled "MECANIQUE" or "Meccanica" or "Mechanism"
+   - Extract the full text description (e.g., "Positano con rete a maglia in acciaio elettrosaldato")
+
+9. **Extract `materasso`** (from Technical Sheet):
+   - Look for row labeled "MATELAS" or "Materasso" or "Mattress"
+   - Extract the full text description (e.g., "Classic h 13 in poliuretano espanso densità 25 kg/m³")
+
+10. **Build `materassiExtra`** (from Extra Mattresses image):
+    - For EACH row in the table, create an object with ONLY two fields:
+      - `name`: The mattress name/model (e.g., "REVES h 13")
+      - `price`: The price as a number (e.g., 40)
+    - Maintain the order from the table
+    - Example structure:
+    ```json
     "materassiExtra": [
-      { "name": "REVES 30kg", "price": 40 },
-      { "name": "ETOILE 35kg", "price": 80 }
-    ],
-    "meccanismiExtra": [
-      { "name": "MEDITATION 38kg h 13", "price": 60 },
-      { "name": "NUAGE 50kg", "price": 120 }
+      { "name": "REVES h 13", "price": 40 },
+      { "name": "ETOILE h 13", "price": 80 },
+      { "name": "CLASSIC h 18", "price": 50 }
     ]
-  }
-]
-```
+    ```
 
-## COMPLETION
-This is the final step. All files have been generated.
+11. **Build `meccanismiExtra`** (from Extra Mechanisms image, if provided):
+    - For EACH row in the table, create an object with ONLY two fields:
+      - `name`: The mechanism name/model (e.g., "Lampolet BL8")
+      - `price`: The price as a number (e.g., 80)
+    - Maintain the order from the table
+    - **ONLY include this field if the user provided the Extra Mechanisms image**
+    - **OMIT this field entirely if not provided by the user**
+
+## ⚠️ CRITICAL Requirements
+
+### Field Order (MUST be exactly this)
+```
+1. name
+2. description
+3. variants
+4. photoUrl
+5. seduta
+6. schienale
+7. meccanica
+8. materasso
+9. materassiExtra
+10. meccanismiExtra (ONLY if provided by user)
+```

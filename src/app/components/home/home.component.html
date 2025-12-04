@@ -1,15 +1,27 @@
 <div class="home">
   <h1>Il nostro catalogo</h1>
 
+  <div class="filter-bar">
+    <div class="filter-card">
+      <div class="filter-control">
+        <span class="p-input-icon-left w-100">
+          <i class="pi pi-search"></i>
+          <input pInputText type="text" [(ngModel)]="searchTerm" placeholder="Cerca per nome prodotto" class="w-100" />
+        </span>
+      </div>
+    </div>
+  </div>
+
   <!-- Stato vuoto -->
-  <div *ngIf="products.length === 0" class="empty-state">
+  <div *ngIf="filteredProducts.length === 0" class="empty-state">
     <i class="pi pi-inbox"></i>
-    <p>Nessun prodotto aggiunto.</p>
+    <p *ngIf="!searchTerm">Nessun prodotto aggiunto.</p>
+    <p *ngIf="searchTerm">Nessun prodotto trovato per "{{ searchTerm }}".</p>
   </div>
 
   <!-- Griglia prodotti -->
-  <div class="p-grid p-align-start p-mt-4" *ngIf="products.length > 0">
-    <div class="p-col-12 p-sm-6 p-md-4" *ngFor="let product of products; trackBy: trackById">
+  <div class="p-grid p-align-start p-mt-4" *ngIf="filteredProducts.length > 0">
+    <div class="p-col-12 p-sm-6 p-md-4" *ngFor="let product of filteredProducts; trackBy: trackById">
       <p-card [header]="product.name" styleClass="product-card">
         <!-- Azioni modifica / elimina -->
         <div class="card-actions">
@@ -265,8 +277,9 @@
 
 
   <!-- Dialog Materassi Extra (Listino) -->
-  <p-dialog [(visible)]="showListinoExtraMattressDialog" header="Extra (Materassi e Meccanismi)" [modal]="true" [closable]="false"
-    [baseZIndex]="10000" [style]="{ width: '700px', maxHeight: '90vh' }" [draggable]="false" [resizable]="false">
+  <p-dialog [(visible)]="showListinoExtraMattressDialog" header="Extra (Materassi e Meccanismi)" [modal]="true"
+    [closable]="false" [baseZIndex]="10000" [style]="{ width: '700px', maxHeight: '90vh' }" [draggable]="false"
+    [resizable]="false">
     <div class="p-fluid">
       <div class="extra-mattress-section">
         <h4 *ngIf="extraMattressesForListino.length === 0"
@@ -356,9 +369,9 @@
       <!-- Selezione Immagine Header -->
       <div class="field">
         <label for="headerImageSelect">Immagine listino:</label>
-        <p-dropdown id="headerImageSelect" [options]="availableHeaderImages" [(ngModel)]="selectedHeaderImage" 
-          optionLabel="name" placeholder="Seleziona immagine listino" [style]="{ width: '100%' }" 
-          styleClass="header-image-dropdown" appendTo="body" [autoZIndex]="true" [baseZIndex]="12000" 
+        <p-dropdown id="headerImageSelect" [options]="availableHeaderImages" [(ngModel)]="selectedHeaderImage"
+          optionLabel="name" placeholder="Seleziona immagine listino" [style]="{ width: '100%' }"
+          styleClass="header-image-dropdown" appendTo="body" [autoZIndex]="true" [baseZIndex]="12000"
           [panelStyle]="{ 'max-height': '40vh', 'overflow': 'auto' }">
           <ng-template let-headerImage pTemplate="item">
             <div class="header-image-option">
@@ -642,16 +655,16 @@
                     </div>
                     <div class="form-col">
                       <p-floatLabel>
-                        <p-inputNumber id="variantDepth" [(ngModel)]="newVariant.depth" name="variantDepth"
-                          [min]="1" [max]="500" suffix=" cm" styleClass="modern-input-number">
+                        <p-inputNumber id="variantDepth" [(ngModel)]="newVariant.depth" name="variantDepth" [min]="1"
+                          [max]="500" suffix=" cm" styleClass="modern-input-number">
                         </p-inputNumber>
                         <label for="variantDepth">Profondità</label>
                       </p-floatLabel>
                     </div>
                     <div class="form-col">
                       <p-floatLabel>
-                        <p-inputNumber id="variantHeight" [(ngModel)]="newVariant.height" name="variantHeight"
-                          [min]="1" [max]="500" suffix=" cm" styleClass="modern-input-number">
+                        <p-inputNumber id="variantHeight" [(ngModel)]="newVariant.height" name="variantHeight" [min]="1"
+                          [max]="500" suffix=" cm" styleClass="modern-input-number">
                         </p-inputNumber>
                         <label for="variantHeight">Altezza</label>
                       </p-floatLabel>

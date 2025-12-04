@@ -1,67 +1,97 @@
 [
     {
-        "name": "Fusto The73 Deauville Divano 3 PL Maxi",
-        "price": 60,
+        "name": "Fusto Redael Matisse Divano 3 PL Maxi",
+        "price": 62,
         "supplier": {
-            "id": "-Ofdx3OE88EJe0SfdNvF",
-            "name": "The73"
+            "id": "-OfdYCfSHUkpVOswO3nW",
+            "name": "Redael"
         },
         "type": "FUSTO",
         "sofaType": "DIVANO_3_PL_MAXI"
     },
     {
-        "name": "Fusto The73 Deauville Divano 3 PL",
-        "price": 55,
+        "name": "Fusto Redael Matisse Divano 3 PL",
+        "price": 58,
         "supplier": {
-            "id": "-Ofdx3OE88EJe0SfdNvF",
-            "name": "The73"
+            "id": "-OfdYCfSHUkpVOswO3nW",
+            "name": "Redael"
         },
         "type": "FUSTO",
         "sofaType": "DIVANO_3_PL"
     },
     {
-        "name": "Fusto The73 Deauville Divano 2 PL",
-        "price": 50,
+        "name": "Fusto Redael Matisse Divano 2 PL",
+        "price": 54,
         "supplier": {
-            "id": "-Ofdx3OE88EJe0SfdNvF",
-            "name": "The73"
+            "id": "-OfdYCfSHUkpVOswO3nW",
+            "name": "Redael"
         },
         "type": "FUSTO",
         "sofaType": "DIVANO_2_PL"
     },
     {
-        "name": "Gomma Nuova Linea Gomma Deauvil Divano 3 PL Maxi",
-        "price": 67.9,
+        "name": "Gomma Diflex Matisse Divano 3 PL Maxi",
+        "price": 147.04,
         "supplier": {
-            "id": "-Ofdx3TlX5A7SfHid4h6",
-            "name": "Nuova Linea"
+            "id": "-OfdYCo6LjM3gxk5Erpr",
+            "name": "Diflex"
         },
         "type": "GOMMA",
         "sofaType": "DIVANO_3_PL_MAXI"
     },
     {
-        "name": "Gomma Nuova Linea Gomma Deauvil Divano 3 PL",
-        "price": 60.5,
+        "name": "Gomma Diflex Matisse Divano 3 PL",
+        "price": 129.81,
         "supplier": {
-            "id": "-Ofdx3TlX5A7SfHid4h6",
-            "name": "Nuova Linea"
+            "id": "-OfdYCo6LjM3gxk5Erpr",
+            "name": "Diflex"
         },
         "type": "GOMMA",
         "sofaType": "DIVANO_3_PL"
     },
     {
-        "name": "Gomma Nuova Linea Gomma Deauvil Divano 2 PL",
-        "price": 54.5,
+        "name": "Gomma Diflex Matisse Divano 2 PL",
+        "price": 117.51,
         "supplier": {
-            "id": "-Ofdx3TlX5A7SfHid4h6",
-            "name": "Nuova Linea"
+            "id": "-OfdYCo6LjM3gxk5Erpr",
+            "name": "Diflex"
         },
         "type": "GOMMA",
         "sofaType": "DIVANO_2_PL"
     },
     {
-        "name": "Tappezzeria Power Sofa Tappezzeria",
-        "price": 81,
+        "name": "Ferro Schienale D’Aniello Mykonos Divano 3 PL Maxi",
+        "price": 24,
+        "supplier": {
+            "id": "-Ofdu6Gkn2InteBncG6p",
+            "name": "D’Aniello"
+        },
+        "type": "FERRO_SCHIENALE",
+        "sofaType": "DIVANO_3_PL_MAXI"
+    },
+    {
+        "name": "Ferro Schienale D’Aniello Mykonos Divano 3 PL",
+        "price": 23,
+        "supplier": {
+            "id": "-Ofdu6Gkn2InteBncG6p",
+            "name": "D’Aniello"
+        },
+        "type": "FERRO_SCHIENALE",
+        "sofaType": "DIVANO_3_PL"
+    },
+    {
+        "name": "Ferro Schienale D’Aniello Mykonos Divano 2 PL",
+        "price": 21,
+        "supplier": {
+            "id": "-Ofdu6Gkn2InteBncG6p",
+            "name": "D’Aniello"
+        },
+        "type": "FERRO_SCHIENALE",
+        "sofaType": "DIVANO_2_PL"
+    },
+    {
+        "name": "Tappezzeria Power Sofa Matisse",
+        "price": 97,
         "supplier": {
             "id": "-Ofdu6Mv_6bYvHygSezW",
             "name": "Power Sofa"

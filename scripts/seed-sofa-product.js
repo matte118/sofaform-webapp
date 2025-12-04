@@ -26,9 +26,10 @@ async function seed() {
   }
 
   const rawData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
-  console.log(`Trovati ${rawData.length} prodotti nel JSON.`);
+  const products = Array.isArray(rawData) ? rawData : [rawData];
+  console.log(`Trovati ${products.length} prodotti nel JSON.`);
 
-  for (const product of rawData) {
+  for (const product of products) {
     // 3) Crea il prodotto
     const newProductRef = productsRef.push();
     await newProductRef.set(product);
@@ -38,14 +39,14 @@ async function seed() {
 
     // 4) Aggiorna le varianti collegate con il nuovo sofaId
     if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
-        console.log(`   🔄 Aggiornamento sofaId per ${product.variants.length} varianti...`);
-        
-        const updatePromises = product.variants.map(variantId => {
-            return variantsRef.child(variantId).update({ sofaId: productId });
-        });
+      console.log(`   🔄 Aggiornamento sofaId per ${product.variants.length} varianti...`);
+      
+      const updatePromises = product.variants.map(variantId => {
+        return variantsRef.child(variantId).update({ sofaId: productId });
+      });
 
-        await Promise.all(updatePromises);
-        console.log(`   ✅ Varianti aggiornate con sofaId: ${productId}`);
+      await Promise.all(updatePromises);
+      console.log(`   ✅ Varianti aggiornate con sofaId: ${productId}`);
     }
   }
 

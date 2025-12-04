@@ -1,17 +1,17 @@
 [
     {
-        "name": "Deauville",
-        "description": "Divano letto Deauville con meccanica Positano a rete elettrosaldata, materasso in poliuretano espanso e seduta ad alta densità per massimo comfort.",
+        "name": "Matisse",
+        "description": "Divano letto Matisse con meccanica Lampolet BL8 a rete in acciaio, seduta in poliuretano espanso ad alta densità da 30 kg/m³ e schienale in fibra di poliestere. Dotato di materasso Classic h 13 cm in poliuretano espanso densità 25 kg/m³, garantisce comfort e praticità per un utilizzo quotidiano.",
         "variants": [
-            "-OfehqdupQ9PipRGTAWL",
-            "-Ofehqk7oB8Y1Kkbo0Kh",
-            "-OfehqkhTkq37hoG_SK-"
+            "-OffIk0664K5-8MIS4T2",
+            "-OffIk5jiZjSq5xfiNxU",
+            "-OffIk6J7e9vWADkP9eZ"
         ],
         "photoUrl": [],
-        "seduta": "Poliuretano espanso densità 30 kg",
-        "schienale": "Poliuretano espanso densità 18 kg",
-        "meccanica": "Positano con rete a maglia in acciaio elettrosaldato",
-        "materasso": "Classic h 13 in poliuretano espanso densità 25 kg/m³",
+        "seduta": "Poliuretano espanso densità 30 kg/m³",
+        "schienale": "Fibra di poliestere",
+        "meccanica": "Lampolet BL8 con rete in acciaio a maglia",
+        "materasso": "Classic h 13 cm in poliuretano espanso densità 25 kg/m³",
         "materassiExtra": [
             {
                 "name": "REVES h 13",
@@ -20,10 +20,6 @@
             {
                 "name": "ETOILE h 13",
                 "price": 80
-            },
-            {
-                "name": "CLASSIC h 18",
-                "price": 50
             },
             {
                 "name": "NUAGE h 13",
@@ -35,7 +31,7 @@
             },
             {
                 "name": "MEDITATION h 18",
-                "price": 90
+                "price": 80
             }
         ],
         "meccanismiExtra": [
