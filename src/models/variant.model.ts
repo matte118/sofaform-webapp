@@ -12,6 +12,8 @@ export class Variant {
   public components: Component[];
   public seatsCount?: number;
   public mattressWidth?: number;
+  public depth?: number;
+  public height?: number;
   public rivestimenti?: { rivestimento: Rivestimento; metri: number }[];
   public pricingMode: PricingMode;
   public customPrice?: number;
@@ -24,6 +26,8 @@ export class Variant {
     components: Component[] = [],
     seatsCount?: number,
     mattressWidth?: number,
+    depth?: number,
+    height?: number,
     rivestimenti?: { rivestimento: Rivestimento; metri: number }[],
     pricingMode: PricingMode = 'components',
     customPrice?: number
@@ -34,6 +38,8 @@ export class Variant {
     this.components = components;
     this.seatsCount = seatsCount;
     this.mattressWidth = mattressWidth;
+    this.depth = depth;
+    this.height = height;
     this.rivestimenti = rivestimenti;
     this.pricingMode = pricingMode;
     this.customPrice = customPrice;

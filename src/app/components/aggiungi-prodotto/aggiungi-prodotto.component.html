@@ -142,7 +142,7 @@
 
         <!-- Step 2: Varianti -->
         <ng-container *ngIf="currentStep === 1">
-          <div class="p-field p-col-12">
+          <div class="p-field p-col-8">
             <h3>Varianti del Prodotto</h3>
 
             <div style="padding-bottom: 15px;">
@@ -153,11 +153,7 @@
               </p-selectButton>
             </div>
 
-
-
-
-
-            <div class="p-grid p-nogutter p-align-end" style="padding-top: 15px;">
+            <div class="p-grid p-nogutter p-align-end" style="padding-top: 25px;">
               <div class="p-field p-col-12 p-md-2">
                 <p-floatLabel>
                   <p-dropdown id="variantName" [options]="sofaTypeOptions" optionLabel="label" optionValue="value"
@@ -181,6 +177,19 @@
                   <p-inputNumber id="mattressWidth" [(ngModel)]="newVariant.mattressWidth"
                     name="larghezzaMaterasso"></p-inputNumber>
                   <label>Larghezza (cm)</label>
+                </p-floatLabel>
+              </div>
+              <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
+                <p-floatLabel>
+                  <p-inputNumber id="depth" [(ngModel)]="newVariant.depth" name="profondita"></p-inputNumber>
+                  <label>Profondità (cm)</label>
+                </p-floatLabel>
+              </div>
+
+              <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
+                <p-floatLabel>
+                  <p-inputNumber id="height" [(ngModel)]="newVariant.height" name="altezza"></p-inputNumber>
+                  <label>Altezza (cm)</label>
                 </p-floatLabel>
               </div>
 
@@ -211,7 +220,6 @@
                   <th>Modalità</th>
                   <th>Prezzo</th>
                   <th>Posti</th>
-                  <th>Larghezza</th>
                   <th>Azioni</th>
                 </tr>
               </ng-template>
@@ -233,7 +241,6 @@
                     </span>
                   </td>
                   <td>{{ variant.seatsCount || "N/A" }}</td>
-                  <td>{{ variant.mattressWidth ? variant.mattressWidth + " cm" : "N/A" }}</td>
                   <td>
                     <p-button type="button" icon="pi pi-pencil"
                       styleClass="p-button-rounded p-button-text p-button transparent-icon-btn"

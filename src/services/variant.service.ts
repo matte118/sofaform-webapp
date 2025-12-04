@@ -233,6 +233,8 @@ export class VariantService {
       data.components || [],
       data.seatsCount,
       data.mattressWidth,
+      data.depth,
+      data.height,
       data.rivestimenti,
       data.pricingMode || 'components',
       data.customPrice

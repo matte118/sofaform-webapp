@@ -1891,9 +1891,23 @@
 
     .variant-form-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr auto;
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 2rem 1.1rem;
       align-items: end;
+      margin-top: 0.75rem;
+      margin-bottom: 1rem;
+
+      .form-col {
+        width: 100%;
+      }
+
+      .form-col.double-col {
+        grid-column: span 2;
+      }
+
+      .form-col.full-col {
+        grid-column: span 2;
+      }
 
       .form-col {
         .modern-variant-btn {

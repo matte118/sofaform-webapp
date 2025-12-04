@@ -416,6 +416,8 @@ export class RealtimeDbService {
       price: variant.price,
       seatsCount: variant.seatsCount ?? null,
       mattressWidth: variant.mattressWidth ?? null,
+      depth: (variant as any).depth ?? null,
+      height: (variant as any).height ?? null,
       components: variant.components.map(c => ({
         id: c.id,
         name: c.name,

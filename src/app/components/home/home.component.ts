@@ -1008,7 +1008,9 @@ export class HomeComponent implements OnInit {
         this.newVariant.price || 0,
         this.editingVariants[this.editingVariantIndex].components,
         this.newVariant.seatsCount,
-        this.newVariant.mattressWidth
+        this.newVariant.mattressWidth,
+        this.newVariant.depth,
+        this.newVariant.height
       );
       this.editingVariants[this.editingVariantIndex] = variant;
       this.editingVariantIndex = -1;
@@ -1098,7 +1100,9 @@ export class HomeComponent implements OnInit {
       0,
       components,
       this.newVariant.seatsCount,
-      this.newVariant.mattressWidth
+      this.newVariant.mattressWidth,
+      this.newVariant.depth,
+      this.newVariant.height
     );
 
     variant.updatePrice();
@@ -1124,7 +1128,9 @@ export class HomeComponent implements OnInit {
       variant.price,
       [...variant.components],
       variant.seatsCount,
-      variant.mattressWidth
+      variant.mattressWidth,
+      variant.depth,
+      variant.height
     );
     this.editingVariantIndex = index;
   }

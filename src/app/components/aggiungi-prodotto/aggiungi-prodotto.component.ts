@@ -301,6 +301,8 @@ export class AggiungiProdottoComponent implements OnInit {
       [],
       this.newVariant.seatsCount,
       this.newVariant.mattressWidth,
+      this.newVariant.depth,
+      this.newVariant.height,
       undefined,
       this.selectedPricingMode,
       this.selectedPricingMode === 'custom' ? this.customVariantPrice : undefined
@@ -1045,6 +1047,8 @@ export class AggiungiProdottoComponent implements OnInit {
         price: v.price,
         seatsCount: v.seatsCount,
         mattressWidth: v.mattressWidth,
+        depth: v.depth,
+        height: v.height,
         pricingMode: v.pricingMode,
         customPrice: v.customPrice,
         components: (v.components || []).map((c: any) => c?.id ?? null)
@@ -1094,6 +1098,8 @@ export class AggiungiProdottoComponent implements OnInit {
         [],
         v.seatsCount,
         v.mattressWidth,
+        v.depth,
+        v.height,
         undefined,
         v.pricingMode ?? 'components',
         v.customPrice

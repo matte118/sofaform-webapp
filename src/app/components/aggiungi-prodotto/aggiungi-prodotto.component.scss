@@ -1,18 +1,31 @@
 .add-product-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 1.5rem;
 
   .p-field {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
   }
 
   .p-grid {
-    row-gap: 1.5rem;
+    row-gap: 1.25rem;
+    column-gap: 1rem;
   }
 
   h3 {
-    margin: 2rem 0;
+    margin: 1rem 0;
+  }
+
+  /* Variants tab spacing */
+  .variants-section {
+    .p-grid {
+      row-gap: 1rem;
+      column-gap: 1rem;
+    }
+
+    .p-field {
+      margin-bottom: 1rem;
+    }
   }
 
   .component-form {
@@ -34,7 +47,7 @@
 
 /* Card spacing */
 .p-card {
-  padding: 1rem 2rem;
+  padding: 1.5rem 2.25rem;
   border-radius: 0.5rem;
   box-shadow: var(--p-shadow-4);
 }
@@ -403,7 +416,6 @@
 .p-field {
   label {
     display: block;
-    margin-bottom: 0.5rem;
     font-weight: 500;
   }
 }

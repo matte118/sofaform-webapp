@@ -79,6 +79,14 @@
                   <strong>Larghezza:</strong>
                   {{ variant.mattressWidth }} cm
                 </div>
+                <div class="variant-detail-row" *ngIf="variant.depth">
+                  <strong>Profondità:</strong>
+                  {{ variant.depth }} cm
+                </div>
+                <div class="variant-detail-row" *ngIf="variant.height">
+                  <strong>Altezza:</strong>
+                  {{ variant.height }} cm
+                </div>
                 <div class="variant-detail-row">
                   <strong>Modalità Prezzo:</strong>
                   {{ isCustomPricingVariant(variant) ? 'Prezzo Custom' : 'Calcolato da Componenti' }}
@@ -573,8 +581,8 @@
                   </div>
 
                   <div class="variant-form-grid">
-                    <div class="form-col">
-                      <p-floatLabel>
+                    <div class="form-col double-col">
+                      <p-floatLabel class="pt-2">
                         <p-dropdown id="variantName" [options]="sofaTypeOptions" optionLabel="label" optionValue="value"
                           [(ngModel)]="newVariant.longName" name="variantName" class="modern-input w-100">
                         </p-dropdown>
@@ -597,6 +605,22 @@
                           [min]="1" [max]="500" suffix=" cm" styleClass="modern-input-number">
                         </p-inputNumber>
                         <label for="variantWidth">Larghezza</label>
+                      </p-floatLabel>
+                    </div>
+                    <div class="form-col">
+                      <p-floatLabel>
+                        <p-inputNumber id="variantDepth" [(ngModel)]="newVariant.depth" name="variantDepth"
+                          [min]="1" [max]="500" suffix=" cm" styleClass="modern-input-number">
+                        </p-inputNumber>
+                        <label for="variantDepth">Profondità</label>
+                      </p-floatLabel>
+                    </div>
+                    <div class="form-col">
+                      <p-floatLabel>
+                        <p-inputNumber id="variantHeight" [(ngModel)]="newVariant.height" name="variantHeight"
+                          [min]="1" [max]="500" suffix=" cm" styleClass="modern-input-number">
+                        </p-inputNumber>
+                        <label for="variantHeight">Altezza</label>
                       </p-floatLabel>
                     </div>
 
@@ -649,7 +673,6 @@
                           <p-tag *ngIf="variant.mattressWidth" [value]="variant.mattressWidth + ' cm'"
                             severity="secondary" styleClass="compact-tag">
                           </p-tag>
-                          <span *ngIf="!variant.mattressWidth" class="text-muted">-</span>
                         </td>
                         <td>
                           <div class="price-cell">
