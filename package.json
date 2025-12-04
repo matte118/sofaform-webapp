@@ -8,7 +8,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:sofaform-webapp": "node dist/sofaform-webapp/server/server.mjs",
-    "seed": "node ./scripts/seed-components.js"
+    "suppliers": "node ./scripts/seed-suppliers.js",
+    "components": "node ./scripts/seed-components.js",
+    "variants": "node ./scripts/seed-variants.js",
+    "sofaProduct": "node ./scripts/seed-sofa-product.js"
   },
   "private": true,
   "dependencies": {

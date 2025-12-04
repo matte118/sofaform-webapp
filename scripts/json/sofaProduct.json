@@ -1,0 +1,35 @@
+[
+    {
+        "name": "Copenaghen",
+        "description": "Divano letto modello Copenaghen con meccanica Positano, seduta e schienale in poliuretano espanso. Struttura con rete a maglia in acciaio elettrosaldato e materasso Classic h 13 in poliuretano espanso densità 25 kg/m³.",
+        "variants": [
+            "-Ofe2EAni89q2lCmFXKo",
+            "-Ofe2Elt2F2ZIJAjxxXs",
+            "-Ofe2EmRV7yq3-EdOrFb"
+        ],
+        "photoUrl": [],
+        "seduta": "Poliuretano espanso densità 30 kg",
+        "schienale": "Poliuretano espanso densità 18 kg",
+        "meccanica": "Positano con rete a maglia in acciaio elettrosaldato",
+        "materasso": "Classic h 13 in poliuretano espanso densità 25 kg/m³",
+        "materassiExtra": [
+            {
+                "name": "REVES 30 kg",
+                "price": 40
+            },
+            {
+                "name": "ETOILE 35 kg",
+                "price": 80
+            },
+            {
+                "name": "MEDITATION 38 kg h 13",
+                "price": 60
+            },
+            {
+                "name": "NUAGE 50 kg",
+                "price": 120
+            }
+        ],
+        "meccanismiExtra": []
+    }
+]

@@ -1,206 +1,89 @@
 [
     {
-        "name": "Fusto Redael CG27 DIVANO_3PL_MAXI",
-        "price": 120,
-        "supplier": "Redael",
-        "type": "FUSTO",
-        "sofaType": "DIVANO_3PL_MAXI"
-    },
-    {
-        "name": "Fusto Redael CG27 DIVANO_3PL",
-        "price": 115,
-        "supplier": "Redael",
-        "type": "FUSTO",
-        "sofaType": "DIVANO_3PL"
-    },
-    {
-        "name": "Fusto Redael CG27 DIVANO_2PL",
-        "price": 110,
-        "supplier": "Redael",
-        "type": "FUSTO",
-        "sofaType": "DIVANO_2PL"
-    },
-    {
-        "name": "Gomma Trasform CG27 DIVANO_3PL_MAXI",
-        "price": 124.75,
-        "supplier": "Trasform",
-        "type": "GOMMA",
-        "sofaType": "DIVANO_3PL_MAXI"
-    },
-    {
-        "name": "Gomma Trasform CG27 DIVANO_3PL",
-        "price": 101.2,
-        "supplier": "Trasform",
-        "type": "GOMMA",
-        "sofaType": "DIVANO_3PL"
-    },
-    {
-        "name": "Gomma Trasform CG27 DIVANO_2PL",
-        "price": 80,
-        "supplier": "Trasform",
-        "type": "GOMMA",
-        "sofaType": "DIVANO_2PL"
-    },
-    {
-        "name": "Rete Lampolet bl8 h18 ferro",
-        "price": 148.5,
-        "supplier": "Lampolet",
-        "type": "RETE",
-        "sofaType": "DIVANO_3PL_MAXI"
-    },
-    {
-        "name": "Rete Lampolet bl8 h18 ferro",
-        "price": 143,
-        "supplier": "Lampolet",
-        "type": "RETE",
-        "sofaType": "DIVANO_3PL"
-    },
-    {
-        "name": "Rete Lampolet bl8 h18 ferro",
-        "price": 141,
-        "supplier": "Lampolet",
-        "type": "RETE",
-        "sofaType": "DIVANO_2PL"
-    },
-    {
-        "name": "Materasso Romagnaflex Classic h17",
-        "price": 78,
-        "supplier": "Romagnaflex",
-        "type": "MATERASSO",
-        "sofaType": "DIVANO_3PL_MAXI"
-    },
-    {
-        "name": "Materasso Romagnaflex Classic h17",
+        "name": "Fusto Redael Copenagh Divano 3 PL Maxi",
         "price": 63,
-        "supplier": "Romagnaflex",
-        "type": "MATERASSO",
-        "sofaType": "DIVANO_3PL"
-    },
-    {
-        "name": "Materasso Romagnaflex Classic h17",
-        "price": 53,
-        "supplier": "Romagnaflex",
-        "type": "MATERASSO",
-        "sofaType": "DIVANO_2PL"
-    },
-    {
-        "name": "Tappezzeria Power Sofa' DIVANO_3PL_MAXI",
-        "price": 97,
-        "supplier": "Power Sofa'",
-        "type": "TAPPEZZERIA",
+        "supplier": {
+            "id": "-OfdYCfSHUkpVOswO3nW",
+            "name": "Redael"
+        },
+        "type": "FUSTO",
         "sofaType": "DIVANO_3PL_MAXI"
     },
     {
-        "name": "Tappezzeria Power Sofa' DIVANO_3PL",
-        "price": 97,
-        "supplier": "Power Sofa'",
-        "type": "TAPPEZZERIA",
+        "name": "Fusto Redael Copenagh Divano 3 PL",
+        "price": 58,
+        "supplier": {
+            "id": "-OfdYCfSHUkpVOswO3nW",
+            "name": "Redael"
+        },
+        "type": "FUSTO",
         "sofaType": "DIVANO_3PL"
     },
     {
-        "name": "Tappezzeria Power Sofa' DIVANO_2PL",
-        "price": 97,
-        "supplier": "Power Sofa'",
-        "type": "TAPPEZZERIA",
+        "name": "Fusto Redael Copenagh Divano 2 PL",
+        "price": 54,
+        "supplier": {
+            "id": "-OfdYCfSHUkpVOswO3nW",
+            "name": "Redael"
+        },
+        "type": "FUSTO",
         "sofaType": "DIVANO_2PL"
     },
     {
-        "name": "Ferro schienale Rima Schienale Malgra",
+        "name": "Gomma Trasform Copena Divano 3 PL Maxi",
+        "price": 95,
+        "supplier": {
+            "id": "-Ofe0ZuW560jMcr94VDs",
+            "name": "Trasform"
+        },
+        "type": "GOMMA",
+        "sofaType": "DIVANO_3PL_MAXI"
+    },
+    {
+        "name": "Gomma Trasform Copena Divano 3 PL",
+        "price": 85,
+        "supplier": {
+            "id": "-Ofe0ZuW560jMcr94VDs",
+            "name": "Trasform"
+        },
+        "type": "GOMMA",
+        "sofaType": "DIVANO_3PL"
+    },
+    {
+        "name": "Gomma Trasform Copena Divano 2 PL",
+        "price": 80,
+        "supplier": {
+            "id": "-Ofe0ZuW560jMcr94VDs",
+            "name": "Trasform"
+        },
+        "type": "GOMMA",
+        "sofaType": "DIVANO_2PL"
+    },
+    {
+        "name": "Tappezzeria Brianza Sofa Copenagh",
+        "price": 120,
+        "supplier": {
+            "id": "-OfdYCqBY64XMRzRixPX",
+            "name": "Brianza Sofa"
+        },
+        "type": "TAPPEZZERIA"
+    },
+    {
+        "name": "Piedini Rima Malgra",
         "price": 33.5,
-        "supplier": "Rima",
-        "type": "FERRAMENTA",
-        "sofaType": "DIVANO_3PL_MAXI"
+        "supplier": {
+            "id": "-OfdYCoqKXx_xP6NZZFS",
+            "name": "Rima"
+        },
+        "type": "PIEDINI"
     },
     {
-        "name": "Ferro schienale Rima Schienale Malgra",
-        "price": 33.5,
-        "supplier": "Rima",
-        "type": "FERRAMENTA",
-        "sofaType": "DIVANO_3PL"
-    },
-    {
-        "name": "Ferro schienale Rima Schienale Malgra",
-        "price": 33.5,
-        "supplier": "Rima",
-        "type": "FERRAMENTA",
-        "sofaType": "DIVANO_2PL"
-    },
-    {
-        "name": "Imbottitura cuscinetti Corbetta Imbottit.cuscin",
-        "price": 3.1,
-        "supplier": "Corbetta",
-        "type": "VARIE",
-        "sofaType": "DIVANO_3PL_MAXI"
-    },
-    {
-        "name": "Imbottitura cuscinetti Corbetta Imbottit.cuscin",
-        "price": 3.1,
-        "supplier": "Corbetta",
-        "type": "VARIE",
-        "sofaType": "DIVANO_3PL"
-    },
-    {
-        "name": "Imbottitura cuscinetti Corbetta Imbottit.cuscin",
-        "price": 3.1,
-        "supplier": "Corbetta",
-        "type": "VARIE",
-        "sofaType": "DIVANO_2PL"
-    },
-    {
-        "name": "Imballo plastica + cartone Mac Pac + Cv Plast Sacchi plastica",
-        "price": 20.88,
-        "supplier": "Mac Pac + Cv Plast",
-        "type": "IMBALLO",
-        "sofaType": "DIVANO_3PL_MAXI"
-    },
-    {
-        "name": "Imballo plastica + cartone Mac Pac + Cv Plast Sacchi plastica",
-        "price": 20.88,
-        "supplier": "Mac Pac + Cv Plast",
-        "type": "IMBALLO",
-        "sofaType": "DIVANO_3PL"
-    },
-    {
-        "name": "Imballo plastica + cartone Mac Pac + Cv Plast Sacchi plastica",
-        "price": 20.88,
-        "supplier": "Mac Pac + Cv Plast",
-        "type": "IMBALLO",
-        "sofaType": "DIVANO_2PL"
-    },
-    {
-        "name": "Tela marchiata Si",
-        "price": 7.7,
-        "type": "TELA_MARCHIATA",
-        "sofaType": "DIVANO_3PL_MAXI"
-    },
-    {
-        "name": "Tela marchiata Si",
-        "price": 7.7,
-        "type": "TELA_MARCHIATA",
-        "sofaType": "DIVANO_3PL"
-    },
-    {
-        "name": "Tela marchiata Si",
-        "price": 7.7,
-        "type": "TELA_MARCHIATA",
-        "sofaType": "DIVANO_2PL"
-    },
-    {
-        "name": "Trasporto",
-        "price": 100,
-        "type": "TRASPORTO",
-        "sofaType": "DIVANO_3PL_MAXI"
-    },
-    {
-        "name": "Trasporto",
-        "price": 90,
-        "type": "TRASPORTO",
-        "sofaType": "DIVANO_3PL"
-    },
-    {
-        "name": "Trasporto",
-        "price": 70,
-        "type": "TRASPORTO",
-        "sofaType": "DIVANO_2PL"
+        "name": "Ferro Schienale Davanzo Copenaghen",
+        "price": 7.64,
+        "supplier": {
+            "id": "-Ofdx3UGPJy2ck-r5mbm",
+            "name": "Davanzo"
+        },
+        "type": "FERRO_SCHIENALE"
     }
 ]

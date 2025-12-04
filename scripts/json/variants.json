@@ -1,0 +1,71 @@
+[
+    {
+        "sofaId": "",
+        "sofaType": "DIVANO_3PL_MAXI",
+        "longName": "Divano 3 PL Maxi",
+        "seatsCount": 3,
+        "mattressWidth": 210,
+        "depth": 98,
+        "height": 84,
+        "price": 628.89,
+        "components": [
+            "-Ofe1H9MdrlIOP2mzlwz",
+            "-Ofe1HAqZekpqPLFczy1",
+            "-Ofdv4NSh_cfV9yq5-Sa",
+            "-Ofdv4OwJ43sNJdNGcW3",
+            "-Ofe1HCn7n5lQ1nJU-V6",
+            "-Ofe1HDG0xJ7XL5tRN2A",
+            "-Ofdv4PtNEmyiwnehdIK",
+            "-Ofdv4PP1ULHUg8IcocB",
+            "-Ofdv4OwJ43sNJdNGcW3",
+            "-Ofdv4PP1ULHUg8IcocB"
+        ],
+        "pricingMode": "components"
+    },
+    {
+        "sofaId": "",
+        "sofaType": "DIVANO_3PL",
+        "longName": "Divano 3 PL",
+        "seatsCount": 3,
+        "mattressWidth": 190,
+        "depth": 98,
+        "height": 84,
+        "price": 585.59,
+        "components": [
+            "-Ofe1H9qNgsYLMr5bHft",
+            "-Ofe1HBJhwGchobJ0ugm",
+            "-Ofdv4NxHrcXL2JUkWSB",
+            "-Ofdv4OwJ43sNJdNGcW3",
+            "-Ofe1HCn7n5lQ1nJU-V6",
+            "-Ofe1HDG0xJ7XL5tRN2A",
+            "-Ofdv4PtNEmyiwnehdIK",
+            "-Ofdv4PP1ULHUg8IcocB",
+            "-Ofdv4OwJ43sNJdNGcW3",
+            "-Ofdv4PP1ULHUg8IcocB"
+        ],
+        "pricingMode": "components"
+    },
+    {
+        "sofaId": "",
+        "sofaType": "DIVANO_2PL",
+        "longName": "Divano 2 PL",
+        "seatsCount": 2,
+        "mattressWidth": 170,
+        "depth": 98,
+        "height": 84,
+        "price": 551.39,
+        "components": [
+            "-Ofe1HAL9cEghp2AgTAB",
+            "-Ofe1HBn85BIghbUelrx",
+            "-Ofdv4OSyjUlAyQLb1xw",
+            "-Ofdv4OwJ43sNJdNGcW3",
+            "-Ofe1HCn7n5lQ1nJU-V6",
+            "-Ofe1HDG0xJ7XL5tRN2A",
+            "-Ofdv4PtNEmyiwnehdIK",
+            "-Ofdv4PP1ULHUg8IcocB",
+            "-Ofdv4OwJ43sNJdNGcW3",
+            "-Ofdv4PP1ULHUg8IcocB"
+        ],
+        "pricingMode": "components"
+    }
+]

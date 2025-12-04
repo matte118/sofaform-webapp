@@ -27,14 +27,43 @@ async function seed() {
   const rawData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
   console.log(`Trovati ${rawData.length} componenti nel JSON.`);
 
-  // 3) PER OGNI COMPONENTE: fai push() e lascia che Firebase generi l'ID
+  // 3) LEGGI TUTTI I COMPONENTI ESISTENTI DAL DATABASE
+  console.log('📥 Caricamento componenti esistenti dal database...');
+  const snapshot = await componentsRef.once('value');
+  const existingComponents = snapshot.val() || {};
+  
+  // Crea una mappa: nome -> { id, data }
+  const componentsByName = new Map();
+  for (const [id, data] of Object.entries(existingComponents)) {
+    componentsByName.set(data.name, { id, data });
+  }
+  
+  console.log(`📊 Trovati ${componentsByName.size} componenti esistenti nel database.\n`);
+
+  let updated = 0;
+  let created = 0;
+
+  // 4) PER OGNI COMPONENTE: aggiorna se esiste, altrimenti crea nuovo
   for (const comp of rawData) {
-    const newRef = componentsRef.push();
-    await newRef.set(comp);
-    console.log(`✔️  Pubblicato ${comp.name} (chiave: ${newRef.key})`);
+    const existing = componentsByName.get(comp.name);
+    
+    if (existing) {
+      // Componente esiste già -> AGGIORNA
+      await componentsRef.child(existing.id).set(comp);
+      console.log(`🔄 Aggiornato ${comp.name} (chiave: ${existing.id})`);
+      updated++;
+    } else {
+      // Componente nuovo -> CREA
+      const newRef = componentsRef.push();
+      await newRef.set(comp);
+      console.log(`✨ Creato ${comp.name} (chiave: ${newRef.key})`);
+      created++;
+    }
   }
 
-  console.log('🎉 Seeding completato!');
+  console.log(`\n🎉 Seeding completato!`);
+  console.log(`   ✨ Creati: ${created}`);
+  console.log(`   🔄 Aggiornati: ${updated}`);
   process.exit(0);
 }
 
