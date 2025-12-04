@@ -1,5 +1,6 @@
 <div class="gestione-componenti-container">
   <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
 
   <div class="page-header">
     <h1>Gestione Componenti</h1>
@@ -341,11 +342,15 @@
 
     <p-table
   *ngIf="dataLoaded && !loading"
-  #componentTable
+  #componentTableEl
+  #dt
   [value]="componentsView"
   styleClass="p-datatable-sm components-table"
   [paginator]="true"
   [rows]="10"
+  [(selection)]="selectedComponents"
+  dataKey="id"
+  [filters]="tableFilters"
   [globalFilterFields]="[
     'name',
     'priceText',
@@ -355,11 +360,13 @@
     'supplierName'
   ]"
   [rowHover]="true"
-  #dt
 >
 
   <ng-template pTemplate="header">
     <tr>
+      <th style="width: 50px;">
+        <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+      </th>
       <th pSortableColumn="name">
         Nome
         <p-sortIcon field="name"></p-sortIcon>
@@ -399,10 +406,19 @@
           pInputText
           type="text"
           placeholder="Cerca Componenti"
-          (input)="onGlobalFilter($event, dt)"
+          [(ngModel)]="globalFilterValue"
+          (input)="onGlobalFilter($event)"
+          [ngModelOptions]="{ standalone: true }"
           class="w-full"
         />
       </span>
+    </div>
+
+    <div class="bulk-actions">
+      <p-button label="Elimina Selezionati" icon="pi pi-trash"
+        styleClass="p-button-danger p-button-sm"
+        (onClick)="bulkDeleteSelected()"
+        [disabled]="!selectedComponents.length"></p-button>
     </div>
   </div>
 </ng-template>
@@ -410,6 +426,9 @@
 
   <ng-template pTemplate="body" let-component let-i="rowIndex">
     <tr>
+      <td>
+        <p-tableCheckbox [value]="component"></p-tableCheckbox>
+      </td>
       <td>{{ component.name }}</td>
       <td>{{ component.price | currency:'EUR' }}</td>
       <td>{{ component.typeLabel }}</td>

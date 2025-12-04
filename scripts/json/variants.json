@@ -1,70 +1,325 @@
 [
     {
         "sofaId": "",
-        "sofaType": "DIVANO_3PL_MAXI",
-        "longName": "Divano 3 PL Maxi",
-        "seatsCount": 3,
-        "mattressWidth": 210,
-        "depth": 98,
-        "height": 84,
-        "price": 628.89,
-        "components": [
-            "-Ofe1H9MdrlIOP2mzlwz",
-            "-Ofe1HAqZekpqPLFczy1",
-            "-Ofdv4NSh_cfV9yq5-Sa",
-            "-Ofdv4OwJ43sNJdNGcW3",
-            "-Ofe1HCn7n5lQ1nJU-V6",
-            "-Ofe1HDG0xJ7XL5tRN2A",
-            "-Ofdv4PtNEmyiwnehdIK",
-            "-Ofdv4PP1ULHUg8IcocB",
-            "-Ofdv4OwJ43sNJdNGcW3",
-            "-Ofdv4PP1ULHUg8IcocB"
-        ],
-        "pricingMode": "components"
-    },
-    {
-        "sofaId": "",
-        "sofaType": "DIVANO_3PL",
-        "longName": "Divano 3 PL",
+        "longName": "divano_3_pl_maxi",
         "seatsCount": 3,
         "mattressWidth": 190,
-        "depth": 98,
-        "height": 84,
-        "price": 585.59,
+        "depth": 96,
+        "height": 85,
+        "price": 510.15,
         "components": [
-            "-Ofe1H9qNgsYLMr5bHft",
-            "-Ofe1HBJhwGchobJ0ugm",
-            "-Ofdv4NxHrcXL2JUkWSB",
-            "-Ofdv4OwJ43sNJdNGcW3",
-            "-Ofe1HCn7n5lQ1nJU-V6",
-            "-Ofe1HDG0xJ7XL5tRN2A",
-            "-Ofdv4PtNEmyiwnehdIK",
-            "-Ofdv4PP1ULHUg8IcocB",
-            "-Ofdv4OwJ43sNJdNGcW3",
-            "-Ofdv4PP1ULHUg8IcocB"
+            {
+                "id": "-OfegurnQqtNbK4KuBIK",
+                "name": "Fusto The73 Deauville Divano 3 PL Maxi",
+                "price": 60,
+                "type": "FUSTO",
+                "supplier": {
+                    "id": "-Ofdx3OE88EJe0SfdNvF",
+                    "name": "The73"
+                }
+            },
+            {
+                "id": "-OfegutLObpfuOb9a0t1",
+                "name": "Gomma Nuova Linea Gomma Deauvil Divano 3 PL Maxi",
+                "price": 67.9,
+                "type": "GOMMA",
+                "supplier": {
+                    "id": "-Ofdx3TlX5A7SfHid4h6",
+                    "name": "Nuova Linea"
+                }
+            },
+            {
+                "id": "-OfdxSSG0vdD4aedLEyZ",
+                "name": "Rete D’Aniello Std Ferro Divano 3 PL Maxi",
+                "price": 110.5,
+                "type": "RETE",
+                "supplier": {
+                    "id": "-Ofdu6Gkn2InteBncG6p",
+                    "name": "D’Aniello"
+                }
+            },
+            {
+                "id": "-Ofe4gOf9VsHY6u8QdsU",
+                "name": "Materasso Giflex Classic Divano 3 PL Maxi",
+                "price": 65.3,
+                "type": "MATERASSO",
+                "supplier": {
+                    "id": "-OfdYCpVLUSCjEC7sllA",
+                    "name": "Giflex"
+                }
+            },
+            {
+                "id": "-OfeguuoGKfA5CusBtEI",
+                "name": "Tappezzeria Power Sofa Tappezzeria",
+                "price": 81,
+                "type": "TAPPEZZERIA",
+                "supplier": {
+                    "id": "-Ofdu6Mv_6bYvHygSezW",
+                    "name": "Power Sofa"
+                }
+            },
+            {
+                "id": "-OfdmKZUtiIWu5f8tmz0",
+                "name": "Imbottitura Cuscinetti Corbetta Bagatelle",
+                "price": 3.1,
+                "type": "IMBOTTITURA_CUSCINETTI",
+                "supplier": {
+                    "id": "-OfdYCs3XsQfwBinKAu6",
+                    "name": "Corbetta"
+                }
+            },
+            {
+                "id": "-OfdmK_T15oAlogu9XxF",
+                "name": "Imballo Mac Pac + Cv Plast Sacchi Plastica",
+                "price": 20.88,
+                "type": "IMBALLO",
+                "supplier": {
+                    "id": "-OfdYCtEEWaBaWQ0Vm5i",
+                    "name": "Mac Pac + Cv Plast"
+                }
+            },
+            {
+                "id": "-OfdmK_xbjfSDih_8ueX",
+                "name": "Scatola Euroscatola Sofair",
+                "price": 0,
+                "type": "SCATOLA",
+                "supplier": {
+                    "id": "-OfdYCtqsZqqUfyYTnVK",
+                    "name": "Euroscatola"
+                }
+            },
+            {
+                "id": "-OfdxSWE2n57XnDbjzXu",
+                "name": "Tela Marchiata Nerini Spa Economica",
+                "price": 1.47,
+                "type": "TELA_MARCHIATA",
+                "supplier": {
+                    "id": "-Ofdx3UkUcDhcyCXTMUY",
+                    "name": "Nerini Spa"
+                }
+            },
+            {
+                "id": "-OfdmKavozm52ueXewCT",
+                "name": "Trasporto Divano 3 PL Maxi",
+                "price": 100,
+                "type": "TRASPORTO"
+            }
         ],
         "pricingMode": "components"
     },
     {
         "sofaId": "",
-        "sofaType": "DIVANO_2PL",
-        "longName": "Divano 2 PL",
-        "seatsCount": 2,
+        "longName": "divano_3_pl",
+        "seatsCount": 3,
         "mattressWidth": 170,
-        "depth": 98,
-        "height": 84,
-        "price": 551.39,
+        "depth": 96,
+        "height": 85,
+        "price": 470.45,
         "components": [
-            "-Ofe1HAL9cEghp2AgTAB",
-            "-Ofe1HBn85BIghbUelrx",
-            "-Ofdv4OSyjUlAyQLb1xw",
-            "-Ofdv4OwJ43sNJdNGcW3",
-            "-Ofe1HCn7n5lQ1nJU-V6",
-            "-Ofe1HDG0xJ7XL5tRN2A",
-            "-Ofdv4PtNEmyiwnehdIK",
-            "-Ofdv4PP1ULHUg8IcocB",
-            "-Ofdv4OwJ43sNJdNGcW3",
-            "-Ofdv4PP1ULHUg8IcocB"
+            {
+                "id": "-OfegusLl8YEhZ3MF2Ae",
+                "name": "Fusto The73 Deauville Divano 3 PL",
+                "price": 55,
+                "type": "FUSTO",
+                "supplier": {
+                    "id": "-Ofdx3OE88EJe0SfdNvF",
+                    "name": "The73"
+                }
+            },
+            {
+                "id": "-Ofegutq7jJpwJYsGmt_",
+                "name": "Gomma Nuova Linea Gomma Deauvil Divano 3 PL",
+                "price": 60.5,
+                "type": "GOMMA",
+                "supplier": {
+                    "id": "-Ofdx3TlX5A7SfHid4h6",
+                    "name": "Nuova Linea"
+                }
+            },
+            {
+                "id": "-OfdxSSkicvNj2SpQCEp",
+                "name": "Rete D’Aniello Std Ferro Divano 3 PL",
+                "price": 102.5,
+                "type": "RETE",
+                "supplier": {
+                    "id": "-Ofdu6Gkn2InteBncG6p",
+                    "name": "D’Aniello"
+                }
+            },
+            {
+                "id": "-OfdmKVnVPsO_t9Z2wjw",
+                "name": "Materasso Giflex Classic Divano 3 PL",
+                "price": 56,
+                "type": "MATERASSO",
+                "supplier": {
+                    "id": "-OfdYCpVLUSCjEC7sllA",
+                    "name": "Giflex"
+                }
+            },
+            {
+                "id": "-OfeguuoGKfA5CusBtEI",
+                "name": "Tappezzeria Power Sofa Tappezzeria",
+                "price": 81,
+                "type": "TAPPEZZERIA",
+                "supplier": {
+                    "id": "-Ofdu6Mv_6bYvHygSezW",
+                    "name": "Power Sofa"
+                }
+            },
+            {
+                "id": "-OfdmKZUtiIWu5f8tmz0",
+                "name": "Imbottitura Cuscinetti Corbetta Bagatelle",
+                "price": 3.1,
+                "type": "IMBOTTITURA_CUSCINETTI",
+                "supplier": {
+                    "id": "-OfdYCs3XsQfwBinKAu6",
+                    "name": "Corbetta"
+                }
+            },
+            {
+                "id": "-OfdmK_T15oAlogu9XxF",
+                "name": "Imballo Mac Pac + Cv Plast Sacchi Plastica",
+                "price": 20.88,
+                "type": "IMBALLO",
+                "supplier": {
+                    "id": "-OfdYCtEEWaBaWQ0Vm5i",
+                    "name": "Mac Pac + Cv Plast"
+                }
+            },
+            {
+                "id": "-OfdmK_xbjfSDih_8ueX",
+                "name": "Scatola Euroscatola Sofair",
+                "price": 0,
+                "type": "SCATOLA",
+                "supplier": {
+                    "id": "-OfdYCtqsZqqUfyYTnVK",
+                    "name": "Euroscatola"
+                }
+            },
+            {
+                "id": "-OfdxSWE2n57XnDbjzXu",
+                "name": "Tela Marchiata Nerini Spa Economica",
+                "price": 1.47,
+                "type": "TELA_MARCHIATA",
+                "supplier": {
+                    "id": "-Ofdx3UkUcDhcyCXTMUY",
+                    "name": "Nerini Spa"
+                }
+            },
+            {
+                "id": "-OfdmKbPaCwztSitMtJY",
+                "name": "Trasporto Divano 3 PL",
+                "price": 90,
+                "type": "TRASPORTO"
+            }
+        ],
+        "pricingMode": "components"
+    },
+    {
+        "sofaId": "",
+        "longName": "divano_2_pl",
+        "seatsCount": 2,
+        "mattressWidth": 150,
+        "depth": 96,
+        "height": 85,
+        "price": 433.25,
+        "components": [
+            {
+                "id": "-Ofegusqz6uUqZjS1JcZ",
+                "name": "Fusto The73 Deauville Divano 2 PL",
+                "price": 50,
+                "type": "FUSTO",
+                "supplier": {
+                    "id": "-Ofdx3OE88EJe0SfdNvF",
+                    "name": "The73"
+                }
+            },
+            {
+                "id": "-OfeguuKRQp40h7GydGW",
+                "name": "Gomma Nuova Linea Gomma Deauvil Divano 2 PL",
+                "price": 54.5,
+                "type": "GOMMA",
+                "supplier": {
+                    "id": "-Ofdx3TlX5A7SfHid4h6",
+                    "name": "Nuova Linea"
+                }
+            },
+            {
+                "id": "-OfdxSTGQIMbo0CVVtH8",
+                "name": "Rete D’Aniello Std Ferro Divano 2 PL",
+                "price": 101.5,
+                "type": "RETE",
+                "supplier": {
+                    "id": "-Ofdu6Gkn2InteBncG6p",
+                    "name": "D’Aniello"
+                }
+            },
+            {
+                "id": "-OfdmKWIv6A8Z1AeUrOX",
+                "name": "Materasso Giflex Classic Divano 2 PL",
+                "price": 50.8,
+                "type": "MATERASSO",
+                "supplier": {
+                    "id": "-OfdYCpVLUSCjEC7sllA",
+                    "name": "Giflex"
+                }
+            },
+            {
+                "id": "-OfeguuoGKfA5CusBtEI",
+                "name": "Tappezzeria Power Sofa Tappezzeria",
+                "price": 81,
+                "type": "TAPPEZZERIA",
+                "supplier": {
+                    "id": "-Ofdu6Mv_6bYvHygSezW",
+                    "name": "Power Sofa"
+                }
+            },
+            {
+                "id": "-OfdmKZUtiIWu5f8tmz0",
+                "name": "Imbottitura Cuscinetti Corbetta Bagatelle",
+                "price": 3.1,
+                "type": "IMBOTTITURA_CUSCINETTI",
+                "supplier": {
+                    "id": "-OfdYCs3XsQfwBinKAu6",
+                    "name": "Corbetta"
+                }
+            },
+            {
+                "id": "-OfdmK_T15oAlogu9XxF",
+                "name": "Imballo Mac Pac + Cv Plast Sacchi Plastica",
+                "price": 20.88,
+                "type": "IMBALLO",
+                "supplier": {
+                    "id": "-OfdYCtEEWaBaWQ0Vm5i",
+                    "name": "Mac Pac + Cv Plast"
+                }
+            },
+            {
+                "id": "-OfdmK_xbjfSDih_8ueX",
+                "name": "Scatola Euroscatola Sofair",
+                "price": 0,
+                "type": "SCATOLA",
+                "supplier": {
+                    "id": "-OfdYCtqsZqqUfyYTnVK",
+                    "name": "Euroscatola"
+                }
+            },
+            {
+                "id": "-OfdxSWE2n57XnDbjzXu",
+                "name": "Tela Marchiata Nerini Spa Economica",
+                "price": 1.47,
+                "type": "TELA_MARCHIATA",
+                "supplier": {
+                    "id": "-Ofdx3UkUcDhcyCXTMUY",
+                    "name": "Nerini Spa"
+                }
+            },
+            {
+                "id": "-OfdmKbugLRh3a1TxWoK",
+                "name": "Trasporto Divano 2 PL",
+                "price": 70,
+                "type": "TRASPORTO"
+            }
         ],
         "pricingMode": "components"
     }

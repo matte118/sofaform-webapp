@@ -272,6 +272,10 @@ export class HomeComponent implements OnInit {
     this.componentTypeMap.set(ComponentType.GOMMA, 'Gomma');
     this.componentTypeMap.set(ComponentType.RETE, 'Rete');
     this.componentTypeMap.set(ComponentType.MATERASSO, 'Materasso');
+    this.componentTypeMap.set(ComponentType.FERRO_SCHIENALE, 'Ferro Schienale');
+    this.componentTypeMap.set(ComponentType.IMBOTTITURA_CUSCINETTI, 'Imbottitura Cuscinetti');
+    this.componentTypeMap.set(ComponentType.TAPPEZZERIA, 'Tappezzeria');
+    this.componentTypeMap.set(ComponentType.TELA_MARCHIATA, 'Tela Marchiata');
     this.componentTypeMap.set(ComponentType.PIEDINI, 'Piedini');
     this.componentTypeMap.set(ComponentType.FERRAMENTA, 'Ferramenta');
     this.componentTypeMap.set(ComponentType.VARIE, 'Varie');

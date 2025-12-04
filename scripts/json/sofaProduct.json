@@ -1,11 +1,11 @@
 [
     {
-        "name": "Copenaghen",
-        "description": "Divano letto modello Copenaghen con meccanica Positano, seduta e schienale in poliuretano espanso. Struttura con rete a maglia in acciaio elettrosaldato e materasso Classic h 13 in poliuretano espanso densità 25 kg/m³.",
+        "name": "Deauville",
+        "description": "Divano letto Deauville con meccanica Positano a rete elettrosaldata, materasso in poliuretano espanso e seduta ad alta densità per massimo comfort.",
         "variants": [
-            "-Ofe2EAni89q2lCmFXKo",
-            "-Ofe2Elt2F2ZIJAjxxXs",
-            "-Ofe2EmRV7yq3-EdOrFb"
+            "-OfehqdupQ9PipRGTAWL",
+            "-Ofehqk7oB8Y1Kkbo0Kh",
+            "-OfehqkhTkq37hoG_SK-"
         ],
         "photoUrl": [],
         "seduta": "Poliuretano espanso densità 30 kg",
@@ -14,22 +14,35 @@
         "materasso": "Classic h 13 in poliuretano espanso densità 25 kg/m³",
         "materassiExtra": [
             {
-                "name": "REVES 30 kg",
+                "name": "REVES h 13",
                 "price": 40
             },
             {
-                "name": "ETOILE 35 kg",
+                "name": "ETOILE h 13",
                 "price": 80
             },
             {
-                "name": "MEDITATION 38 kg h 13",
+                "name": "CLASSIC h 18",
+                "price": 50
+            },
+            {
+                "name": "NUAGE h 13",
+                "price": 120
+            },
+            {
+                "name": "MEDITATION h 13",
                 "price": 60
             },
             {
-                "name": "NUAGE 50 kg",
-                "price": 120
+                "name": "MEDITATION h 18",
+                "price": 90
             }
         ],
-        "meccanismiExtra": []
+        "meccanismiExtra": [
+            {
+                "name": "Lampolet BL8",
+                "price": 80
+            }
+        ]
     }
 ]

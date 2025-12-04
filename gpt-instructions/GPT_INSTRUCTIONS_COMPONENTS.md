@@ -6,6 +6,24 @@
 *   **Image 1**: Price Table (same as Step 1).
 *   **Supplier IDs**: A list or JSON provided by the user mapping Supplier Names to DB IDs.
 
+## MANDATORY: Database Check Workflow
+
+### STEP 1: Extract Components
+1. Parse each row in Image 1 following the component name generation rules
+2. Build component names: `[ComponentType] [Supplier] [VariableName] [SofaType]`
+3. Expand all abbreviations
+4. Remove duplicate ComponentType from VariableName
+5. **Present to user**: Show the complete extracted list
+
+**EXAMPLE OUTPUT**:
+```
+[
+  "Fusto Redael C3205 Bagatelle Divano 3 PL Maxi",
+  "Gomma Diflex Standard Divano 3 PL",
+  "Rete Redael Premium Divano 2 PL"
+]
+```
+
 ## ComponentType Enum Reference
 The `ComponentType` enum defines valid component types. Map column 1 values to these types:
 

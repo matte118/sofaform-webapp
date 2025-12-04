@@ -26,6 +26,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TabViewModule } from 'primeng/tabview';
 
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { Table } from 'primeng/table';
 
 import { Component as ComponentModel } from '../../../models/component.model';
 import { Supplier } from '../../../models/supplier.model';
@@ -75,8 +76,9 @@ import {
   styleUrls: ['./gestione-componenti.component.scss']
 })
 export class GestioneComponentiComponent implements OnInit, AfterViewInit {
-  @ViewChild('componentTable') componentTable?: ElementRef;
+  @ViewChild('componentTableEl') componentTableEl?: ElementRef;
   @ViewChild('variantEntriesContainer') variantEntriesContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('dt') dt?: Table;
 
   componentsView: Array<
     ComponentModel & {
@@ -147,6 +149,10 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   filteredComponentsForPriceList: ComponentModel[] = [];
   displayConfirmPriceUpdate = false;
   savingPriceList = false;
+
+  globalFilterValue = '';
+  tableFilters: any = { global: { value: '', matchMode: 'contains' } };
+  selectedComponents: Array<ComponentModel & { supplierName: string; typeLabel: string; sofaTypeLabel: string; priceText: string; priceTextComma: string }> = [];
 
   constructor(
     private componentService: ComponentService,
@@ -250,6 +256,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         priceTextComma
       };
     });
+    setTimeout(() => this.applyGlobalFilter(), 0);
   }
 
 
@@ -281,8 +288,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   }
 
   private refreshTable() {
-    if (this.componentTable) {
-      const el = this.componentTable.nativeElement;
+    if (this.componentTableEl) {
+      const el = this.componentTableEl.nativeElement;
       if (el) {
         el.classList.add('refreshing');
         setTimeout(() => {
@@ -537,6 +544,39 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         this.saving = false;
         this.displayConfirmDelete = false;
       });
+  }
+
+  bulkDeleteSelected(): void {
+    const toDelete = this.selectedComponents || [];
+    if (!toDelete.length) {
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: `Sei sicuro di voler eliminare ${toDelete.length} componenti selezionati?`,
+      header: 'Conferma eliminazione multipla',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Elimina',
+      rejectLabel: 'Annulla',
+      acceptButtonStyleClass: 'btn-confirm',
+      rejectButtonStyleClass: 'btn-cancel',
+      accept: () => {
+        this.saving = true;
+        forkJoin(toDelete.map(c => this.componentService.deleteComponent(c.id))).subscribe({
+          next: () => {
+            this.addSuccess(`Eliminati ${toDelete.length} componenti`);
+            this.selectedComponents = [];
+            this.refresh$.next();
+            this.saving = false;
+          },
+          error: err => {
+            console.error('Errore eliminazione multipla', err);
+            this.addError('Errore durante eliminazione multipla');
+            this.saving = false;
+          }
+        });
+      }
+    });
   }
 
   private performDelete(component: ComponentModel) {
@@ -912,9 +952,10 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   }
 
   // Add missing onGlobalFilter method
-  onGlobalFilter(event: Event, dt: any) {
+  onGlobalFilter(event: Event) {
     const target = event.target as HTMLInputElement;
-    dt.filterGlobal(target.value, 'contains');
+    this.globalFilterValue = target.value;
+    this.applyGlobalFilter();
   }
 
   // Add missing removeVariableDataEntry method
@@ -968,6 +1009,22 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   private addSuccess(detail: string, summary: string = 'Successo') {
     this.messageService.add({ severity: 'success', summary, detail });
+  }
+
+  private applyGlobalFilter(): void {
+    // Keep table filters in sync so filtering survives reloads
+    this.tableFilters = {
+      ...this.tableFilters,
+      global: { value: this.globalFilterValue, matchMode: 'contains' }
+    };
+
+    if (!this.dt) {
+      // Retry shortly if the table view isn't ready yet
+      setTimeout(() => this.applyGlobalFilter(), 50);
+      return;
+    }
+
+    this.dt.filterGlobal(this.globalFilterValue, 'contains');
   }
 
   /** Nel componente: */

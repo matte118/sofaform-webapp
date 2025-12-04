@@ -1,89 +1,71 @@
 [
     {
-        "name": "Fusto Redael Copenagh Divano 3 PL Maxi",
-        "price": 63,
+        "name": "Fusto The73 Deauville Divano 3 PL Maxi",
+        "price": 60,
         "supplier": {
-            "id": "-OfdYCfSHUkpVOswO3nW",
-            "name": "Redael"
+            "id": "-Ofdx3OE88EJe0SfdNvF",
+            "name": "The73"
         },
         "type": "FUSTO",
-        "sofaType": "DIVANO_3PL_MAXI"
+        "sofaType": "DIVANO_3_PL_MAXI"
     },
     {
-        "name": "Fusto Redael Copenagh Divano 3 PL",
-        "price": 58,
+        "name": "Fusto The73 Deauville Divano 3 PL",
+        "price": 55,
         "supplier": {
-            "id": "-OfdYCfSHUkpVOswO3nW",
-            "name": "Redael"
+            "id": "-Ofdx3OE88EJe0SfdNvF",
+            "name": "The73"
         },
         "type": "FUSTO",
-        "sofaType": "DIVANO_3PL"
+        "sofaType": "DIVANO_3_PL"
     },
     {
-        "name": "Fusto Redael Copenagh Divano 2 PL",
-        "price": 54,
+        "name": "Fusto The73 Deauville Divano 2 PL",
+        "price": 50,
         "supplier": {
-            "id": "-OfdYCfSHUkpVOswO3nW",
-            "name": "Redael"
+            "id": "-Ofdx3OE88EJe0SfdNvF",
+            "name": "The73"
         },
         "type": "FUSTO",
-        "sofaType": "DIVANO_2PL"
+        "sofaType": "DIVANO_2_PL"
     },
     {
-        "name": "Gomma Trasform Copena Divano 3 PL Maxi",
-        "price": 95,
+        "name": "Gomma Nuova Linea Gomma Deauvil Divano 3 PL Maxi",
+        "price": 67.9,
         "supplier": {
-            "id": "-Ofe0ZuW560jMcr94VDs",
-            "name": "Trasform"
+            "id": "-Ofdx3TlX5A7SfHid4h6",
+            "name": "Nuova Linea"
         },
         "type": "GOMMA",
-        "sofaType": "DIVANO_3PL_MAXI"
+        "sofaType": "DIVANO_3_PL_MAXI"
     },
     {
-        "name": "Gomma Trasform Copena Divano 3 PL",
-        "price": 85,
+        "name": "Gomma Nuova Linea Gomma Deauvil Divano 3 PL",
+        "price": 60.5,
         "supplier": {
-            "id": "-Ofe0ZuW560jMcr94VDs",
-            "name": "Trasform"
+            "id": "-Ofdx3TlX5A7SfHid4h6",
+            "name": "Nuova Linea"
         },
         "type": "GOMMA",
-        "sofaType": "DIVANO_3PL"
+        "sofaType": "DIVANO_3_PL"
     },
     {
-        "name": "Gomma Trasform Copena Divano 2 PL",
-        "price": 80,
+        "name": "Gomma Nuova Linea Gomma Deauvil Divano 2 PL",
+        "price": 54.5,
         "supplier": {
-            "id": "-Ofe0ZuW560jMcr94VDs",
-            "name": "Trasform"
+            "id": "-Ofdx3TlX5A7SfHid4h6",
+            "name": "Nuova Linea"
         },
         "type": "GOMMA",
-        "sofaType": "DIVANO_2PL"
+        "sofaType": "DIVANO_2_PL"
     },
     {
-        "name": "Tappezzeria Brianza Sofa Copenagh",
-        "price": 120,
+        "name": "Tappezzeria Power Sofa Tappezzeria",
+        "price": 81,
         "supplier": {
-            "id": "-OfdYCqBY64XMRzRixPX",
-            "name": "Brianza Sofa"
+            "id": "-Ofdu6Mv_6bYvHygSezW",
+            "name": "Power Sofa"
         },
         "type": "TAPPEZZERIA"
-    },
-    {
-        "name": "Piedini Rima Malgra",
-        "price": 33.5,
-        "supplier": {
-            "id": "-OfdYCoqKXx_xP6NZZFS",
-            "name": "Rima"
-        },
-        "type": "PIEDINI"
-    },
-    {
-        "name": "Ferro Schienale Davanzo Copenaghen",
-        "price": 7.64,
-        "supplier": {
-            "id": "-Ofdx3UGPJy2ck-r5mbm",
-            "name": "Davanzo"
-        },
-        "type": "FERRO_SCHIENALE"
     }
 ]

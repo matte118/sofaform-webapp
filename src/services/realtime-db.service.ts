@@ -6,6 +6,8 @@ import {
   push,
   onValue,
   remove,
+  get,
+  update,
 } from '@angular/fire/database';
 import { SofaProduct } from '../models/sofa-product.model';
 import { Variant } from '../models/variant.model';
@@ -334,7 +336,9 @@ export class RealtimeDbService {
     console.log('RealtimeDbService: Updating component in DB:', sanitizedComponent);
     console.log('RealtimeDbService: Component type field for update:', sanitizedComponent.type);
 
-    return set(ref(this.db, `components/${id}`), sanitizedComponent);
+    return set(ref(this.db, `components/${id}`), sanitizedComponent).then(() =>
+      this.updateComponentInVariants(id, sanitizedComponent)
+    );
   }
 
   deleteComponent(id: string): Promise<void> {
@@ -386,6 +390,50 @@ export class RealtimeDbService {
         }
       });
     });
+  }
+
+  private async updateComponentInVariants(componentId: string, componentData: any): Promise<void> {
+    const snapshot = await get(ref(this.db, 'variants'));
+    const variants = snapshot.val() || {};
+    const updatePromises: Promise<void>[] = [];
+
+    Object.entries(variants).forEach(([variantId, variantData]: [string, any]) => {
+      const components = Array.isArray(variantData.components) ? variantData.components : [];
+      let touched = false;
+
+      const updatedComponents = components.map((comp: any) => {
+        if (comp && comp.id === componentId) {
+          touched = true;
+          return {
+            ...comp,
+            ...componentData,
+            id: componentId
+          };
+        }
+        return comp;
+      });
+
+      if (touched) {
+        const payload: any = { components: updatedComponents };
+
+        if (variantData.pricingMode !== 'custom') {
+          const newPrice = updatedComponents.reduce(
+            (sum: number, c: any) => sum + (c?.price || 0),
+            0
+          );
+          payload.price = newPrice;
+        } else if (variantData.customPrice !== undefined) {
+          payload.price = variantData.customPrice;
+        }
+
+        const sanitizedPayload = this.sanitizeData(payload);
+        updatePromises.push(update(ref(this.db, `variants/${variantId}`), sanitizedPayload));
+      }
+    });
+
+    if (updatePromises.length) {
+      await Promise.all(updatePromises);
+    }
   }
 
   // New methods for creating products and variants
