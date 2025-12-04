@@ -95,6 +95,7 @@ export class HomeComponent implements OnInit {
   @ViewChild('productForm') productForm?: NgForm;
   @ViewChild('fileUpload') fileUpload?: any;
   @ViewChild('hiddenFileInput') hiddenFileInput?: ElementRef;
+  @ViewChild('variantFormSection') variantFormSection?: ElementRef<HTMLElement>;
 
   products: SofaProduct[] = [];
   productVariants: Map<string, Variant[]> = new Map();
@@ -1146,11 +1147,23 @@ export class HomeComponent implements OnInit {
       variant.height
     );
     this.editingVariantIndex = index;
+    this.cdr.detectChanges();
+    this.scrollToVariantForm();
   }
 
   cancelVariantEdit(): void {
     this.editingVariantIndex = -1;
     this.newVariant = new Variant('', '', SofaType.DIVANO_3_PL, 0);
+  }
+
+  private scrollToVariantForm(): void {
+    if (!this.isBrowser) return;
+    setTimeout(() => {
+      const el = this.variantFormSection?.nativeElement;
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 0);
   }
 
   deleteVariantFromProduct(index: number): void {
@@ -1506,15 +1519,14 @@ export class HomeComponent implements OnInit {
   formatComponentName(component: ComponentModel): string {
     if (!component) return '';
     const sofaTypeLabel = component.sofaType ? this.getSofaTypeDisplayName(component.sofaType) : '';
-    const hasSofaType = !!sofaTypeLabel.trim();
+
     const key = this.buildNameMeasureKey(component);
+
     let base = component.name;
-    if (hasSofaType) base += ` (${sofaTypeLabel})`;
+
     if (!this.duplicateNameMeasureKeys.has(key)) return base;
     const supplier = this.getSupplierName(component);
-    if (supplier) {
-      return hasSofaType ? `${component.name} (${sofaTypeLabel}) (${supplier})` : `${component.name} (${supplier})`;
-    }
+
     return base;
   }
 

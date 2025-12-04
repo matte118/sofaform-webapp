@@ -48,8 +48,8 @@ Always expand abbreviations in component names to their full form. Common abbrev
 - **"Tappez."** → "Tappezzeria"
 - **"Ferram."** → "Ferramenta"
 - **"Schien."** → "Schienale"
-- **"3PL" / "3 Pl"** → "3 Posti" (in SofaType context, keep as "DIVANO_3PL_MAXI")
-- **"2PL" / "2 Pl"** → "2 Posti" (in SofaType context, keep as "DIVANO_2PL")
+- **"3PL" / "3 Pl"** → "3 Posti" (in SofaType context, keep as "DIVANO_3_PL_MAXI")
+- **"2PL" / "2 Pl"** → "2 Posti" (in SofaType context, keep as "DIVANO_2_PL")
 - **"Bagat." / "Bagatelle (abbr.)"** → Resolve to full product name from header
 
 ## Component Name Generation
@@ -67,7 +67,7 @@ Always expand abbreviations in component names to their full form. Common abbrev
    - If Column 3 contains only a model code (e.g., "C3205"), use it as-is.
    - If Column 3 contains brand/model info (e.g., "High Ferro"), use it as-is but expand any abbreviations.
    - **Never repeat the ComponentType in VariableName** (e.g., don't say "Fusto Redael Fusto...").
-4. **SofaType**: Match to the column header (e.g., "DIVANO_3PL_MAXI", "DIVANO_3PL", "DIVANO_2PL").
+4. **SofaType**: Match to the column header (e.g., "DIVANO_3_PL_MAXI", "DIVANO_3_PL", "DIVANO_2_PL").
 
 ### ⚠️ SPECIAL: Fixed-Price Components (No SofaType Variation)
 For the following component types, the price **does NOT vary** by sofa type, so **OMIT `[SofaType]`** from the name:
@@ -155,7 +155,7 @@ For the following component types, the price **does NOT vary** by sofa type, so 
   price: number;
   supplier?: { id: string, name: string }; // MUST use the ID provided
   type: ComponentType; // Enum value (e.g., FUSTO, GOMMA, IMBOTTITURA_CUSCINETTI)
-  sofaType: SofaType; // e.g., DIVANO_3PL_MAXI
+  sofaType: SofaType; // e.g., DIVANO_3_PL_MAXI
 }
 ```
 
@@ -174,7 +174,7 @@ For the following component types, the price **does NOT vary** by sofa type, so 
     "price": 46,
     "supplier": { "id": "PROVIDED_ID_123", "name": "Redael" },
     "type": "FUSTO",
-    "sofaType": "DIVANO_3PL_MAXI"
+    "sofaType": "DIVANO_3_PL_MAXI"
   }
 ]
 ```

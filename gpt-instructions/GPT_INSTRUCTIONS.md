@@ -10,7 +10,7 @@
 1. **ComponentType** (Column 1): FUSTO, GOMMA, RETE, etc. (always full form, never abbreviated).
 2. **Supplier** (Column 2): Redael, Diflex, etc.
 3. **VariableName** (Column 3): Model code, brand, or sofa name (abbreviations expanded).
-4. **SofaType** (Column Header): DIVANO_3PL_MAXI, DIVANO_3PL, DIVANO_2PL.
+4. **SofaType** (Column Header): DIVANO_3_PL_MAXI, DIVANO_3_PL, DIVANO_2_PL.
 
 ### Pattern
 `[ComponentType] [Supplier] [VariableName] [SofaType]`

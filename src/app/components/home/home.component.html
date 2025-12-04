@@ -599,7 +599,7 @@
               </div>
               <div class="card-content">
                 <!-- Add/Edit Variant Form - Solo per modifica esistenti -->
-                <div class="variant-form-section" *ngIf="editingVariantIndex >= 0">
+                <div class="variant-form-section" *ngIf="editingVariantIndex >= 0" #variantFormSection>
                   <div class="variant-form-header">
                     <h4 class="editing-variant-title">
                       <i class="pi pi-pencil"></i>

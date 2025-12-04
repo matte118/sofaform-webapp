@@ -69,7 +69,7 @@ Rappresenta un utente del sistema.
 *   **ExtraMattress**: `{ name: string, price: number }` - Opzioni aggiuntive per materassi.
 *   **ExtraMeccanismo**: `{ name: string, price: number }` - Opzioni aggiuntive per meccanismi.
 *   **ComponentType** (Enum): Categorie fisse per i componenti (FUSTO, GOMMA, RETE, MATERASSO, TAPPEZZERIA, PIEDINI, FERRAMENTA, VARIE, IMBALLO, SCATOLA, TELA_MARCHIATA, TRASPORTO).
-*   **SofaType** (Enum): Tipologia del divano (DIVANO_3PL_MAXI, DIVANO_3PL, DIVANO_2PL).
+*   **SofaType** (Enum): Tipologia del divano (DIVANO_3_PL_MAXI, DIVANO_3_PL, DIVANO_2_PL).
 
 ## 3. Comunicazione con il Database
 La gestione dei dati è centralizzata nel servizio **`RealtimeDbService`** (`src/services/realtime-db.service.ts`).

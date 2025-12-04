@@ -6,6 +6,7 @@ import { RealtimeDbService } from './realtime-db.service';
 import { Variant } from '../models/variant.model';
 import { Rivestimento } from '../models/rivestimento.model';
 import { SofaType } from '../models/sofa-type.model';
+import { ComponentType } from '../models/component-type.model';
 
 @Injectable({
   providedIn: 'root',
@@ -22,14 +23,16 @@ export class VariantService {
   }
 
   addVariant(variant: Variant): Observable<void> {
-    return from(this.dbService.addVariant(variant));
+    const preparedVariant = this.prepareVariantForSave(variant);
+    return from(this.dbService.addVariant(preparedVariant as any));
   }
 
   createVariant(variant: Variant): Observable<string> {
     if (!this.isBrowser) {
       return of('');
     }
-    return from(this.dbService.createVariant(variant));
+    const preparedVariant = this.prepareVariantForSave(variant);
+    return from(this.dbService.createVariant(preparedVariant as any));
   }
 
   getVariants(): Observable<Variant[]> {
@@ -56,7 +59,8 @@ export class VariantService {
   }
 
   updateVariant(id: string, variant: Variant): Observable<void> {
-    return from(this.dbService.updateVariant(id, variant));
+    const preparedVariant = this.prepareVariantForSave(variant);
+    return from(this.dbService.updateVariant(id, preparedVariant as any));
   }
 
   deleteVariant(id: string): Observable<void> {
@@ -222,15 +226,84 @@ export class VariantService {
     }
   }
 
+  private prepareVariantForSave(variant: Variant): Variant {
+    const components = (variant.components || []).map((comp: any) => ({
+      ...comp,
+      type: this.toComponentTypeString(comp?.type),
+      sofaType: this.parseSofaType(comp?.sofaType)
+    }));
+
+    return {
+      ...variant,
+      components
+    } as Variant;
+  }
+
+  private toComponentTypeString(type: any): string | null {
+    const parsedType = this.parseComponentType(type);
+    return parsedType !== undefined ? ComponentType[parsedType] : null;
+  }
+
+  private parseComponentType(type: any): ComponentType | undefined {
+    if (type === null || type === undefined) {
+      return undefined;
+    }
+
+    if (typeof type === 'number' && !isNaN(type)) {
+      return type as ComponentType;
+    }
+
+    const raw = String(type).trim();
+    if (!raw) {
+      return undefined;
+    }
+
+    const enumKey = Object.keys(ComponentType)
+      .filter(k => isNaN(Number(k)))
+      .find(k => k.toLowerCase() === raw.toLowerCase());
+
+    if (enumKey) {
+      return ComponentType[enumKey as keyof typeof ComponentType];
+    }
+
+    const numeric = Number(raw);
+    if (!Number.isNaN(numeric)) {
+      return numeric as ComponentType;
+    }
+
+    return undefined;
+  }
+
+  private parseSofaType(raw: any): SofaType | null {
+    if (raw === null || raw === undefined) return null;
+
+    const value = String(raw).trim();
+    if (!value) return null;
+
+    const match = (Object.values(SofaType) as string[]).find(
+      v => v.toLowerCase() === value.toLowerCase()
+    );
+
+    return match ? (match as SofaType) : null;
+  }
+
   private mapToVariant(data: any, id: string): Variant {
     console.log('Mapping variant data from Firebase:', { id, data }); // Debug log
+
+    const parsedComponents = (data.components || []).map((comp: any) => ({
+      ...comp,
+      type: this.parseComponentType(comp?.type),
+      sofaType: this.parseSofaType(comp?.sofaType)
+    }));
+
+    const parsedLongName = this.parseSofaType(data.longName) ?? SofaType.DIVANO_3_PL;
 
     const variant = new Variant(
       id,
       data.sofaId || '',
-      (data.longName as SofaType) || SofaType.DIVANO_3_PL,
+      parsedLongName,
       0, // Initialize with 0, will set properly below
-      data.components || [],
+      parsedComponents,
       data.seatsCount,
       data.mattressWidth,
       data.depth,
@@ -264,6 +337,3 @@ export class VariantService {
     return variant;
   }
 }
-
-
-
