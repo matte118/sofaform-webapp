@@ -18,7 +18,7 @@ const suppliersRef = db.ref('suppliers');
 
 async function seed() {
   // 2) LEGGI IL JSON che hai creato da Excel
-  const jsonPath = path.resolve(__dirname, 'suppliers.json');
+  const jsonPath = path.resolve(__dirname, 'json/suppliers.json');
   if (!fs.existsSync(jsonPath)) {
     console.error(`❌ File non trovato: ${jsonPath}`);
     process.exit(1);

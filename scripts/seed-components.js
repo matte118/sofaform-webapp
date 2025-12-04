@@ -18,7 +18,7 @@ const componentsRef = db.ref('components');
 
 async function seed() {
   // 2) LEGGI IL JSON che hai creato da Excel
-  const jsonPath = path.resolve(__dirname, 'components.json');
+  const jsonPath = path.resolve(__dirname, 'json/components.json');
   if (!fs.existsSync(jsonPath)) {
     console.error(`❌ File non trovato: ${jsonPath}`);
     process.exit(1);

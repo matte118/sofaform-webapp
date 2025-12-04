@@ -6,8 +6,5 @@ export class User {
     public email: string,
     public displayName?: string,
     public role: UserRole = UserRole.OPERATOR,
-    public creationDate: string = new Date().toISOString(),
-    public lastLoginDate?: string,
-    public disabled: boolean = false
-  ) {}
+  ) { }
 }

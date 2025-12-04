@@ -106,15 +106,11 @@ export class AuthService {
       ),
       // 3) salva profilo in RealtimeDB
       switchMap((cred) => {
-        const now = new Date().toISOString();
         const u = new User(
           cred.user.uid,
           email,
           displayName,
           role,
-          now,
-          now,
-          false
         );
         return from(set(ref(this.db, `users/${u.id}`), u));
       }),
@@ -161,9 +157,6 @@ export class AuthService {
           d.email || '',
           d.displayName,
           d.role || UserRole.OPERATOR,
-          d.creationDate,
-          d.lastLoginDate,
-          d.disabled
         );
       }),
       catchError((err) => {
@@ -189,9 +182,6 @@ export class AuthService {
             user.email ?? '',
             user.displayName ?? '',
             role,
-            now,
-            lastLoginDate,
-            false
           );
           await set(ref(this.db, `users/${u.id}`), u);
           this.currentUserRole$.next(role);
@@ -218,9 +208,6 @@ export class AuthService {
                 d.email || '',
                 d.displayName,
                 d.role || UserRole.OPERATOR,
-                d.creationDate,
-                d.lastLoginDate,
-                d.disabled
               )
             );
           });

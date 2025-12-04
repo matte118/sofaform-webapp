@@ -9,12 +9,8 @@
 
   <!-- Loading spinner -->
   <div *ngIf="loading" class="loading-container">
-    <p-progressSpinner
-      styleClass="w-4rem h-4rem"
-      strokeWidth="4"
-      fill="var(--surface-ground)"
-      animationDuration=".5s"
-    ></p-progressSpinner>
+    <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="4" fill="var(--surface-ground)"
+      animationDuration=".5s"></p-progressSpinner>
     <p>
       Caricamento utenti...
       <span *ngIf="users.length > 0">(dati già ricevuti)</span>
@@ -26,31 +22,17 @@
     <ng-template pTemplate="header">
       <div class="card-header">
         <h2>Utenti</h2>
-        <button
-          pButton
-          type="button"
-          label="Aggiungi Utente"
-          icon="pi pi-plus"
-          (click)="openNewUserDialog()"
-        ></button>
+        <button pButton type="button" label="Aggiungi Utente" icon="pi pi-plus" (click)="openNewUserDialog()"></button>
       </div>
     </ng-template>
 
-    <p-table
-      [value]="users"
-      styleClass="p-datatable-sm p-datatable-striped"
-      [tableStyle]="{ 'min-width': '50rem' }"
-      [paginator]="users.length > 10"
-      [rows]="10"
-      [rowHover]="true"
-    >
+    <p-table [value]="users" styleClass="p-datatable-sm p-datatable-striped" [tableStyle]="{ 'min-width': '50rem' }"
+      [paginator]="users.length > 10" [rows]="10" [rowHover]="true">
       <ng-template pTemplate="header">
         <tr>
           <th>Email</th>
           <th>Nome</th>
           <th>Ruolo</th>
-          <th>Data creazione</th>
-          <th>Ultimo accesso</th>
           <th>Azioni</th>
         </tr>
       </ng-template>
@@ -60,11 +42,7 @@
           <td>
             <span class="email-cell">
               {{ user.email }}
-              <i
-                *ngIf="isCurrentUser(user.id)"
-                class="pi pi-user current-user-icon"
-                pTooltip="Utente corrente"
-              ></i>
+              <i *ngIf="isCurrentUser(user.id)" class="pi pi-user current-user-icon" pTooltip="Utente corrente"></i>
             </span>
           </td>
           <td>{{ user.displayName || "N/D" }}</td>
@@ -73,30 +51,15 @@
               {{ getRoleName(user.role) }}
             </span>
           </td>
-          <td>{{ formatDate(user.creationDate) }}</td>
-          <td>{{ formatDate(user.lastLoginDate) }}</td>
           <td class="actions-cell">
             <!-- Dropdown cambio ruolo -->
-            <p-dropdown
-              *ngIf="canChangeRole(user)"
-              [options]="roleOptions"
-              [(ngModel)]="user.role"
-              (onChange)="changeUserRole(user, $event.value)"
-              styleClass="p-button-sm"
-              appendTo="body"
-            ></p-dropdown>
+            <p-dropdown *ngIf="canChangeRole(user)" [options]="roleOptions" [(ngModel)]="user.role"
+              (onChange)="changeUserRole(user, $event.value)" styleClass="p-button-sm" appendTo="body"></p-dropdown>
 
             <!-- Pulsante elimina -->
-            <button
-              pButton
-              type="button"
-              icon="pi pi-trash"
-              class="p-button-rounded p-button-danger p-button-text"
-              [disabled]="isCurrentUser(user.id) || !canManageUser(user)"
-              pTooltip="Elimina utente"
-              tooltipPosition="left"
-              (click)="deleteUser(user)"
-            ></button>
+            <button pButton type="button" icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text"
+              [disabled]="isCurrentUser(user.id) || !canManageUser(user)" pTooltip="Elimina utente"
+              tooltipPosition="left" (click)="deleteUser(user)"></button>
           </td>
         </tr>
       </ng-template>
@@ -112,40 +75,19 @@
   </p-card>
 
   <!-- Dialog per nuovo utente -->
-  <p-dialog
-    [(visible)]="showNewUserDialog"
-    [style]="{ width: '450px' }"
-    header="Aggiungi Nuovo Utente"
-    [modal]="true"
-    [draggable]="false"
-    [resizable]="false"
-  >
+  <p-dialog [(visible)]="showNewUserDialog" [style]="{ width: '450px' }" header="Aggiungi Nuovo Utente" [modal]="true"
+    [draggable]="false" [resizable]="false">
     <div class="new-user-form">
       <div class="form-field">
         <label for="email">Email*</label>
-        <input
-          id="email"
-          type="email"
-          pInputText
-          [(ngModel)]="newUser.email"
-          placeholder="Email"
-          [disabled]="saving"
-          class="w-full"
-        />
+        <input id="email" type="email" pInputText [(ngModel)]="newUser.email" placeholder="Email" [disabled]="saving"
+          class="w-full" />
       </div>
 
       <div class="form-field">
         <label for="password">Password*</label>
-        <p-password
-          id="password"
-          [(ngModel)]="newUser.password"
-          placeholder="Password"
-          [toggleMask]="true"
-          [feedback]="true"
-          [disabled]="saving"
-          styleClass="w-full"
-          inputStyleClass="w-full"
-        ></p-password>
+        <p-password id="password" [(ngModel)]="newUser.password" placeholder="Password" [toggleMask]="true"
+          [feedback]="true" [disabled]="saving" styleClass="w-full" inputStyleClass="w-full"></p-password>
         <small class="password-hint">
           La password deve essere di almeno 6 caratteri
         </small>
@@ -153,56 +95,25 @@
 
       <div class="form-field">
         <label for="displayName">Nome (opzionale)</label>
-        <input
-          id="displayName"
-          type="text"
-          pInputText
-          [(ngModel)]="newUser.displayName"
-          placeholder="Nome dell'utente"
-          [disabled]="saving"
-          class="w-full"
-        />
+        <input id="displayName" type="text" pInputText [(ngModel)]="newUser.displayName" placeholder="Nome dell'utente"
+          [disabled]="saving" class="w-full" />
       </div>
 
       <div class="form-field">
         <label for="userRole">Ruolo*</label>
-        <p-dropdown
-          id="userRole"
-          [(ngModel)]="newUser.role"
-          [options]="roleOptions"
-          [disabled]="saving"
-          styleClass="w-full"
-          placeholder="Seleziona un ruolo"
-          appendTo="body"
-        ></p-dropdown>
+        <p-dropdown id="userRole" [(ngModel)]="newUser.role" [options]="roleOptions" [disabled]="saving"
+          styleClass="w-full" placeholder="Seleziona un ruolo" appendTo="body"></p-dropdown>
       </div>
     </div>
 
     <ng-template pTemplate="footer">
-      <button
-        pButton
-        type="button"
-        label="Annulla"
-        icon="pi pi-times"
-        class="p-button-text"
-        [disabled]="saving"
-        (click)="showNewUserDialog = false"
-      ></button>
-      <button
-        pButton
-        type="button"
-        label="Salva"
-        icon="pi pi-check"
-        [loading]="saving"
-        [disabled]="!newUser.email || newUser.password.length < 6 || saving"
-        (click)="createUser()"
-      ></button>
+      <button pButton type="button" label="Annulla" icon="pi pi-times" class="p-button-text" [disabled]="saving"
+        (click)="showNewUserDialog = false"></button>
+      <button pButton type="button" label="Salva" icon="pi pi-check" [loading]="saving"
+        [disabled]="!newUser.email || newUser.password.length < 6 || saving" (click)="createUser()"></button>
     </ng-template>
   </p-dialog>
 
   <!-- Dialog di conferma eliminazione -->
-  <p-confirmDialog
-    header="Conferma eliminazione"
-    icon="pi pi-exclamation-triangle"
-  ></p-confirmDialog>
+  <p-confirmDialog header="Conferma eliminazione" icon="pi pi-exclamation-triangle"></p-confirmDialog>
 </div>

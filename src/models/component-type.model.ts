@@ -13,6 +13,4 @@ export enum ComponentType {
   SCATOLA,
   TELA_MARCHIATA,
   TRASPORTO,
-  
-
 }
