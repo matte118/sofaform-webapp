@@ -95,10 +95,10 @@ export class AggiungiProdottoComponent implements OnInit {
   selectedTelaMarchiata?: ComponentModel;
   selectedTrasporto?: ComponentModel;
 
-  // 2) Piedini (minimo 2)
+  // 2) Piedini
   selectedPiedini?: ComponentModel;
-  piediniQty: number | null = null;
-  piediniQuantityOptions: number[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16];
+  piediniQty: number | null = 1;
+  piediniQuantityOptions: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16];
 
   // 3) Liste multiple
   ferramentaList: ComponentModel[] = [];
@@ -469,7 +469,12 @@ export class AggiungiProdottoComponent implements OnInit {
     const comps: ComponentModel[] = [];
     [this.selectedFusto, this.selectedGomma, this.selectedRete, this.selectedMaterasso, this.selectedFerroSchienale, this.selectedImballo, this.selectedScatola, this.selectedTelaMarchiata, this.selectedTrasporto]
       .forEach(c => c && comps.push(c));
-    if (this.selectedPiedini) for (let i = 0; i < Math.max(2, this.piediniQty!); i++) comps.push(this.selectedPiedini);
+    if (this.selectedPiedini) {
+      const qty = this.piediniQty ?? 0;
+      for (let i = 0; i < qty; i++) {
+        comps.push(this.selectedPiedini);
+      }
+    }
     this.ferramentaList.forEach(c => comps.push(c));
     this.varieList.forEach(c => comps.push(c));
     this.tappezzeriaList.forEach(c => comps.push(c));
@@ -900,7 +905,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.selectedPiedini = undefined;
     this.selectedTelaMarchiata = undefined;
     this.selectedTrasporto = undefined;
-    this.piediniQty = 2;
+    this.piediniQty = 1;
     this.ferramentaList = [];
     this.varieList = [];
     this.tappezzeriaList = [];
