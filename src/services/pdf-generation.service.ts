@@ -449,12 +449,13 @@ export class PdfGenerationService {
   }
 
   private formatCurrency(value: number): string {
+    const roundedValue = Math.ceil(value);
     return new Intl.NumberFormat(this.currentLang || 'it', {
       style: 'currency',
       currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value);
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(roundedValue);
   }
 
   getFilename(productName: string, languageCode: string = 'it'): string {
