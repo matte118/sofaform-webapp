@@ -414,11 +414,10 @@
       </span>
     </div>
 
-    <div class="bulk-actions">
+    <div class="bulk-actions" *ngIf="selectedComponents?.length">
       <p-button label="Elimina Selezionati" icon="pi pi-trash"
         styleClass="p-button-danger p-button-sm"
-        (onClick)="bulkDeleteSelected()"
-        [disabled]="!selectedComponents.length"></p-button>
+        (onClick)="bulkDeleteSelected()"></p-button>
     </div>
   </div>
 </ng-template>
