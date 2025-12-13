@@ -135,7 +135,7 @@ export class PdfGenerationService {
         matrixHeader: { bold: true, fillColor: '#1a365d', color: '#ffffff', fontSize: 9, alignment: 'center', margin: [3, 6, 3, 6] },
         matrixCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4] },
         variantCell: { fontSize: 8, bold: true, alignment: 'left', margin: [8, 4, 3, 4], color: '#1a365d' },
-        priceCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4], bold: true, color: '#38a169' },
+        priceCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4], bold: true, color: '#1a365d' },
         techSpecs: { fontSize: 10, margin: [0, 10, 0, 10] },
         small: { fontSize: 7, color: '#718096', alignment: 'center' },
 
@@ -374,7 +374,7 @@ export class PdfGenerationService {
           const totalPrice = variant.price + rivestimentoCost + this.deliveryCost;
           const finalPrice = this.applyMarkup(totalPrice, this.markupPerc);
 
-          row.push({ text: this.formatCurrency(finalPrice), style: 'priceCell', fillColor: '#f0fff4' });
+          row.push({ text: this.formatCurrency(finalPrice), style: 'priceCell', fillColor: '#f7fafc' });
         } else {
           row.push({ text: '-', style: 'matrixCell', color: '#a0aec0' });
         }
