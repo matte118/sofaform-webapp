@@ -1,7 +1,7 @@
 [
     {
-        "name": "Fusto Redael Matisse Divano 3 PL Maxi",
-        "price": 62,
+        "name": "Fusto Redael Stockholm Divano 3 PL Maxi",
+        "price": 97.2,
         "supplier": {
             "id": "-OfdYCfSHUkpVOswO3nW",
             "name": "Redael"
@@ -10,8 +10,8 @@
         "sofaType": "DIVANO_3_PL_MAXI"
     },
     {
-        "name": "Fusto Redael Matisse Divano 3 PL",
-        "price": 58,
+        "name": "Fusto Redael Stockholm Divano 3 PL",
+        "price": 91.8,
         "supplier": {
             "id": "-OfdYCfSHUkpVOswO3nW",
             "name": "Redael"
@@ -20,8 +20,8 @@
         "sofaType": "DIVANO_3_PL"
     },
     {
-        "name": "Fusto Redael Matisse Divano 2 PL",
-        "price": 54,
+        "name": "Fusto Redael Stockholm Divano 2 PL",
+        "price": 86.4,
         "supplier": {
             "id": "-OfdYCfSHUkpVOswO3nW",
             "name": "Redael"
@@ -30,8 +30,8 @@
         "sofaType": "DIVANO_2_PL"
     },
     {
-        "name": "Gomma Diflex Matisse Divano 3 PL Maxi",
-        "price": 147.04,
+        "name": "Gomma Diflex Stockholm Divano 3 PL Maxi",
+        "price": 106.35,
         "supplier": {
             "id": "-OfdYCo6LjM3gxk5Erpr",
             "name": "Diflex"
@@ -40,8 +40,8 @@
         "sofaType": "DIVANO_3_PL_MAXI"
     },
     {
-        "name": "Gomma Diflex Matisse Divano 3 PL",
-        "price": 129.81,
+        "name": "Gomma Diflex Stockholm Divano 3 PL",
+        "price": 96.15,
         "supplier": {
             "id": "-OfdYCo6LjM3gxk5Erpr",
             "name": "Diflex"
@@ -50,8 +50,8 @@
         "sofaType": "DIVANO_3_PL"
     },
     {
-        "name": "Gomma Diflex Matisse Divano 2 PL",
-        "price": 117.51,
+        "name": "Gomma Diflex Stockholm Divano 2 PL",
+        "price": 84.4,
         "supplier": {
             "id": "-OfdYCo6LjM3gxk5Erpr",
             "name": "Diflex"
@@ -60,7 +60,27 @@
         "sofaType": "DIVANO_2_PL"
     },
     {
-        "name": "Ferro Schienale D’Aniello Mykonos Divano 3 PL Maxi",
+        "name": "Tappezzeria Power Sofa Stockholm",
+        "price": 97,
+        "supplier": {
+            "id": "-Ofdu6Mv_6bYvHygSezW",
+            "name": "Power Sofa"
+        },
+        "type": "TAPPEZZERIA",
+        "sofaType": ""
+    },
+    {
+        "name": "Piedini Davanzo Bergen",
+        "price": 37.52,
+        "supplier": {
+            "id": "-Ofdx3UGPJy2ck-r5mbm",
+            "name": "Davanzo"
+        },
+        "type": "PIEDINI",
+        "sofaType": ""
+    },
+    {
+        "name": "Ferro Schienale D’Aniello Oslo Divano 3 PL Maxi",
         "price": 24,
         "supplier": {
             "id": "-Ofdu6Gkn2InteBncG6p",
@@ -70,7 +90,7 @@
         "sofaType": "DIVANO_3_PL_MAXI"
     },
     {
-        "name": "Ferro Schienale D’Aniello Mykonos Divano 3 PL",
+        "name": "Ferro Schienale D’Aniello Oslo Divano 3 PL",
         "price": 23,
         "supplier": {
             "id": "-Ofdu6Gkn2InteBncG6p",
@@ -80,7 +100,7 @@
         "sofaType": "DIVANO_3_PL"
     },
     {
-        "name": "Ferro Schienale D’Aniello Mykonos Divano 2 PL",
+        "name": "Ferro Schienale D’Aniello Oslo Divano 2 PL",
         "price": 21,
         "supplier": {
             "id": "-Ofdu6Gkn2InteBncG6p",
@@ -88,14 +108,5 @@
         },
         "type": "FERRO_SCHIENALE",
         "sofaType": "DIVANO_2_PL"
-    },
-    {
-        "name": "Tappezzeria Power Sofa Matisse",
-        "price": 97,
-        "supplier": {
-            "id": "-Ofdu6Mv_6bYvHygSezW",
-            "name": "Power Sofa"
-        },
-        "type": "TAPPEZZERIA"
     }
 ]

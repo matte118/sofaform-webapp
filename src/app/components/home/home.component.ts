@@ -570,10 +570,8 @@ export class HomeComponent implements OnInit {
         updatedProduct,
         this.getProductVariants(updatedProduct.id),
         rivestimentiByVariant,
-        [
-          ...this.extraMattressesForListino,
-          ...this.extraMechanismsForListino
-        ],
+        this.extraMattressesForListino,
+        this.extraMechanismsForListino,
         this.markupPercentage,
         this.deliveryPriceListino
       );

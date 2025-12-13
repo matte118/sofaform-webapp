@@ -138,16 +138,17 @@ For the following component types, the price **does NOT vary** by sofa type, so 
 1. **Extract Phase**: Parse each row following the table structure rules above, generating full component names with intelligent abbreviation resolution and expansion.
 2. **Present to User**: Display the list of extracted components and request confirmation to proceed.
 3. **Database Query**: Call `gpt-firebase-backend.onrender.com` -> `/realtime/columns?path=/components`.
-4. **Intelligent Matching**: Compare extracted component names against DB results using semantic similarity:
+4. **IDs Storage**: Memorize all the ids found in the database.
+5. **Intelligent Matching**: Compare extracted component names against DB results using semantic similarity:
    - Handle abbreviations (e.g., "Bagat." ≈ "Bagatelle", "3PL" ≈ "3 PL").
    - Understand format variations (e.g., spacing, case differences).
    - Match by logical equivalence, not just exact string match.
    - Example: "Fusto Redael Bagatelle 3PL Maxi" in DB could match extracted "Fusto Redael Bagatelle Divano 3 PL Maxi" if the base components align.
-5. **Cache Matched Data**: When matches are found, **remember the complete component data structures internally** (all fields: id, name, price, supplier, type, sofaType, etc.). **Do NOT ask the user for this data again**.
-6. **Filter & Report**:
+6. **Cache Matched Data**: When matches are found, **remember the complete component data structures internally** (all fields: id, name, price, supplier, type, sofaType, etc.). **Do NOT ask the user for this data again**.
+7. **Filter & Report**:
    - Exclude components that already exist in the DB.
    - Clearly list which components are **NEW** vs. **ALREADY IN DB** with confidence notes.
-7. **Proceed or Generate**:
+8. **Proceed or Generate**:
    - If **all components already exist**: Report matches and ask "Can I proceed to Step 3 (Variants)?"
    - If **new components exist**: Generate `components.json` and ask user to confirm before proceeding.
 

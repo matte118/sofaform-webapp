@@ -3,15 +3,15 @@
         "sofaId": "",
         "longName": "divano_3_pl_maxi",
         "seatsCount": 3,
-        "mattressWidth": 204,
-        "depth": 218,
-        "height": 85,
-        "price": 699.9,
+        "mattressWidth": 238,
+        "depth": 104,
+        "height": 82,
+        "price": 709.52,
         "components": [
             {
-                "id": "-OffI6z4U6FXMQROEdO1",
-                "name": "Fusto Redael Matisse Divano 3 PL Maxi",
-                "price": 62,
+                "id": "-OfkBY0mP57tmJdpks27",
+                "name": "Fusto Redael Stockholm Divano 3 PL Maxi",
+                "price": 97.2,
                 "type": "FUSTO",
                 "supplier": {
                     "id": "-OfdYCfSHUkpVOswO3nW",
@@ -19,9 +19,9 @@
                 }
             },
             {
-                "id": "-OffI7-dWN1BEPG29ng4",
-                "name": "Gomma Diflex Matisse Divano 3 PL Maxi",
-                "price": 147.04,
+                "id": "-OfkBY2Oe8vg0UvibE4n",
+                "name": "Gomma Diflex Stockholm Divano 3 PL Maxi",
+                "price": 106.35,
                 "type": "GOMMA",
                 "supplier": {
                     "id": "-OfdYCo6LjM3gxk5Erpr",
@@ -29,17 +29,17 @@
                 }
             },
             {
-                "id": "-Ofe-3HFzP_UibU2qf47",
-                "name": "Rete Lampolet BL 8 H13 Ferro Divano 3 PL Maxi",
-                "price": 168.64,
+                "id": "-OfdYCoqKXx_xP6NZZFS",
+                "name": "Rete Rima High Ferro Divano 3 PL Maxi",
+                "price": 148.5,
                 "type": "RETE",
                 "supplier": {
-                    "id": "-OfeWuxUagVIcMp-QHcn",
-                    "name": "Lampolet"
+                    "id": "-OfdYCoqKXx_xP6NZZFS",
+                    "name": "Rima"
                 }
             },
             {
-                "id": "-Ofe4gOf9VsHY6u8QdsU",
+                "id": "-OfdYCpVLUSCjEC7sllA",
                 "name": "Materasso Giflex Classic Divano 3 PL Maxi",
                 "price": 65.3,
                 "type": "MATERASSO",
@@ -49,28 +49,8 @@
                 }
             },
             {
-                "id": "-OffI72kUKRZFcojgovL",
-                "name": "Tappezzeria Power Sofa Matisse",
-                "price": 97,
-                "type": "TAPPEZZERIA",
-                "supplier": {
-                    "id": "-Ofdu6Mv_6bYvHygSezW",
-                    "name": "Power Sofa"
-                }
-            },
-            {
-                "id": "-OfeecSS1y9enOtbHwMG",
-                "name": "Piedini Davanzo Marais",
-                "price": 4.24,
-                "type": "PIEDINI",
-                "supplier": {
-                    "id": "-Ofdx3UGPJy2ck-r5mbm",
-                    "name": "Davanzo"
-                }
-            },
-            {
-                "id": "-OffI71BuZskT0Y0cvmt",
-                "name": "Ferro Schienale D’Aniello Mykonos Divano 3 PL Maxi",
+                "id": "-OfkBY5WnB0xdq5dv4-j",
+                "name": "Ferro Schienale D’Aniello Oslo Divano 3 PL Maxi",
                 "price": 24,
                 "type": "FERRO_SCHIENALE",
                 "supplier": {
@@ -79,7 +59,27 @@
                 }
             },
             {
-                "id": "-OfdmKZUtiIWu5f8tmz0",
+                "id": "-OfkBY4KrxUOn3n_uXOD",
+                "name": "Tappezzeria Power Sofa Stockholm",
+                "price": 97,
+                "type": "TAPPEZZERIA",
+                "supplier": {
+                    "id": "-Ofdu6Mv_6bYvHygSezW",
+                    "name": "Power Sofa"
+                }
+            },
+            {
+                "id": "-OfkBY4ve3vSRgHKfMK6",
+                "name": "Piedini Davanzo Bergen",
+                "price": 37.52,
+                "type": "PIEDINI",
+                "supplier": {
+                    "id": "-Ofdx3UGPJy2ck-r5mbm",
+                    "name": "Davanzo"
+                }
+            },
+            {
+                "id": "-OfdYCs3XsQfwBinKAu6",
                 "name": "Imbottitura Cuscinetti Corbetta",
                 "price": 3.1,
                 "type": "IMBOTTITURA_CUSCINETTI",
@@ -89,9 +89,9 @@
                 }
             },
             {
-                "id": "-OfdmK_T15oAlogu9XxF",
-                "name": "Imballo Mac Pac + Cv Plast Sacchi Plastica",
-                "price": 20.88,
+                "id": "-OfdYCtEEWaBaWQ0Vm5i",
+                "name": "Imballo Mac Pac + Cv Plast",
+                "price": 22.85,
                 "type": "IMBALLO",
                 "supplier": {
                     "id": "-OfdYCtEEWaBaWQ0Vm5i",
@@ -99,7 +99,7 @@
                 }
             },
             {
-                "id": "-OfdmK_xbjfSDih_8ueX",
+                "id": "-OfdYCtqsZqqUfyYTnVK",
                 "name": "Scatola Euroscatola Sofair",
                 "price": 0,
                 "type": "SCATOLA",
@@ -109,7 +109,7 @@
                 }
             },
             {
-                "id": "-OfdmKaR8w8gt_jy-8-E",
+                "id": "-OfdYCuVKyxQVLP9qvMV",
                 "name": "Tela Marchiata Ipea Made In Italy",
                 "price": 7.7,
                 "type": "TELA_MARCHIATA",
@@ -119,7 +119,7 @@
                 }
             },
             {
-                "id": "-OfdmKavozm52ueXewCT",
+                "id": "-Ofabu2A6s4Q_MSrInDh",
                 "name": "Trasporto Divano 3 PL Maxi",
                 "price": 100,
                 "type": "TRASPORTO"
@@ -131,15 +131,15 @@
         "sofaId": "",
         "longName": "divano_3_pl",
         "seatsCount": 3,
-        "mattressWidth": 184,
-        "depth": 218,
-        "height": 85,
-        "price": 646.81,
+        "mattressWidth": 218,
+        "depth": 104,
+        "height": 82,
+        "price": 668.12,
         "components": [
             {
-                "id": "-OffI6zbiiUfOwiztfLk",
-                "name": "Fusto Redael Matisse Divano 3 PL",
-                "price": 58,
+                "id": "-OfkBY1KgRPnempkjPw7",
+                "name": "Fusto Redael Stockholm Divano 3 PL",
+                "price": 91.8,
                 "type": "FUSTO",
                 "supplier": {
                     "id": "-OfdYCfSHUkpVOswO3nW",
@@ -147,9 +147,9 @@
                 }
             },
             {
-                "id": "-OffI709Mxl0dUk9JwGf",
-                "name": "Gomma Diflex Matisse Divano 3 PL",
-                "price": 129.81,
+                "id": "-OfkBY2ua2_yDam8psO-",
+                "name": "Gomma Diflex Stockholm Divano 3 PL",
+                "price": 96.15,
                 "type": "GOMMA",
                 "supplier": {
                     "id": "-OfdYCo6LjM3gxk5Erpr",
@@ -157,17 +157,17 @@
                 }
             },
             {
-                "id": "-Ofe-3Hj8zxUAV5gBtBN",
-                "name": "Rete Lampolet BL 8 H13 Ferro Divano 3 PL",
-                "price": 157.08,
+                "id": "-OfdYCoqKXx_xP6NZZFS",
+                "name": "Rete Rima High Ferro Divano 3 PL",
+                "price": 143,
                 "type": "RETE",
                 "supplier": {
-                    "id": "-OfeWuxUagVIcMp-QHcn",
-                    "name": "Lampolet"
+                    "id": "-OfdYCoqKXx_xP6NZZFS",
+                    "name": "Rima"
                 }
             },
             {
-                "id": "-OfdmKVnVPsO_t9Z2wjw",
+                "id": "-OfdYCpVLUSCjEC7sllA",
                 "name": "Materasso Giflex Classic Divano 3 PL",
                 "price": 56,
                 "type": "MATERASSO",
@@ -177,28 +177,8 @@
                 }
             },
             {
-                "id": "-OffI72kUKRZFcojgovL",
-                "name": "Tappezzeria Power Sofa Matisse",
-                "price": 97,
-                "type": "TAPPEZZERIA",
-                "supplier": {
-                    "id": "-Ofdu6Mv_6bYvHygSezW",
-                    "name": "Power Sofa"
-                }
-            },
-            {
-                "id": "-OfeecSS1y9enOtbHwMG",
-                "name": "Piedini Davanzo Marais",
-                "price": 4.24,
-                "type": "PIEDINI",
-                "supplier": {
-                    "id": "-Ofdx3UGPJy2ck-r5mbm",
-                    "name": "Davanzo"
-                }
-            },
-            {
-                "id": "-OffI71h8rzeyb-C-E4H",
-                "name": "Ferro Schienale D’Aniello Mykonos Divano 3 PL",
+                "id": "-OfkBY63ACQ6d94dx53B",
+                "name": "Ferro Schienale D’Aniello Oslo Divano 3 PL",
                 "price": 23,
                 "type": "FERRO_SCHIENALE",
                 "supplier": {
@@ -207,7 +187,27 @@
                 }
             },
             {
-                "id": "-OfdmKZUtiIWu5f8tmz0",
+                "id": "-OfkBY4KrxUOn3n_uXOD",
+                "name": "Tappezzeria Power Sofa Stockholm",
+                "price": 97,
+                "type": "TAPPEZZERIA",
+                "supplier": {
+                    "id": "-Ofdu6Mv_6bYvHygSezW",
+                    "name": "Power Sofa"
+                }
+            },
+            {
+                "id": "-OfkBY4ve3vSRgHKfMK6",
+                "name": "Piedini Davanzo Bergen",
+                "price": 37.52,
+                "type": "PIEDINI",
+                "supplier": {
+                    "id": "-Ofdx3UGPJy2ck-r5mbm",
+                    "name": "Davanzo"
+                }
+            },
+            {
+                "id": "-OfdYCs3XsQfwBinKAu6",
                 "name": "Imbottitura Cuscinetti Corbetta",
                 "price": 3.1,
                 "type": "IMBOTTITURA_CUSCINETTI",
@@ -217,9 +217,9 @@
                 }
             },
             {
-                "id": "-OfdmK_T15oAlogu9XxF",
-                "name": "Imballo Mac Pac + Cv Plast Sacchi Plastica",
-                "price": 20.88,
+                "id": "-OfdYCtEEWaBaWQ0Vm5i",
+                "name": "Imballo Mac Pac + Cv Plast",
+                "price": 22.85,
                 "type": "IMBALLO",
                 "supplier": {
                     "id": "-OfdYCtEEWaBaWQ0Vm5i",
@@ -227,7 +227,7 @@
                 }
             },
             {
-                "id": "-OfdmK_xbjfSDih_8ueX",
+                "id": "-OfdYCtqsZqqUfyYTnVK",
                 "name": "Scatola Euroscatola Sofair",
                 "price": 0,
                 "type": "SCATOLA",
@@ -237,7 +237,7 @@
                 }
             },
             {
-                "id": "-OfdmKaR8w8gt_jy-8-E",
+                "id": "-OfdYCuVKyxQVLP9qvMV",
                 "name": "Tela Marchiata Ipea Made In Italy",
                 "price": 7.7,
                 "type": "TELA_MARCHIATA",
@@ -247,7 +247,7 @@
                 }
             },
             {
-                "id": "-OfdmKbPaCwztSitMtJY",
+                "id": "-Ofabu2A6s4Q_MSrInDi",
                 "name": "Trasporto Divano 3 PL",
                 "price": 90,
                 "type": "TRASPORTO"
@@ -259,15 +259,15 @@
         "sofaId": "",
         "longName": "divano_2_pl",
         "seatsCount": 2,
-        "mattressWidth": 164,
-        "depth": 218,
-        "height": 85,
-        "price": 601.63,
+        "mattressWidth": 198,
+        "depth": 104,
+        "height": 82,
+        "price": 621.77,
         "components": [
             {
-                "id": "-OffI7-7Yd97YTACJ4IW",
-                "name": "Fusto Redael Matisse Divano 2 PL",
-                "price": 54,
+                "id": "-OfkBY1sr6bufCzlZO0_",
+                "name": "Fusto Redael Stockholm Divano 2 PL",
+                "price": 86.4,
                 "type": "FUSTO",
                 "supplier": {
                     "id": "-OfdYCfSHUkpVOswO3nW",
@@ -275,9 +275,9 @@
                 }
             },
             {
-                "id": "-OffI70i4Z8G_MKO_qxn",
-                "name": "Gomma Diflex Matisse Divano 2 PL",
-                "price": 117.51,
+                "id": "-OfkBY3jsSoDxOzqDTha",
+                "name": "Gomma Diflex Stockholm Divano 2 PL",
+                "price": 84.4,
                 "type": "GOMMA",
                 "supplier": {
                     "id": "-OfdYCo6LjM3gxk5Erpr",
@@ -285,17 +285,17 @@
                 }
             },
             {
-                "id": "-Ofe-3IDdc6p73LXSZ-Y",
-                "name": "Rete Lampolet BL 8 H13 Ferro Divano 2 PL",
-                "price": 155.4,
+                "id": "-OfdYCoqKXx_xP6NZZFS",
+                "name": "Rete Rima High Ferro Divano 2 PL",
+                "price": 141,
                 "type": "RETE",
                 "supplier": {
-                    "id": "-OfeWuxUagVIcMp-QHcn",
-                    "name": "Lampolet"
+                    "id": "-OfdYCoqKXx_xP6NZZFS",
+                    "name": "Rima"
                 }
             },
             {
-                "id": "-OfdmKWIv6A8Z1AeUrOX",
+                "id": "-OfdYCpVLUSCjEC7sllA",
                 "name": "Materasso Giflex Classic Divano 2 PL",
                 "price": 50.8,
                 "type": "MATERASSO",
@@ -305,28 +305,8 @@
                 }
             },
             {
-                "id": "-OffI72kUKRZFcojgovL",
-                "name": "Tappezzeria Power Sofa Matisse",
-                "price": 97,
-                "type": "TAPPEZZERIA",
-                "supplier": {
-                    "id": "-Ofdu6Mv_6bYvHygSezW",
-                    "name": "Power Sofa"
-                }
-            },
-            {
-                "id": "-OfeecSS1y9enOtbHwMG",
-                "name": "Piedini Davanzo Marais",
-                "price": 4.24,
-                "type": "PIEDINI",
-                "supplier": {
-                    "id": "-Ofdx3UGPJy2ck-r5mbm",
-                    "name": "Davanzo"
-                }
-            },
-            {
-                "id": "-OffI72Ds3XijVFvFjM8",
-                "name": "Ferro Schienale D’Aniello Mykonos Divano 2 PL",
+                "id": "-OfkBY6clArSX3tUPKsx",
+                "name": "Ferro Schienale D’Aniello Oslo Divano 2 PL",
                 "price": 21,
                 "type": "FERRO_SCHIENALE",
                 "supplier": {
@@ -335,7 +315,27 @@
                 }
             },
             {
-                "id": "-OfdmKZUtiIWu5f8tmz0",
+                "id": "-OfkBY4KrxUOn3n_uXOD",
+                "name": "Tappezzeria Power Sofa Stockholm",
+                "price": 97,
+                "type": "TAPPEZZERIA",
+                "supplier": {
+                    "id": "-Ofdu6Mv_6bYvHygSezW",
+                    "name": "Power Sofa"
+                }
+            },
+            {
+                "id": "-OfkBY4ve3vSRgHKfMK6",
+                "name": "Piedini Davanzo Bergen",
+                "price": 37.52,
+                "type": "PIEDINI",
+                "supplier": {
+                    "id": "-Ofdx3UGPJy2ck-r5mbm",
+                    "name": "Davanzo"
+                }
+            },
+            {
+                "id": "-OfdYCs3XsQfwBinKAu6",
                 "name": "Imbottitura Cuscinetti Corbetta",
                 "price": 3.1,
                 "type": "IMBOTTITURA_CUSCINETTI",
@@ -345,9 +345,9 @@
                 }
             },
             {
-                "id": "-OfdmK_T15oAlogu9XxF",
-                "name": "Imballo Mac Pac + Cv Plast Sacchi Plastica",
-                "price": 20.88,
+                "id": "-OfdYCtEEWaBaWQ0Vm5i",
+                "name": "Imballo Mac Pac + Cv Plast",
+                "price": 22.85,
                 "type": "IMBALLO",
                 "supplier": {
                     "id": "-OfdYCtEEWaBaWQ0Vm5i",
@@ -355,7 +355,7 @@
                 }
             },
             {
-                "id": "-OfdmK_xbjfSDih_8ueX",
+                "id": "-OfdYCtqsZqqUfyYTnVK",
                 "name": "Scatola Euroscatola Sofair",
                 "price": 0,
                 "type": "SCATOLA",
@@ -365,7 +365,7 @@
                 }
             },
             {
-                "id": "-OfdmKaR8w8gt_jy-8-E",
+                "id": "-OfdYCuVKyxQVLP9qvMV",
                 "name": "Tela Marchiata Ipea Made In Italy",
                 "price": 7.7,
                 "type": "TELA_MARCHIATA",
@@ -375,7 +375,7 @@
                 }
             },
             {
-                "id": "-OfdmKbugLRh3a1TxWoK",
+                "id": "-Ofabu2A6s4Q_MSrInDj",
                 "name": "Trasporto Divano 2 PL",
                 "price": 70,
                 "type": "TRASPORTO"

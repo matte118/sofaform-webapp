@@ -14,7 +14,8 @@ export class PdfGenerationService {
   private productData!: SofaProduct;
   private variantsData: Variant[] = [];
   private rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] } = {};
-  private extrasData: { name: string; price: number }[] = [];
+  private extraMattressesData: { name: string; price: number }[] = [];
+  private extraMechanismsData: { name: string; price: number }[] = [];
   private markupPerc = 0;
   private deliveryCost = 0;
   private currentLang = 'it';
@@ -28,14 +29,16 @@ export class PdfGenerationService {
     product: SofaProduct,
     variants: Variant[],
     rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] },
-    extras: { name: string; price: number }[],
+    extraMattresses: { name: string; price: number }[],
+    extraMechanisms: { name: string; price: number }[],
     markup: number,
     delivery: number
   ): void {
     this.productData = product;
     this.variantsData = variants;
     this.rivestimentiByVariant = rivestimentiByVariant;
-    this.extrasData = extras;
+    this.extraMattressesData = extraMattresses;
+    this.extraMechanismsData = extraMechanisms;
     this.markupPerc = markup;
     this.deliveryCost = delivery;
   }
@@ -95,7 +98,8 @@ export class PdfGenerationService {
     });
     textsToTranslate.push(...Array.from(uniqueRivestimenti));
 
-    this.extrasData.forEach(extra => { if (extra.name) textsToTranslate.push(extra.name); });
+    this.extraMattressesData.forEach(extra => { if (extra.name) textsToTranslate.push(extra.name); });
+    this.extraMechanismsData.forEach(extra => { if (extra.name) textsToTranslate.push(extra.name); });
 
     let dynamicTranslations: { [key: string]: string } = {};
     if (languageCode !== 'it' && textsToTranslate.length > 0) {
@@ -178,7 +182,7 @@ export class PdfGenerationService {
 
     await this.addProductImagesWithDescription(docDefinition, t);
     await this.addMatrixPricingTable(docDefinition, t);
-    if (this.extrasData.length > 0) await this.addExtraServices(docDefinition, t);
+    if (this.extraMattressesData.length > 0 || this.extraMechanismsData.length > 0) await this.addExtraServices(docDefinition, t);
 
     const filename = this.getFilename(productName, languageCode);
     pdfMake.createPdf(docDefinition).download(filename);
@@ -333,7 +337,7 @@ export class PdfGenerationService {
     const tableBody: any[] = [headerRow];
 
     this.variantsData.forEach(variant => {
-      const row: any[] = [{ text: t(variant.longName), style: 'variantCell' }];
+      const row: any[] = [{ text: this.formatVariantName(t(variant.longName)), style: 'variantCell' }];
       const variantRivestimenti = this.rivestimentiByVariant[variant.id] || [];
 
       rivestimentiArray.forEach(rivestimento => {
@@ -371,36 +375,72 @@ export class PdfGenerationService {
   }
 
   private async addExtraServices(docDefinition: any, t: (text: string) => string): Promise<void> {
-    if (this.extrasData.length === 0) return;
+    const hasMattresses = this.extraMattressesData.length > 0;
+    const hasMechanisms = this.extraMechanismsData.length > 0;
+    if (!hasMattresses && !hasMechanisms) return;
 
-    const extraTexts: any[] = [];
-    this.extrasData.forEach(extra => {
-      extraTexts.push(
-        { text: t(extra.name), fontSize: 12, bold: true, color: '#1a365d' },
-        { text: `: ${this.formatCurrency(extra.price)}`, fontSize: 12, bold: true, color: '#38a169' }
-      );
-    });
+    const columnWidth = hasMattresses && hasMechanisms ? '50%' : '*';
+    const tables: any[] = [];
 
-    if (this.deliveryCost > 0) {
-      if (extraTexts.length > 0) {
-        extraTexts.push({ text: ' | ', fontSize: 12, color: '#718096' });
-      }
-      extraTexts.push(
-        { text: t('Consegna'), fontSize: 12, bold: true, color: '#1a365d' },
-        { text: `: ${this.formatCurrency(this.deliveryCost)}`, fontSize: 12, bold: true, color: '#c05621' }
-      );
+    if (hasMattresses) {
+      tables.push({
+        width: columnWidth,
+        ...this.buildExtrasTable(this.extraMattressesData, t('Materassi Extra a Scelta'), t)
+      });
+    }
+
+    if (hasMechanisms) {
+      tables.push({
+        width: columnWidth,
+        ...this.buildExtrasTable(this.extraMechanismsData, t('Meccanismi Extra a Scelta'), t)
+      });
     }
 
     docDefinition.content.push({
-      stack: [
-        {
-          text: extraTexts,
-          margin: [0, 0, 0, 0],
-          alignment: 'left'
-        }
-      ],
-      margin: [0, 15, 0, 0]
+      columns: tables,
+      columnGap: 16,
+      margin: [0, 0, 0, 6]
     });
+
+    if (this.deliveryCost > 0) {
+      docDefinition.content.push({
+        text: `${t('Consegna')}: ${this.formatCurrency(this.deliveryCost)}`,
+        style: 'matrixCell',
+        bold: true,
+        alignment: 'left',
+        margin: [0, 6, 0, 0],
+        color: '#1a365d'
+      });
+    }
+  }
+
+  private buildExtrasTable(items: { name: string; price: number }[], title: string, t: (text: string) => string) {
+    return {
+      table: {
+        headerRows: 1,
+        widths: ['70%', '30%'],
+        body: [
+          [
+            { text: title.toUpperCase(), style: 'matrixHeader' },
+            { text: t('Prezzo'), style: 'matrixHeader' }
+          ],
+          ...items.map(extra => ([
+            { text: t(extra.name), style: 'matrixCell', alignment: 'left' },
+            { text: this.formatCurrency(extra.price), style: 'priceCell' }
+          ]))
+        ]
+      },
+      layout: {
+        hLineWidth: (i: number, node: any) => (i === 0 || i === node.table.body.length ? 1.5 : 1),
+        vLineWidth: () => 1,
+        hLineColor: () => '#e2e8f0',
+        vLineColor: () => '#e2e8f0',
+        paddingLeft: () => 6,
+        paddingRight: () => 6,
+        paddingTop: () => 6,
+        paddingBottom: () => 6
+      }
+    };
   }
 
   private applyMarkup(amount: number, perc: number): number {
@@ -422,5 +462,19 @@ export class PdfGenerationService {
     const cleanName = productName.replace(/[^a-zA-Z0-9_-]/g, '_');
     const langSuffix = languageCode !== 'it' ? `_${languageCode.toUpperCase()}` : '';
     return `Listino_${cleanName}${langSuffix}_${timestamp}.pdf`;
+  }
+
+  private formatVariantName(name?: string): string {
+    if (!name) return '';
+    return name
+      .split('_')
+      .filter(Boolean)
+      .map(part => {
+        const lower = part.toLowerCase();
+        if (lower === 'pl') return 'PL';
+        if (/^\d+$/.test(part)) return part;
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+      })
+      .join(' ');
   }
 }

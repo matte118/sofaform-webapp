@@ -1,43 +1,39 @@
 [
     {
-        "name": "Matisse",
-        "description": "Divano letto Matisse con meccanica Lampolet BL8 a rete in acciaio, seduta in poliuretano espanso ad alta densità da 30 kg/m³ e schienale in fibra di poliestere. Dotato di materasso Classic h 13 cm in poliuretano espanso densità 25 kg/m³, garantisce comfort e praticità per un utilizzo quotidiano.",
+        "name": "Stockholm",
+        "description": "Divano letto Stockholm con meccanica Lampolet High Sommier a maglie in acciaio, materasso Classic h 13 in poliuretano espanso densità 25 kg/m³ e seduta in poliuretano espanso ad alta densità per un comfort equilibrato. Ideale per un utilizzo quotidiano grazie alla robusta struttura e all'apertura rapida.",
         "variants": [
-            "-OffIk0664K5-8MIS4T2",
-            "-OffIk5jiZjSq5xfiNxU",
-            "-OffIk6J7e9vWADkP9eZ"
+            "-OfkBiGyitA7iQce8f_8",
+            "-OfkBiLuvc1pIs5J7Bm-",
+            "-OfkBiMV4XAoEcuH9tpL"
         ],
         "photoUrl": [],
-        "seduta": "Poliuretano espanso densità 30 kg/m³",
-        "schienale": "Fibra di poliestere",
-        "meccanica": "Lampolet BL8 con rete in acciaio a maglia",
-        "materasso": "Classic h 13 cm in poliuretano espanso densità 25 kg/m³",
+        "seduta": "Poliuretano espanso densità 30 kg",
+        "schienale": "Poliuretano espanso densità 18 kg",
+        "meccanica": "Lampolet High Sommier a maglie in acciaio",
+        "materasso": "Classic h 13 in poliuretano espanso densità 25 kg/m³",
         "materassiExtra": [
             {
-                "name": "REVES h 13",
+                "name": "REVES 30 kg",
                 "price": 40
             },
             {
-                "name": "ETOILE h 13",
+                "name": "ETOILE 35 kg",
                 "price": 80
             },
             {
-                "name": "NUAGE h 13",
-                "price": 120
-            },
-            {
-                "name": "MEDITATION h 13",
+                "name": "MEDITATION 38 kg h 13",
                 "price": 60
             },
             {
-                "name": "MEDITATION h 18",
-                "price": 80
+                "name": "NUAGE 50 kg",
+                "price": 120
             }
         ],
         "meccanismiExtra": [
             {
-                "name": "Lampolet BL8",
-                "price": 80
+                "name": "LA 13",
+                "price": 60
             }
         ]
     }
