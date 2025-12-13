@@ -38,15 +38,27 @@
               </p-fileUpload>
 
               <!-- Preview delle immagini -->
-              <div *ngIf="imagePreviews.length > 0 && !isUploading" class="images-preview-container">
+              <div *ngIf="imagePreviews.length > 0 && !isUploading"
+                class="images-preview-container"
+                [class.dragging]="draggedImageIndex !== null">
+                <div class="image-actions-row">
+                  <div class="image-actions">
+                    <p-button icon="pi pi-times" (onClick)="removeImage()" styleClass="p-button-danger p-button-sm"
+                      pTooltip="Rimuovi Immagini"></p-button>
+                  </div>
+                </div>
                 <div class="images-grid">
-                  <div *ngFor="let preview of imagePreviews; let i = index" class="image-preview-item">
+                  <div *ngFor="let preview of imagePreviews; let i = index" class="image-preview-item"
+                    pDraggable="images" pDroppable="images"
+                    (onDragStart)="onImageDragStart(i)" (onDragEnd)="onImageDragEnd()"
+                    (onDrop)="onImageDrop(i)" (onDragEnter)="onImageDragEnter(i)" (onDragLeave)="onImageDragLeave()"
+                    [ngClass]="{ 'drag-over': dragOverIndex === i, 'dragging': draggedImageIndex === i }">
                     <img [src]="preview" alt="Anteprima {{i+1}}" class="image-preview" />
                   </div>
                 </div>
-                <div class="image-actions">
-                  <p-button icon="pi pi-times" (onClick)="removeImage()" styleClass="p-button-danger p-button-sm"
-                    pTooltip="Rimuovi Immagini"></p-button>
+                <div class="info-row">
+                  <i class="pi pi-info-circle info-icon"></i>
+                  <span class="italic-text">Trascina le immagini per ordinarle, la prima verrà usata come immagine principale</span>
                 </div>
               </div>
 
@@ -162,7 +174,7 @@
                   <label>Nome Variante</label>
                 </p-floatLabel>
                 <small *ngIf="shouldShowVariantFieldError(newVariant.longName)" class="p-error">
-                  Il nome della variante Ã¨ obbligatorio
+                  Il nome della variante è obbligatorio
                 </small>
               </div>
               <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
@@ -182,7 +194,7 @@
               <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
                 <p-floatLabel>
                   <p-inputNumber id="depth" [(ngModel)]="newVariant.depth" name="profondita"></p-inputNumber>
-                  <label>ProfonditÃ  (cm)</label>
+                  <label>Profondità  (cm)</label>
                 </p-floatLabel>
               </div>
 
@@ -217,7 +229,7 @@
               <ng-template pTemplate="header">
                 <tr>
                   <th>Nome</th>
-                  <th>ModalitÃ </th>
+                  <th>Modalità </th>
                   <th>Prezzo</th>
                   <th>Posti</th>
                   <th>Azioni</th>
@@ -642,7 +654,7 @@
                   <div class="p-col-12 p-text-right">
 
 
-                    <!-- Cambiato per abilitare il pulsante quando almeno un componente Ã¨ selezionato -->
+                    <!-- Cambiato per abilitare il pulsante quando almeno un componente è selezionato -->
                     <p-button label="Applica componenti" icon="pi pi-check" (onClick)="applySpecialComponents()"
                       [disabled]="!hasSelectedComponents()" styleClass="variant-add-btn">
                     </p-button>

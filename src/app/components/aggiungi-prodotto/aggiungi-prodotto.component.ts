@@ -16,12 +16,14 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { DialogModule } from 'primeng/dialog';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { FileUploadModule } from 'primeng/fileupload';
-import { MessagesModule } from 'primeng/messages';
-import { MessageModule } from 'primeng/message';
+  import { DialogModule } from 'primeng/dialog';
+  import { ProgressSpinnerModule } from 'primeng/progressspinner';
+  import { MultiSelectModule } from 'primeng/multiselect';
+  import { FileUploadModule } from 'primeng/fileupload';
+  import { MessagesModule } from 'primeng/messages';
+  import { MessageModule } from 'primeng/message';
+import { OrderListModule } from 'primeng/orderlist';
+import { DragDropModule } from 'primeng/dragdrop';
 import { HttpClientModule } from '@angular/common/http';
 import { forkJoin, interval, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
@@ -66,7 +68,9 @@ import { SofaType } from '../../../models/sofa-type.model';
     MultiSelectModule,
     MessagesModule,
     MessageModule,
-    SelectButtonModule
+    SelectButtonModule,
+    OrderListModule,
+    DragDropModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './aggiungi-prodotto.component.html',
@@ -146,6 +150,9 @@ export class AggiungiProdottoComponent implements OnInit {
   // Image upload
   selectedFiles: File[] = [];
   imagePreviews: string[] = [];
+  mainImageIndex: number | null = null;
+  draggedImageIndex: number | null = null;
+  dragOverIndex: number | null = null;
   isUploading = false;
   uploadComplete = false;
 
@@ -286,7 +293,7 @@ export class AggiungiProdottoComponent implements OnInit {
     // Validate custom price if in custom mode
     if (this.selectedPricingMode === 'custom' && (this.customVariantPrice <= 0 || !this.customVariantPrice)) {
       this.variantFormValid = false;
-      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Inserisci un prezzo valido per la modalitÃ  custom' });
+      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Inserisci un prezzo valido per la modalità custom' });
       return;
     }
 
@@ -399,7 +406,7 @@ export class AggiungiProdottoComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
-          detail: 'Ogni variante in modalitÃ  componenti deve avere almeno un componente. Applica i componenti o cambia modalitÃ .'
+          detail: 'Ogni variante in modalità componenti deve avere almeno un componente. Applica i componenti o cambia modalità.'
         });
         return false;
       }
@@ -459,7 +466,7 @@ export class AggiungiProdottoComponent implements OnInit {
         this.messageService.add({
           severity: 'warn',
           summary: 'Componenti mancanti',
-          detail: `Ãˆ necessario selezionare ${missingComponents.join(', ')}`,
+          detail: `E' necessario selezionare ${missingComponents.join(', ')}`,
           life: 5000
         });
       }
@@ -655,6 +662,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.selectedFiles = [];
     this.imagePreviews = [];
     this.newSofaProduct.photoUrl = [];
+    this.mainImageIndex = null;
     this.isUploading = false;
     this.uploadComplete = false;
   }
@@ -675,6 +683,8 @@ export class AggiungiProdottoComponent implements OnInit {
         };
         reader.readAsDataURL(file);
       });
+
+      this.mainImageIndex = 0;
 
       // Upload all images immediately
       this.uploadMultipleImagesImmediately(filesToProcess);
@@ -756,6 +766,9 @@ export class AggiungiProdottoComponent implements OnInit {
           this.newSofaProduct.photoUrl = downloadUrls;
           this.uploadComplete = true;
           this.isUploading = false;
+          if (this.mainImageIndex === null) {
+            this.mainImageIndex = 0;
+          }
 
           this.messageService.add({
             severity: 'success',
@@ -779,6 +792,82 @@ export class AggiungiProdottoComponent implements OnInit {
 
   private uploadImageImmediately(file: File): void {
     this.uploadMultipleImagesImmediately([file]);
+  }
+
+  setMainImage(index: number): void {
+    if (index < 0) return;
+
+    const bringToFront = <T>(arr: T[] | undefined): T[] => {
+      if (!arr || index >= arr.length) return arr || [];
+      const copy = [...arr];
+      const [item] = copy.splice(index, 1);
+      copy.unshift(item);
+      return copy;
+    };
+
+    this.imagePreviews = bringToFront(this.imagePreviews);
+    this.selectedFiles = bringToFront(this.selectedFiles);
+    this.newSofaProduct.photoUrl = bringToFront(this.newSofaProduct.photoUrl);
+    this.mainImageIndex = 0;
+  }
+
+  onImagesReorder(event: any): void {
+    const from = event?.dragIndex;
+    const to = event?.dropIndex;
+    if (from === undefined || to === undefined) return;
+
+    const move = <T>(arr: T[] | undefined) => {
+      if (!arr || from < 0 || from >= arr.length || to < 0 || to > arr.length) return;
+      const [item] = arr.splice(from, 1);
+      arr.splice(to, 0, item);
+    };
+
+    move(this.imagePreviews);
+    move(this.selectedFiles);
+    move(this.newSofaProduct.photoUrl);
+    this.mainImageIndex = 0;
+  }
+
+  onImageDragStart(index: number): void {
+    this.draggedImageIndex = index;
+  }
+
+  onImageDragEnd(): void {
+    this.draggedImageIndex = null;
+    this.dragOverIndex = null;
+  }
+
+  onImageDragEnter(index: number): void {
+    if (this.draggedImageIndex !== null && this.draggedImageIndex !== index) {
+      this.dragOverIndex = index;
+    }
+  }
+
+  onImageDragLeave(): void {
+    this.dragOverIndex = null;
+  }
+
+  onImageDrop(targetIndex: number): void {
+    if (this.draggedImageIndex === null) return;
+    if (targetIndex === this.draggedImageIndex) {
+      this.onImageDragEnd();
+      return;
+    }
+
+    const from = this.draggedImageIndex;
+    const to = targetIndex;
+
+    const move = <T>(arr: T[] | undefined) => {
+      if (!arr || from < 0 || from >= arr.length || to < 0 || to >= arr.length) return;
+      const [item] = arr.splice(from, 1);
+      arr.splice(to, 0, item);
+    };
+
+    move(this.imagePreviews);
+    move(this.selectedFiles);
+    move(this.newSofaProduct.photoUrl);
+    this.mainImageIndex = 0;
+    this.onImageDragEnd();
   }
 
   public getComponentsByType(type: string): ComponentModel[] {
@@ -1156,6 +1245,9 @@ export class AggiungiProdottoComponent implements OnInit {
     this.newSofaProduct.schienale = d.newSofaProduct?.schienale ?? '';
     this.newSofaProduct.meccanica = d.newSofaProduct?.meccanica ?? '';
     this.newSofaProduct.materasso = d.newSofaProduct?.materasso ?? '';
+    if ((this.newSofaProduct.photoUrl?.length || 0) > 0) {
+      this.mainImageIndex = 0;
+    }
 
     this.variants = (d.variants || []).map(v => {
       const variant = new Variant(
@@ -1236,6 +1328,7 @@ export class AggiungiProdottoComponent implements OnInit {
     }
   }
 }
+
 
 
 
