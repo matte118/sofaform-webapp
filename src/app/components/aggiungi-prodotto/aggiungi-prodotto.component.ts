@@ -1,4 +1,4 @@
-import { Component as NgComponent, OnInit, PLATFORM_ID, Inject } from '@angular/core';
+﻿import { Component as NgComponent, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -286,7 +286,7 @@ export class AggiungiProdottoComponent implements OnInit {
     // Validate custom price if in custom mode
     if (this.selectedPricingMode === 'custom' && (this.customVariantPrice <= 0 || !this.customVariantPrice)) {
       this.variantFormValid = false;
-      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Inserisci un prezzo valido per la modalità custom' });
+      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Inserisci un prezzo valido per la modalitÃ  custom' });
       return;
     }
 
@@ -399,7 +399,7 @@ export class AggiungiProdottoComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
-          detail: 'Ogni variante in modalità componenti deve avere almeno un componente. Applica i componenti o cambia modalità.'
+          detail: 'Ogni variante in modalitÃ  componenti deve avere almeno un componente. Applica i componenti o cambia modalitÃ .'
         });
         return false;
       }
@@ -459,7 +459,7 @@ export class AggiungiProdottoComponent implements OnInit {
         this.messageService.add({
           severity: 'warn',
           summary: 'Componenti mancanti',
-          detail: `È necessario selezionare ${missingComponents.join(', ')}`,
+          detail: `Ãˆ necessario selezionare ${missingComponents.join(', ')}`,
           life: 5000
         });
       }
@@ -492,6 +492,23 @@ export class AggiungiProdottoComponent implements OnInit {
     }
 
     return true;
+  }
+
+  resetVariantComponents(variant?: Variant): void {
+    if (!variant) return;
+
+    variant.components = [];
+    variant.updatePrice();
+    if (variant === this.selectedVariant) {
+      this.componentQuantities.clear();
+      this.resetComponentSelections();
+    }
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Variante resettata',
+      detail: `${this.getSofaTypeDisplayName(variant.longName)} è stata ripulita`
+    });
   }
 
   calculateFinalPrices(): void {
@@ -1026,6 +1043,52 @@ export class AggiungiProdottoComponent implements OnInit {
     return this.hasSelectedComponents() ? [] : ['almeno un componente'];
   }
 
+  removeComponentFromVariant(component: ComponentModel): void {
+    if (!this.selectedVariant) return;
+
+    const isSame = (a: ComponentModel | undefined, b: ComponentModel) =>
+      !!a && ((a.id && b.id && a.id === b.id) || (!a.id && !b.id && a.name === b.name));
+
+    const before = this.selectedVariant.components.length;
+    this.selectedVariant.components = this.selectedVariant.components.filter(c => !isSame(c, component));
+
+    if (before === this.selectedVariant.components.length) return;
+
+    this.selectedVariant.updatePrice();
+
+    if (isSame(this.selectedFusto, component)) this.selectedFusto = undefined;
+    if (isSame(this.selectedGomma, component)) this.selectedGomma = undefined;
+    if (isSame(this.selectedRete, component)) this.selectedRete = undefined;
+    if (isSame(this.selectedMaterasso, component)) this.selectedMaterasso = undefined;
+    if (isSame(this.selectedFerroSchienale, component)) this.selectedFerroSchienale = undefined;
+    if (isSame(this.selectedImballo, component)) this.selectedImballo = undefined;
+    if (isSame(this.selectedScatola, component)) this.selectedScatola = undefined;
+    if (isSame(this.selectedTelaMarchiata, component)) this.selectedTelaMarchiata = undefined;
+    if (isSame(this.selectedTrasporto, component)) this.selectedTrasporto = undefined;
+
+    if (isSame(this.selectedPiedini, component)) {
+      this.selectedPiedini = undefined;
+      this.piediniQty = 1;
+    }
+
+    this.ferramentaList = this.ferramentaList.filter(c => !isSame(c, component));
+    this.varieList = this.varieList.filter(c => !isSame(c, component));
+    this.tappezzeriaList = this.tappezzeriaList.filter(c => !isSame(c, component));
+    this.imbottituraCuscinettiList = this.imbottituraCuscinettiList.filter(c => !isSame(c, component));
+
+    this.componentQuantities.clear();
+    this.selectedVariant.components.forEach(c => {
+      const key = c.id || c.name;
+      this.componentQuantities.set(key, (this.componentQuantities.get(key) || 0) + 1);
+    });
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Componente rimosso',
+      detail: `${this.getSofaTypeDisplayName(this.selectedVariant.longName)} aggiornato`
+    });
+  }
+
   private getDraftSnapshot(): AddProductDraft {
     const selectedVariantIndex = this.selectedVariant
       ? this.variants.findIndex(v => v === this.selectedVariant)
@@ -1173,3 +1236,9 @@ export class AggiungiProdottoComponent implements OnInit {
     }
   }
 }
+
+
+
+
+
+

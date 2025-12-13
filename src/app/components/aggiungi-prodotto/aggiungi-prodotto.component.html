@@ -1,4 +1,4 @@
-<div class="add-product-container">
+﻿<div class="add-product-container">
   <p-toast></p-toast>
   <div *ngIf="isSavingProduct" class="saving-overlay">
     <div class="saving-content">
@@ -162,7 +162,7 @@
                   <label>Nome Variante</label>
                 </p-floatLabel>
                 <small *ngIf="shouldShowVariantFieldError(newVariant.longName)" class="p-error">
-                  Il nome della variante è obbligatorio
+                  Il nome della variante Ã¨ obbligatorio
                 </small>
               </div>
               <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
@@ -182,7 +182,7 @@
               <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
                 <p-floatLabel>
                   <p-inputNumber id="depth" [(ngModel)]="newVariant.depth" name="profondita"></p-inputNumber>
-                  <label>Profondità (cm)</label>
+                  <label>ProfonditÃ  (cm)</label>
                 </p-floatLabel>
               </div>
 
@@ -217,7 +217,7 @@
               <ng-template pTemplate="header">
                 <tr>
                   <th>Nome</th>
-                  <th>Modalità</th>
+                  <th>ModalitÃ </th>
                   <th>Prezzo</th>
                   <th>Posti</th>
                   <th>Azioni</th>
@@ -369,7 +369,7 @@
               </div>
 
 
-              <!-- Piedini + Quantità -->
+              <!-- Piedini + Quantità  -->
               <div class="p-field p-grid" style="padding-top: 10px;">
                 <div class="p-col-12 p-md-6 p-d-flex p-jc-between">
                   <!-- Selezione Piedini -->
@@ -396,14 +396,14 @@
                     </small>
                   </div>
 
-                  <!-- Quantità Piedini -->
+                  <!-- Quantità  Piedini -->
                   <div style="width: 28%; padding-top: 30px;">
                     <p-floatLabel>
                       <p-dropdown [options]="piediniQuantityOptions" [(ngModel)]="piediniQty"
-                        inputId="piediniQtyDropdown" placeholder="Quantità" name="piediniQty"
+                        inputId="piediniQtyDropdown" placeholder="Quantità " name="piediniQty"
                         [disabled]="getComponentsByType('piedini').length === 0"
                         [ngStyle]="{ 'width': '100%' }"></p-dropdown>
-                      <label for="piediniQtyDropdown">Quantità</label>
+                      <label for="piediniQtyDropdown">Quantità </label>
                     </p-floatLabel>
                   </div>
                 </div>
@@ -639,10 +639,10 @@
               <div class="p-field p-col-12">
                 <div class="p-grid">
 
-                  <div class="p-col-12 p-md-4 p-text-right">
+                  <div class="p-col-12 p-text-right">
 
 
-                    <!-- Cambiato per abilitare il pulsante quando almeno un componente è selezionato -->
+                    <!-- Cambiato per abilitare il pulsante quando almeno un componente Ã¨ selezionato -->
                     <p-button label="Applica componenti" icon="pi pi-check" (onClick)="applySpecialComponents()"
                       [disabled]="!hasSelectedComponents()" styleClass="variant-add-btn">
                     </p-button>
@@ -656,29 +656,41 @@
                 <p-divider></p-divider>
                 <h4>Componenti applicati a "{{ getSofaTypeDisplayName(selectedVariant.longName) }}"</h4>
                 <p-table [value]="getGroupedComponents()">
-                  <ng-template pTemplate="header">
-                    <tr>
-                      <th>Nome</th>
-                      <th>Tipo</th>
-                      <th>Prezzo</th>
-                      <th>Quantità</th>
-                    </tr>
-                  </ng-template>
-                  <ng-template pTemplate="body" let-row>
-                    <tr>
-                      <td>{{ formatComponentName(row.item) }}</td>
-                      <td>{{ getComponentTypeDisplayName(row.item.type) }}</td>
-                      <td>{{ row.item.price | currency:'EUR' }}</td>
-                      <td>{{ row.qty }}</td>
-                    </tr>
-                  </ng-template>
-                  <ng-template pTemplate="footer">
-                    <tr>
-                      <td colspan="2"><strong>Prezzo Totale:</strong></td>
-                      <td colspan="2"><strong>{{ selectedVariant.price | currency:'EUR' }}</strong></td>
-                    </tr>
-                  </ng-template>
-                </p-table>
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Nome</th>
+      <th>Tipo</th>
+      <th>Prezzo</th>
+      <th>Quantita</th>
+      <th>Azioni</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-row>
+    <tr>
+      <td>{{ formatComponentName(row.item) }}</td>
+      <td>{{ getComponentTypeDisplayName(row.item.type) }}</td>
+      <td>{{ row.item.price | currency:'EUR' }}</td>
+      <td>{{ row.qty }}</td>
+      <td class="p-text-right" style="text-align: center;">
+        <i class="pi pi-trash p-text-danger"
+          style="cursor: pointer; font-size: 1.2rem; color: #d32f2f;"
+          (click)="removeComponentFromVariant(row.item); $event.stopPropagation()"
+          (keydown.enter)="removeComponentFromVariant(row.item); $event.stopPropagation()"
+          (keydown.space)="removeComponentFromVariant(row.item); $event.stopPropagation()"
+          tabindex="0"
+          role="button"
+          aria-label="Rimuovi componente">
+        </i>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="footer">
+    <tr>
+      <td colspan="2"><strong>Prezzo Totale:</strong></td>
+      <td colspan="3"><strong>{{ selectedVariant.price | currency:'EUR' }}</strong></td>
+    </tr>
+  </ng-template>
+</p-table>
 
               </div>
             </div>
@@ -800,3 +812,4 @@
     </ng-template>
   </p-dialog>
 </div>
+
