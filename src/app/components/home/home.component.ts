@@ -505,7 +505,89 @@ export class HomeComponent implements OnInit {
 
     if (previewWindow && !previewWindow.closed) {
       previewWindow.document.open();
-      previewWindow.document.write('<p style="font-family: Arial, sans-serif; padding: 16px;">Generazione listino in corso...</p>');
+      const loadingHtml = `
+        <!DOCTYPE html>
+        <html lang="it">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Generazione listino</title>
+            <style>
+              :root {
+                --bg: #f7fafc;
+                --card: #ffffff;
+                --accent: #1a365d;
+                --muted: #4a5568;
+              }
+              * { box-sizing: border-box; }
+              body {
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: radial-gradient(circle at 20% 20%, #edf2f7 0, #f7fafc 45%, #e2e8f0 100%);
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: var(--accent);
+              }
+              .card {
+                width: min(520px, 90vw);
+                background: var(--card);
+                box-shadow: 0 20px 60px rgba(26, 54, 93, 0.15);
+                border-radius: 18px;
+                padding: 32px 28px;
+                text-align: center;
+                border: 1px solid #e2e8f0;
+              }
+              .pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 14px;
+                border-radius: 999px;
+                background: #ebf4ff;
+                color: #1e429f;
+                font-weight: 600;
+                font-size: 12px;
+                letter-spacing: 0.3px;
+                text-transform: uppercase;
+              }
+              .spinner {
+                width: 64px;
+                height: 64px;
+                margin: 28px auto 18px;
+                border-radius: 50%;
+                border: 6px solid #cbd5e0;
+                border-top-color: var(--accent);
+                animation: spin 1s linear infinite;
+              }
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+              h1 {
+                margin: 0 0 10px;
+                font-size: 22px;
+                letter-spacing: -0.2px;
+              }
+              p {
+                margin: 0;
+                color: var(--muted);
+                font-size: 14px;
+                line-height: 1.5;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <div class="pill">PDF</div>
+              <div class="spinner" aria-label="Caricamento"></div>
+              <h1>Generazione del listino in corso</h1>
+              <p>Stiamo preparando il PDF. Questa finestra si aggiorner&agrave; automaticamente quando il file &egrave; pronto.</p>
+            </div>
+          </body>
+        </html>
+      `;
+      previewWindow.document.write(loadingHtml);
       previewWindow.document.close();
     }
 
