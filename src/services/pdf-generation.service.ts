@@ -477,12 +477,15 @@ export class PdfGenerationService {
 
   private formatCurrency(value: number): string {
     const roundedValue = Math.ceil(value);
-    return new Intl.NumberFormat(this.currentLang || 'it', {
+    const formatted = new Intl.NumberFormat('it-IT', {
       style: 'currency',
       currency: 'EUR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(roundedValue);
+
+    // Normalize non-breaking spaces that some locales use
+    return formatted.replace(/\u202f|\u00a0/g, ' ');
   }
 
   getFilename(productName: string, languageCode: string = 'it'): string {
