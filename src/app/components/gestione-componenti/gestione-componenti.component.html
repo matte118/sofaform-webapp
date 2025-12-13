@@ -414,10 +414,15 @@
       </span>
     </div>
 
-    <div class="bulk-actions" *ngIf="selectedComponents?.length">
-      <p-button label="Elimina Selezionati" icon="pi pi-trash"
+    <div class="bulk-actions">
+      <p-button *ngIf="selectedComponents?.length"
+        label="Elimina Selezionati" icon="pi pi-trash"
         styleClass="p-button-danger p-button-sm"
         (onClick)="bulkDeleteSelected()"></p-button>
+      <p-button icon="pi pi-print"
+        styleClass="p-button-primary p-button-sm p-button-icon-only"
+        pTooltip="Esporta componenti"
+        (onClick)="generateComponentsPdf()"></p-button>
     </div>
   </div>
 </ng-template>

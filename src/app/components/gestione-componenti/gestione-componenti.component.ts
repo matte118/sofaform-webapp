@@ -37,6 +37,8 @@ import { VariantService } from '../../../services/variant.service';
 import { SofaProductService } from '../../../services/sofa-product.service';
 import { Variant } from '../../../models/variant.model';
 import { SofaType } from '../../../models/sofa-type.model';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
 
 import { forkJoin, of, Subject } from 'rxjs';
 import { finalize, tap, catchError } from 'rxjs/operators';
@@ -76,6 +78,9 @@ import {
   styleUrls: ['./gestione-componenti.component.scss']
 })
 export class GestioneComponentiComponent implements OnInit, AfterViewInit {
+  // Attach default fonts for pdfMake
+  private pdfInitialized = false;
+
   @ViewChild('componentTableEl') componentTableEl?: ElementRef;
   @ViewChild('variantEntriesContainer') variantEntriesContainer?: ElementRef<HTMLDivElement>;
   @ViewChild('dt') dt?: Table;
@@ -1221,6 +1226,102 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       percentage: null
     };
     this.filteredComponentsForPriceList = [];
+  }
+
+  // === PDF Export ===
+  private ensurePdfReady(): void {
+    if (this.pdfInitialized) return;
+    (pdfMake as any).vfs = pdfFonts.vfs;
+    this.pdfInitialized = true;
+  }
+
+  generateComponentsPdf(): void {
+    this.ensurePdfReady();
+
+    const rows = [...this.componentsView]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(c => [
+        c.name,
+        c.typeLabel,
+        c.supplierName,
+        c.sofaTypeLabel || '-',
+        this.formatEuro(c.price ?? 0)
+      ]);
+
+    if (!rows.length) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Nessun dato',
+        detail: 'Non ci sono componenti da esportare'
+      });
+      return;
+    }
+
+    const docDefinition: any = {
+      pageSize: 'A4',
+      pageOrientation: 'landscape',
+      info: {
+        title: 'Lista Componenti',
+        subject: 'Esportazione componenti',
+        author: 'Sofaform'
+      },
+      defaultStyle: { fontSize: 9, color: '#2d3748' },
+      styles: {
+        title: { fontSize: 18, bold: true, color: '#1a365d', margin: [0, 0, 0, 14] },
+        subtitle: { fontSize: 10, color: '#4a5568', margin: [0, 0, 0, 12] },
+        header: { bold: true, fillColor: '#1a365d', color: '#ffffff', alignment: 'center', margin: [4, 6, 4, 6] },
+        cell: { margin: [4, 6, 4, 6], alignment: 'center' },
+        leftCell: { margin: [6, 6, 4, 6], alignment: 'left' }
+      },
+      content: [
+        { text: 'Lista Componenti', style: 'title' },
+        { text: `Totale componenti: ${rows.length}`, style: 'subtitle' },
+        {
+          table: {
+            headerRows: 1,
+            widths: ['32%', '14%', '18%', '16%', '10%'],
+            body: [
+              [
+                { text: 'Nome', style: 'header', alignment: 'left' },
+                { text: 'Tipo', style: 'header' },
+                { text: 'Fornitore', style: 'header' },
+                { text: 'Tipo Divano', style: 'header' },
+                { text: 'Prezzo', style: 'header' }
+              ],
+              ...rows.map(r => [
+                { text: r[0], style: 'leftCell' },
+                { text: r[1], style: 'cell' },
+                { text: r[2], style: 'cell' },
+                { text: r[3], style: 'cell' },
+                { text: r[4], style: 'cell' }
+              ])
+            ]
+          },
+          layout: {
+            hLineWidth: (i: number, node: any) => (i === 0 || i === 1 || i === node.table.body.length ? 1.5 : 1),
+            vLineWidth: () => 1,
+            hLineColor: () => '#e2e8f0',
+            vLineColor: () => '#e2e8f0',
+            paddingLeft: () => 0,
+            paddingRight: () => 0,
+            paddingTop: () => 0,
+            paddingBottom: () => 0
+          }
+        }
+      ]
+    };
+
+    const filename = `Componenti_${new Date().toISOString().slice(0, 10)}.pdf`;
+    pdfMake.createPdf(docDefinition).download(filename);
+  }
+
+  private formatEuro(value: number): string {
+    return new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
   }
 
 }
