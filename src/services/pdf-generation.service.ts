@@ -6,6 +6,7 @@ import { Variant } from '../models/variant.model';
 import { Rivestimento } from '../models/rivestimento.model';
 import { TranslationService } from './translation.service';
 import { I18nService } from './i18n.service';
+import { firstValueFrom } from 'rxjs';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 
@@ -77,7 +78,12 @@ export class PdfGenerationService {
     }
   }
 
-  async generateListinoPdf(productName: string, languageCode: string = 'it') {
+  async generateListinoPdf(
+    productName: string,
+    languageCode: string = 'it',
+    preview = false,
+    previewWindow?: Window | null
+  ) {
     this.currentLang = languageCode || 'it';
     const staticTranslations = this.i18nService.getListinoTranslations(languageCode);
 
@@ -104,7 +110,7 @@ export class PdfGenerationService {
     let dynamicTranslations: { [key: string]: string } = {};
     if (languageCode !== 'it' && textsToTranslate.length > 0) {
       try {
-        dynamicTranslations = await this.translationService.translateTexts(textsToTranslate, languageCode).toPromise() || {};
+        dynamicTranslations = await firstValueFrom(this.translationService.translateTexts(textsToTranslate, languageCode)) || {};
       } catch (error) {
         console.warn('Dynamic translation failed, using original texts:', error);
         textsToTranslate.forEach(t => dynamicTranslations[t] = t);
@@ -185,7 +191,28 @@ export class PdfGenerationService {
     if (this.extraMattressesData.length > 0 || this.extraMechanismsData.length > 0) await this.addExtraServices(docDefinition, t);
 
     const filename = this.getFilename(productName, languageCode);
-    pdfMake.createPdf(docDefinition).download(filename);
+    const pdfInstance = pdfMake.createPdf(docDefinition);
+
+    if (preview) {
+      pdfInstance.getBlob(blob => {
+        const url = URL.createObjectURL(blob);
+
+        if (previewWindow && !previewWindow.closed) {
+          previewWindow.location.href = url;
+          previewWindow.focus();
+          return;
+        }
+
+        try {
+          window.open(url, '_blank');
+        } catch (openError) {
+          console.warn('PDF preview blocked; cannot open new window.', openError);
+        }
+      });
+      return;
+    }
+
+    pdfInstance.download(filename);
   }
 
 

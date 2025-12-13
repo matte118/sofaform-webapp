@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, map, timeout, retry } from 'rxjs/operators';
+import { catchError, map, timeout } from 'rxjs/operators';
 
 export interface TranslationResponse {
   translations: { [key: string]: string };
@@ -28,6 +28,7 @@ export class TranslationService {
     'Seduta', 'Schienale', 'Meccanica', 'Materasso',
     'Rivestimento', 'Prezzo', 'Servizio', 'Servizi Aggiuntivi',
     'Modello', 'Consegna',
+    'Materassi Extra a Scelta', 'Meccanismi Extra a Scelta',
     'Nessun rivestimento configurato per questa variante'
   ];
 
@@ -45,23 +46,29 @@ export class TranslationService {
   }
 
   translateTexts(texts: string[], targetLanguage: string): Observable<{ [key: string]: string }> {
-    console.log('TranslationService: Starting translation', { textsCount: texts.length, targetLanguage });
+    const sanitizedTexts = Array.from(new Set(
+      (texts || [])
+        .map(t => (t || '').trim())
+        .filter(t => t.length > 0)
+    ));
+
+    console.log('TranslationService: Starting translation', { textsCount: sanitizedTexts.length, targetLanguage });
 
     if (targetLanguage === 'it') {
       // No translation needed for Italian - return Observable
       const translations: { [key: string]: string } = {};
-      texts.forEach(text => translations[text] = text);
+      sanitizedTexts.forEach(text => translations[text] = text);
       console.log('TranslationService: Italian detected, returning identity mapping');
       return of(translations);
     }
 
     // Filter out static labels - they are handled by I18nService
-    const textsToTranslate = texts.filter(text => !this.STATIC_LABELS.includes(text));
+    const textsToTranslate = sanitizedTexts.filter(text => !this.STATIC_LABELS.includes(text));
     
     if (textsToTranslate.length === 0) {
       console.log('TranslationService: No texts to translate after filtering static labels');
       const translations: { [key: string]: string } = {};
-      texts.forEach(text => translations[text] = text);
+      sanitizedTexts.forEach(text => translations[text] = text);
       return of(translations);
     }
 
@@ -77,30 +84,36 @@ export class TranslationService {
 
     console.log('TranslationService: Making HTTP request to', this.TRANSLATION_FUNCTION_URL, 'with', textsToTranslate.length, 'texts');
 
-    return this.http.post<TranslationResponse>(this.TRANSLATION_FUNCTION_URL, payload, { 
+    return this.http.post(this.TRANSLATION_FUNCTION_URL, payload, {
       headers,
-      observe: 'response'
+      observe: 'response',
+      responseType: 'text'
     })
       .pipe(
         timeout(60000), // 60 second timeout
-        retry(2), // Retry up to 2 times on failure
         map(response => {
           console.log('TranslationService: Received response', response.status);
-          const body = response.body;
-          
-          if (body?.warning) {
-            console.warn('Translation warning:', body.warning);
+
+          const rawBody = response.body || '';
+          let body: TranslationResponse | null = null;
+
+          if (rawBody) {
+            try {
+              body = JSON.parse(rawBody);
+            } catch (parseError) {
+              console.warn('TranslationService: Failed to parse translation response, using fallback', parseError);
+            }
           }
-          if (body?.error) {
-            console.warn('Translation error from server:', body.error);
-          }
-          
+
+          if (body?.warning) console.warn('Translation warning:', body.warning);
+          if (body?.error) console.warn('Translation error from server:', body.error);
+
           // Combine filtered translations with identity mapping for technical labels
           const combinedTranslations: { [key: string]: string } = {};
           
           // Add identity mapping for technical labels
           this.STATIC_LABELS.forEach(label => {
-            if (texts.includes(label)) {
+            if (sanitizedTexts.includes(label)) {
               combinedTranslations[label] = label;
             }
           });
@@ -133,7 +146,7 @@ export class TranslationService {
 
           // Fallback: return original texts as Observable
           const fallback: { [key: string]: string } = {};
-          texts.forEach(text => fallback[text] = text);
+          sanitizedTexts.forEach(text => fallback[text] = text);
           return of(fallback);
         })
       );

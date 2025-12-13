@@ -422,6 +422,8 @@
     <ng-template pTemplate="footer">
       <p-button type="button" label="Annulla" styleClass="btn-dialog-no" (click)="cancelMarkup()"
         [disabled]="isTranslating"></p-button>
+      <p-button type="button" label="Anteprima PDF" styleClass="btn-dialog-preview" (click)="previewListinoPdf()"
+        [disabled]="isTranslating"></p-button>
       <p-button type="button" label="Genera PDF" styleClass="btn-dialog-yes" (click)="generateWithMarkup()"
         [loading]="isTranslating" [disabled]="isTranslating"></p-button>
     </ng-template>

@@ -970,6 +970,20 @@
   }
 }
 
+::ng-deep .btn-dialog-preview.p-button {
+  background-color: #6c757d !important;
+  border-color: #6c757d !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  padding: 12px 32px !important;
+  font-weight: 600 !important;
+
+  &:hover {
+    background-color: #5a6268 !important;
+    border-color: #545b62 !important;
+  }
+}
+
 ::ng-deep .p-dialog .p-dialog-footer {
   display: flex !important;
   justify-content: center !important;

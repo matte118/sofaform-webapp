@@ -33,7 +33,6 @@ export class RealtimeDbService {
         // Special handling for the 'type' field to ensure it's always preserved
         if (key === 'type') {
           sanitized[key] = value; // Always keep the type field, even if null
-          console.log(`RealtimeDbService: Preserving type field:`, key, value);
         } else if (value !== undefined) {
           sanitized[key] = this.sanitizeData(value);
         }
@@ -305,9 +304,6 @@ export class RealtimeDbService {
     // Assegna l'ID generato al componente prima di salvarlo
     sanitizedComponent.id = newRef.key;
 
-    console.log('RealtimeDbService: Adding component to DB:', sanitizedComponent);
-    console.log('RealtimeDbService: Component type field:', sanitizedComponent.type);
-
     return set(newRef, sanitizedComponent);
   }
 
@@ -317,7 +313,6 @@ export class RealtimeDbService {
     const refPath = ref(this.db, 'components');
     onValue(refPath, (snapshot) => {
       const raw = snapshot.val();
-      console.log('RealtimeDbService: Raw data from DB:', raw);
 
       const parsed = raw
         ? Object.entries(raw).map(([id, val]) => {
@@ -328,15 +323,12 @@ export class RealtimeDbService {
         })
         : [];
 
-      console.log('RealtimeDbService: Parsed components:', parsed);
       callback(parsed);
     });
   }
 
   updateComponent(id: string, component: any): Promise<void> {
     const sanitizedComponent = this.sanitizeData(component);
-    console.log('RealtimeDbService: Updating component in DB:', sanitizedComponent);
-    console.log('RealtimeDbService: Component type field for update:', sanitizedComponent.type);
 
     return set(ref(this.db, `components/${id}`), sanitizedComponent).then(() =>
       this.updateComponentInVariants(id, sanitizedComponent)

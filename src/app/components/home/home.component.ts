@@ -497,20 +497,33 @@ export class HomeComponent implements OnInit {
 
   // === Markup and PDF Generation ===
   async generateWithMarkup() {
+    await this.processListinoGeneration(false);
+  }
+
+  async previewListinoPdf() {
+    const previewWindow = this.isBrowser ? window.open('', '_blank') : null;
+
+    if (previewWindow && !previewWindow.closed) {
+      previewWindow.document.open();
+      previewWindow.document.write('<p style="font-family: Arial, sans-serif; padding: 16px;">Generazione listino in corso...</p>');
+      previewWindow.document.close();
+    }
+
+    await this.processListinoGeneration(true, previewWindow as Window | null);
+  }
+
+  private async processListinoGeneration(preview: boolean, previewWindow?: Window | null) {
     if (!this.selectedProduct) {
       this.showMarkupDialog = false;
       this.cdr.detectChanges();
       return;
     }
 
-    const variants = this.getProductVariants(this.selectedProduct.id);
-
     try {
-      // Show loading state
       this.messageService.add({
         severity: 'info',
-        summary: 'Generazione PDF',
-        detail: 'Generazione del listino in corso...'
+        summary: preview ? 'Anteprima PDF' : 'Generazione PDF',
+        detail: 'Generazione listino in corso'
       });
 
       // Save rivestimenti for each variant
@@ -576,7 +589,7 @@ export class HomeComponent implements OnInit {
         this.deliveryPriceListino
       );
 
-      await this.pdfService.generateListinoPdf(updatedProduct.name, this.selectedLanguage.code);
+      await this.pdfService.generateListinoPdf(updatedProduct.name, this.selectedLanguage.code, preview, previewWindow);
       this.showPdfTemplate = false;
       this.cdr.detectChanges();
 
@@ -589,9 +602,9 @@ export class HomeComponent implements OnInit {
       this.resetListinoWizard();
 
       this.messageService.add({
-        severity: 'success',
-        summary: 'PDF Generato',
-        detail: 'Listino generato e dati salvati con successo'
+        severity: preview ? 'info' : 'success',
+        summary: preview ? 'Anteprima aperta' : 'PDF Generato',
+        detail: preview ? 'Anteprima del listino aperta in una nuova scheda' : 'Listino generato e dati salvati con successo'
       });
 
     } catch (error) {
