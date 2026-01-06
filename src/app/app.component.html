@@ -17,7 +17,8 @@
             <span class="user-role">{{ getRoleLabel() }}</span>
           </div>
         </div>
-        <button
+        <div class="user-actions">
+          <button
           pButton
           type="button"
           icon="pi pi-sign-out"
@@ -27,6 +28,7 @@
           [disabled]="isLoggingOut"
           pTooltip="Disconnetti"
         ></button>
+        </div>
       </div>
     </div>
   </aside>
