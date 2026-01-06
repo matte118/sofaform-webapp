@@ -38,12 +38,13 @@ testem.log
 /typings
 .env
 
+
 # System files
 .DS_Store
 Thumbs.db
 
 # environment files
-# src/environments/environments.ts
+src/environments/environments.ts
 
 # serviceAccountKey.json
 scripts/serviceAccountKey.json
