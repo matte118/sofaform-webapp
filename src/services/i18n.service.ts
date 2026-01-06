@@ -4,7 +4,30 @@ interface I18nData {
   [key: string]: any;
 }
 
-@Injectable({ providedIn: 'root' })
+export const LISTINO_STATIC_LABELS: ReadonlyArray<string> = [
+  'Scheda Tecnica',
+  'Caratteristica',
+  'Dettaglio',
+  'Seduta',
+  'Schienale',
+  'Meccanica',
+  'Materasso',
+  'Rivestimento',
+  'Prezzo',
+  'Servizio',
+  'Materassi Extra',
+  'Meccanismi Extra',
+  'Modello',
+  'Consegna',
+  'Divano 3 PL Maxi',
+  'Divano 3 PL',
+  'Divano 2 PL',
+  'Nessun rivestimento configurato per questa variante'
+];
+
+@Injectable({
+  providedIn: 'root'
+})
 export class I18nService {
   private readonly TRANSLATIONS: { [lang: string]: I18nData } = {
     it: {
@@ -23,12 +46,18 @@ export class I18nService {
           meccanismi: 'Meccanismi Extra a Scelta',
         },
         pricing: {
-          rivestimento: 'Rivestimento',
-          prezzo: 'Prezzo',
-          servizio: 'Servizio',
-          serviziAggiuntivi: 'Servizi Aggiuntivi',
-          modello: 'Modello',
-          consegna: 'Consegna',
+          rivestimento: "Rivestimento",
+          prezzo: "Prezzo",
+          servizio: "Servizio",
+          materassiExtra: "Materassi Extra",
+          meccanismiExtra: "Meccanismi Extra",
+          modello: "Modello",
+          consegna: "Consegna"
+        },
+        sofaTypes: {
+          divano3PlMaxi: "Divano 3 PL Maxi",
+          divano3Pl: "Divano 3 PL",
+          divano2Pl: "Divano 2 PL"
         },
         messages: {
           noRivestimento: 'Nessun rivestimento configurato per questa variante',
@@ -51,12 +80,18 @@ export class I18nService {
           meccanismi: 'Optional Extra Mechanisms',
         },
         pricing: {
-          rivestimento: 'Upholstery',
-          prezzo: 'Price',
-          servizio: 'Service',
-          serviziAggiuntivi: 'Additional Services',
-          modello: 'Model',
-          consegna: 'Delivery',
+          rivestimento: "Upholstery",
+          prezzo: "Price",
+          servizio: "Service",
+          materassiExtra: "Extra Mattresses",
+          meccanismiExtra: "Extra Mechanisms",
+          modello: "Model",
+          consegna: "Delivery"
+        },
+        sofaTypes: {
+          divano3PlMaxi: "3-sleeper sofa bed Maxi",
+          divano3Pl: "3-sleeper sofa bed",
+          divano2Pl: "2-sleeper sofa bed"
         },
         messages: {
           noRivestimento: 'No upholstery configured for this variant',
@@ -79,12 +114,18 @@ export class I18nService {
           meccanismi: 'Mecanismes supplementaires au choix',
         },
         pricing: {
-          rivestimento: 'Revetement',
-          prezzo: 'Prix',
-          servizio: 'Service',
-          serviziAggiuntivi: 'Services Supplementaires',
-          modello: 'Modele',
-          consegna: 'Livraison',
+          rivestimento: "Revêtement",
+          prezzo: "Prix",
+          servizio: "Service",
+          materassiExtra: "Matelas Supplémentaires",
+          meccanismiExtra: "Mécanismes Supplémentaires",
+          modello: "Modèle",
+          consegna: "Livraison"
+        },
+        sofaTypes: {
+          divano3PlMaxi: "Canapé-lit 3 couchages Maxi",
+          divano3Pl: "Canapé-lit 3 couchages",
+          divano2Pl: "Canapé-lit 2 couchages"
         },
         messages: {
           noRivestimento: 'Aucun revetement configure pour cette variante',
@@ -107,12 +148,18 @@ export class I18nService {
           meccanismi: 'Optionale Zusatzmechanismen',
         },
         pricing: {
-          rivestimento: 'Bezug',
-          prezzo: 'Preis',
-          servizio: 'Service',
-          serviziAggiuntivi: 'Zusaetzliche Services',
-          modello: 'Modell',
-          consegna: 'Lieferung',
+          rivestimento: "Bezug",
+          prezzo: "Preis",
+          servizio: "Service",
+          materassiExtra: "Zusätzliche Matratzen",
+          meccanismiExtra: "Zusätzliche Mechanismen",
+          modello: "Modell",
+          consegna: "Lieferung"
+        },
+        sofaTypes: {
+          divano3PlMaxi: "Schlafsofa 3 Schlafplätze Maxi",
+          divano3Pl: "Schlafsofa 3 Schlafplätze",
+          divano2Pl: "Schlafsofa 2 Schlafplätze"
         },
         messages: {
           noRivestimento: 'Kein Bezug fuer diese Variante konfiguriert',
@@ -135,12 +182,18 @@ export class I18nService {
           meccanismi: 'Mecanismos extra opcionales',
         },
         pricing: {
-          rivestimento: 'Revestimiento',
-          prezzo: 'Precio',
-          servizio: 'Servicio',
-          serviziAggiuntivi: 'Servicios Adicionales',
-          modello: 'Modelo',
-          consegna: 'Entrega',
+          rivestimento: "Revestimiento",
+          prezzo: "Precio",
+          servizio: "Servicio",
+          materassiExtra: "Colchones Adicionales",
+          meccanismiExtra: "Mecanismos Adicionales",
+          modello: "Modelo",
+          consegna: "Entrega"
+        },
+        sofaTypes: {
+          divano3PlMaxi: "Sofá cama 3 plazas Maxi",
+          divano3Pl: "Sofá cama 3 plazas",
+          divano2Pl: "Sofá cama 2 plazas"
         },
         messages: {
           noRivestimento: 'Ningun revestimiento configurado para esta variante',
@@ -163,12 +216,18 @@ export class I18nService {
           meccanismi: 'Mecanismos extra opcionais',
         },
         pricing: {
-          rivestimento: 'Revestimento',
-          prezzo: 'Preco',
-          servizio: 'Servico',
-          serviziAggiuntivi: 'Servicos Adicionais',
-          modello: 'Modelo',
-          consegna: 'Entrega',
+          rivestimento: "Revestimento",
+          prezzo: "Preço",
+          servizio: "Serviço",
+          materassiExtra: "Colchões Adicionais",
+          meccanismiExtra: "Mecanismos Adicionais",
+          modello: "Modelo",
+          consegna: "Entrega"
+        },
+        sofaTypes: {
+          divano3PlMaxi: "Sofá-cama 3 lugares Maxi",
+          divano3Pl: "Sofá-cama 3 lugares",
+          divano2Pl: "Sofá-cama 2 lugares"
         },
         messages: {
           noRivestimento: 'Nenhum revestimento configurado para esta variante',
@@ -177,8 +236,14 @@ export class I18nService {
     },
   };
 
+  constructor() { }
+
+  /**
+   * Get translated text by key path - direct access to hardcoded translations
+   */
   translate(key: string, lang: string = 'it'): string {
     const translations = this.TRANSLATIONS[lang] || this.TRANSLATIONS['it'];
+
     const keys = key.split('.');
     let value: any = translations;
 
@@ -193,6 +258,7 @@ export class I18nService {
   getListinoTranslations(lang: string): { [key: string]: string } {
     const staticTranslations: { [key: string]: string } = {};
 
+    // Technical specifications
     staticTranslations['Scheda Tecnica'] = this.translate('listino.techSpecs.title', lang);
     staticTranslations['Caratteristica'] = this.translate('listino.techSpecs.characteristic', lang);
     staticTranslations['Dettaglio'] = this.translate('listino.techSpecs.detail', lang);
@@ -201,18 +267,22 @@ export class I18nService {
     staticTranslations['Meccanica'] = this.translate('listino.techSpecs.meccanica', lang);
     staticTranslations['Materasso'] = this.translate('listino.techSpecs.materasso', lang);
 
+    // Pricing section
     staticTranslations['Rivestimento'] = this.translate('listino.pricing.rivestimento', lang);
     staticTranslations['Prezzo'] = this.translate('listino.pricing.prezzo', lang);
     staticTranslations['Servizio'] = this.translate('listino.pricing.servizio', lang);
-    staticTranslations['Servizi Aggiuntivi'] = this.translate('listino.pricing.serviziAggiuntivi', lang);
+    staticTranslations['Materassi Extra'] = this.translate('listino.pricing.materassiExtra', lang);
+    staticTranslations['Meccanismi Extra'] = this.translate('listino.pricing.meccanismiExtra', lang);
     staticTranslations['Modello'] = this.translate('listino.pricing.modello', lang);
     staticTranslations['Consegna'] = this.translate('listino.pricing.consegna', lang);
 
-    staticTranslations['Materassi Extra a Scelta'] = this.translate('listino.extras.materassi', lang);
-    staticTranslations['Meccanismi Extra a Scelta'] = this.translate('listino.extras.meccanismi', lang);
+    // Sofa types
+    staticTranslations['Divano 3 PL Maxi'] = this.translate('listino.sofaTypes.divano3PlMaxi', lang);
+    staticTranslations['Divano 3 PL'] = this.translate('listino.sofaTypes.divano3Pl', lang);
+    staticTranslations['Divano 2 PL'] = this.translate('listino.sofaTypes.divano2Pl', lang);
 
-    staticTranslations['Nessun rivestimento configurato per questa variante'] =
-      this.translate('listino.messages.noRivestimento', lang);
+    // Messages
+    staticTranslations['Nessun rivestimento configurato per questa variante'] = this.translate('listino.messages.noRivestimento', lang);
 
     return staticTranslations;
   }

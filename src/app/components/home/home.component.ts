@@ -1007,13 +1007,45 @@ export class HomeComponent implements OnInit {
     document.body.removeChild(fileInput);
   }
 
+  private ensureImageSlot(index: number): void {
+    while (this.tempImageFiles.length <= index) {
+      this.tempImageFiles.push(null);
+      this.imagesChanged.push(false);
+      this.imagesRemoved.push(false);
+      this.tempImagePreviews.push('');
+      this.tempImageUrls.push('');
+    }
+  }
+
+  private getAvailableImageSlots(maxImages: number): number[] {
+    const available: number[] = [];
+    for (let i = 0; i < maxImages; i++) {
+      const hasTempFile = !!this.tempImageFiles[i];
+      const hasPreview = !!this.tempImagePreviews[i];
+      const hasUrl = !!this.tempImageUrls[i];
+      const isRemoved = this.imagesRemoved[i] === true;
+      if (isRemoved || (!hasTempFile && !hasPreview && !hasUrl)) {
+        available.push(i);
+      }
+    }
+    return available;
+  }
+
   onFileSelected(event: any, index?: number): void {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
+    const maxImages = 3;
+    const isReplacing = index !== undefined;
+    const availableSlots = isReplacing ? [index as number] : this.getAvailableImageSlots(maxImages);
+    let limitReached = false;
+
     // Process all selected files
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    for (const file of Array.from(files) as File[]) {
+      if (!isReplacing && availableSlots.length === 0) {
+        limitReached = true;
+        break;
+      }
 
       if (!file.type.startsWith('image/')) {
         this.messageService.add({
@@ -1033,48 +1065,16 @@ export class HomeComponent implements OnInit {
         continue;
       }
 
-      // Determine target index
-      let targetIndex = index;
+      const targetIndex = isReplacing ? (index as number) : (availableSlots.shift() as number);
       if (targetIndex === undefined) {
-        // Adding new image - check if we have space based on visible images
-        const currentVisibleCount = this.currentImagesToShow.length;
-        if (currentVisibleCount >= 3) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Limite raggiunto',
-            detail: 'Puoi caricare massimo 3 immagini'
-          });
-          break;
-        }
-
-        // Find the next available slot
-        targetIndex = currentVisibleCount;
-
-        // Expand arrays if needed
-        while (this.tempImageFiles.length <= targetIndex) {
-          this.tempImageFiles.push(null);
-          this.imagesChanged.push(false);
-          this.imagesRemoved.push(false);
-          this.tempImagePreviews.push('');
-          this.tempImageUrls.push('');
-        }
-
-        this.tempImageFiles[targetIndex] = file;
-        this.imagesChanged[targetIndex] = true;
-      } else {
-        // Replacing existing image
-        // Expand arrays if needed
-        while (this.tempImageFiles.length <= targetIndex) {
-          this.tempImageFiles.push(null);
-          this.imagesChanged.push(false);
-          this.imagesRemoved.push(false);
-          this.tempImagePreviews.push('');
-          this.tempImageUrls.push('');
-        }
-
-        this.tempImageFiles[targetIndex] = file;
-        this.imagesChanged[targetIndex] = true;
+        limitReached = true;
+        break;
       }
+
+      this.ensureImageSlot(targetIndex);
+      this.imagesRemoved[targetIndex] = false;
+      this.tempImageFiles[targetIndex] = file;
+      this.imagesChanged[targetIndex] = true;
 
       // Create preview
       const reader = new FileReader();
@@ -1083,6 +1083,14 @@ export class HomeComponent implements OnInit {
         this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
+    }
+
+    if (!isReplacing && limitReached) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Limite raggiunto',
+        detail: 'Puoi caricare massimo 3 immagini'
+      });
     }
 
     this.isUploadMode = false;

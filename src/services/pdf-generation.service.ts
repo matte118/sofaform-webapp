@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { firstValueFrom } from 'rxjs';
 import { SofaProduct } from '../models/sofa-product.model';
 import { Variant } from '../models/variant.model';
 import { Rivestimento } from '../models/rivestimento.model';
+import { SofaType } from '../models/sofa-type.model';
 import { TranslationService } from './translation.service';
 import { I18nService } from './i18n.service';
 import { firstValueFrom } from 'rxjs';
@@ -87,25 +89,31 @@ export class PdfGenerationService {
     this.currentLang = languageCode || 'it';
     const staticTranslations = this.i18nService.getListinoTranslations(languageCode);
 
-    const textsToTranslate: string[] = [];
-    if (this.productData.name) textsToTranslate.push(this.productData.name);
-    if (this.productData.description) textsToTranslate.push(this.productData.description);
+    const uniqueTexts = new Set<string>();
+    const addText = (text?: string | null) => {
+      if (text) uniqueTexts.add(text);
+    };
 
-    if (this.productData.seduta) textsToTranslate.push(this.productData.seduta);
-    if (this.productData.schienale) textsToTranslate.push(this.productData.schienale);
-    if (this.productData.meccanica) textsToTranslate.push(this.productData.meccanica);
-    if (this.productData.materasso) textsToTranslate.push(this.productData.materasso);
+    addText(this.productData.name);
+    addText(this.productData.description);
+    addText(this.productData.seduta);
+    addText(this.productData.schienale);
+    addText(this.productData.meccanica);
+    addText(this.productData.materasso);
 
-    this.variantsData.forEach(v => { if (v.longName) textsToTranslate.push(v.longName); });
-
-    const uniqueRivestimenti = new Set<string>();
-    Object.values(this.rivestimentiByVariant).forEach(rivs => {
-      rivs.forEach(r => { if (r.rivestimento.name) uniqueRivestimenti.add(r.rivestimento.name); });
+    this.variantsData.forEach(v => {
+      const variantLabel = this.getVariantBaseLabel(v.longName);
+      addText(variantLabel);
     });
-    textsToTranslate.push(...Array.from(uniqueRivestimenti));
 
-    this.extraMattressesData.forEach(extra => { if (extra.name) textsToTranslate.push(extra.name); });
-    this.extraMechanismsData.forEach(extra => { if (extra.name) textsToTranslate.push(extra.name); });
+    Object.values(this.rivestimentiByVariant).forEach(rivs => {
+      rivs.forEach(r => addText(r.rivestimento.name));
+    });
+
+    this.extraMattressesData.forEach(extra => addText(extra.name));
+    this.extraMechanismsData.forEach(extra => addText(extra.name));
+
+    const textsToTranslate = Array.from(uniqueTexts);
 
     let dynamicTranslations: { [key: string]: string } = {};
     if (languageCode !== 'it' && textsToTranslate.length > 0) {
@@ -364,7 +372,9 @@ export class PdfGenerationService {
     const tableBody: any[] = [headerRow];
 
     this.variantsData.forEach(variant => {
-      const row: any[] = [{ text: this.formatVariantName(t(variant.longName)), style: 'variantCell' }];
+      const variantLabel = this.getVariantBaseLabel(variant.longName);
+      const translatedVariantName = t(variantLabel);
+      const row: any[] = [{ text: translatedVariantName, style: 'variantCell' }];
       const variantRivestimenti = this.rivestimentiByVariant[variant.id] || [];
 
       rivestimentiArray.forEach(rivestimento => {
@@ -412,14 +422,14 @@ export class PdfGenerationService {
     if (hasMattresses) {
       tables.push({
         width: columnWidth,
-        ...this.buildExtrasTable(this.extraMattressesData, t('Materassi Extra a Scelta'), t)
+        ...this.buildExtrasTable(this.extraMattressesData, t('Materassi Extra'), t)
       });
     }
 
     if (hasMechanisms) {
       tables.push({
         width: columnWidth,
-        ...this.buildExtrasTable(this.extraMechanismsData, t('Meccanismi Extra a Scelta'), t)
+        ...this.buildExtrasTable(this.extraMechanismsData, t('Meccanismi Extra'), t)
       });
     }
 
@@ -448,7 +458,7 @@ export class PdfGenerationService {
         widths: ['70%', '30%'],
         body: [
           [
-            { text: title.toUpperCase(), style: 'matrixHeader' },
+            { text: title, style: 'matrixHeader' },
             { text: t('Prezzo'), style: 'matrixHeader' }
           ],
           ...items.map(extra => ([
@@ -476,16 +486,15 @@ export class PdfGenerationService {
   }
 
   private formatCurrency(value: number): string {
-    const roundedValue = Math.ceil(value);
-    const formatted = new Intl.NumberFormat('it-IT', {
+    const formatted = new Intl.NumberFormat(this.currentLang || 'it', {
       style: 'currency',
       currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(roundedValue);
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
 
-    // Normalize non-breaking spaces that some locales use
-    return formatted.replace(/\u202f|\u00a0/g, ' ');
+    // Replace narrow/no-break spaces that pdfMake's default font can't render.
+    return formatted.replace(/[\u202F\u00A0]/g, ' ');
   }
 
   getFilename(productName: string, languageCode: string = 'it'): string {
@@ -507,5 +516,25 @@ export class PdfGenerationService {
         return lower.charAt(0).toUpperCase() + lower.slice(1);
       })
       .join(' ');
+  }
+
+  private getVariantBaseLabel(name?: SofaType | string): string {
+    if (!name) return '';
+    const value = String(name);
+    const map: Record<SofaType, string> = {
+      [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
+      [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
+      [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+    };
+
+    if (map[value as SofaType]) {
+      return map[value as SofaType];
+    }
+
+    if (value.includes('_')) {
+      return this.formatVariantName(value);
+    }
+
+    return value;
   }
 }
