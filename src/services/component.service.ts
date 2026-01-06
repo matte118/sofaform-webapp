@@ -13,18 +13,12 @@ export class ComponentService {
   constructor(private dbService: RealtimeDbService) { }
 
   addComponent(component: Component): Observable<void> {
-    console.log('ComponentService: Adding component', component);
-    console.log('Component type before saving:', component.type, 'Type:', typeof component.type);
-    console.log('Component type === null:', component.type === null);
-    console.log('Component type === undefined:', component.type === undefined);
-
     // Create a plain object for database storage, converting enum to string
     let typeToSave = null;
 
     if (component.type !== null && component.type !== undefined) {
       // Convert enum number to string
       typeToSave = ComponentType[component.type];
-      console.log('Converting enum to string:', component.type, '->', typeToSave);
     }
 
     const componentData = {
@@ -35,10 +29,6 @@ export class ComponentService {
       type: typeToSave,
       sofaType: component.sofaType ?? null
     };
-
-    // Add explicit logging to see what's being saved
-    console.log('Component data type field:', componentData.type);
-    console.log('Component data being saved to DB:', componentData);
 
     return from(this.dbService.addComponent(componentData));
   }
@@ -57,7 +47,6 @@ export class ComponentService {
               this.parseSofaType(c.data.sofaType ?? c.data.measure)
             )
         );
-        console.log('ComponentService: Mapped components', mappedComponents);
         observer.next(mappedComponents);
       });
     });
@@ -86,16 +75,12 @@ export class ComponentService {
   }
 
   updateComponent(id: string, component: Component): Observable<void> {
-    console.log('ComponentService: Updating component', component);
-    console.log('Component type before updating:', component.type, 'Type:', typeof component.type);
-
     // Create a plain object for database storage, converting enum to string
     let typeToSave = null;
 
     if (component.type !== null && component.type !== undefined) {
       // Convert enum number to string
       typeToSave = ComponentType[component.type];
-      console.log('Converting enum to string for update:', component.type, '->', typeToSave);
     }
 
     const componentData = {
@@ -106,10 +91,6 @@ export class ComponentService {
       type: typeToSave,
       sofaType: component.sofaType ?? null
     };
-
-    // Add explicit logging to see what's being saved
-    console.log('Component data type field for update:', componentData.type);
-    console.log('Component data being updated in DB:', componentData);
 
     return from(this.dbService.updateComponent(id, componentData));
   }
@@ -225,8 +206,6 @@ export class ComponentService {
   }
 
   addBulkComponents(bulkData: BulkComponentCreation): Observable<void[]> {
-    console.log('ComponentService: Adding bulk components', bulkData);
-
     const componentPromises = bulkData.variableData.map(variableData => {
       // Generate unique ID for each component
       const componentId = this.generateComponentId();

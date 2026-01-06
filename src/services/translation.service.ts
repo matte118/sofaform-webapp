@@ -52,13 +52,11 @@ export class TranslationService {
         .filter(t => t.length > 0)
     ));
 
-    console.log('TranslationService: Starting translation', { textsCount: sanitizedTexts.length, targetLanguage });
 
     if (targetLanguage === 'it') {
       // No translation needed for Italian - return Observable
       const translations: { [key: string]: string } = {};
       sanitizedTexts.forEach(text => translations[text] = text);
-      console.log('TranslationService: Italian detected, returning identity mapping');
       return of(translations);
     }
 
@@ -66,7 +64,6 @@ export class TranslationService {
     const textsToTranslate = sanitizedTexts.filter(text => !this.STATIC_LABELS.includes(text));
     
     if (textsToTranslate.length === 0) {
-      console.log('TranslationService: No texts to translate after filtering static labels');
       const translations: { [key: string]: string } = {};
       sanitizedTexts.forEach(text => translations[text] = text);
       return of(translations);
@@ -82,7 +79,6 @@ export class TranslationService {
       targetLanguage
     };
 
-    console.log('TranslationService: Making HTTP request to', this.TRANSLATION_FUNCTION_URL, 'with', textsToTranslate.length, 'texts');
 
     return this.http.post(this.TRANSLATION_FUNCTION_URL, payload, {
       headers,
@@ -92,7 +88,6 @@ export class TranslationService {
       .pipe(
         timeout(60000), // 60 second timeout
         map(response => {
-          console.log('TranslationService: Received response', response.status);
 
           const rawBody = response.body || '';
           let body: TranslationResponse | null = null;

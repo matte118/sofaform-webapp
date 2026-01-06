@@ -154,7 +154,6 @@ export class RealtimeDbService {
     // This ensures the relationship is maintained regardless of sanitization
     if (variant.sofaId) {
       sanitizedVariant.sofaId = variant.sofaId;
-      console.log('Saving variant with sofaId:', variant.sofaId);
     } else {
       console.warn('Variant being saved without sofaId!', variant);
     }
@@ -474,8 +473,6 @@ export class RealtimeDbService {
         supplier: c.supplier ?? null
       }))
     };
-
-    console.log('Saving variant payload:', payload);
 
     // 3. Uso ref(this.db, `variants/${newRef.key}`) per ottenere il DatabaseReference giusto
     const variantRef = ref(this.db, `variants/${newRef.key}`);

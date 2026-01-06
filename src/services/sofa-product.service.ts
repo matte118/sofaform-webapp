@@ -47,7 +47,6 @@ export class SofaProductService {
     return new Observable((observer) => {
       this.dbService.getSofaProducts((products) => {
         const mappedProducts = products.map((p) => {
-          console.log('Raw product data from DB:', p);
 
           // Handle photoUrl - convert string to array for backward compatibility
           let photoUrl: string[] | undefined;
@@ -74,10 +73,8 @@ export class SofaProductService {
             p.data.deliveryPrice ?? 0,
             p.data.ricarico ?? 30
           );
-          console.log('Mapped SofaProduct:', sofaProduct);
           return sofaProduct;
         });
-        console.log('SofaProductService: Mapped products', mappedProducts);
         observer.next(mappedProducts);
       });
     });

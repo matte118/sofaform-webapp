@@ -971,16 +971,21 @@
 }
 
 ::ng-deep .btn-dialog-preview.p-button {
-  background-color: #6c757d !important;
-  border-color: #6c757d !important;
+  background-color: #10B981 !important;
+  border-color: #10B981 !important;
   color: #fff !important;
   border-radius: 8px !important;
   padding: 12px 32px !important;
   font-weight: 600 !important;
 
   &:hover {
-    background-color: #5a6268 !important;
-    border-color: #545b62 !important;
+    background-color: #059669 !important;
+    border-color: #059669 !important;
+  }
+
+  &:active {
+    background-color: #047857 !important;
+    border-color: #047857 !important;
   }
 }
 
@@ -2203,5 +2208,3 @@
   gap: 0.25rem;
   margin-top: 0.5rem;
 }
-
-

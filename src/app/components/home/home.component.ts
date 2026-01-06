@@ -249,9 +249,6 @@ export class HomeComponent implements OnInit {
       });
       this.cdr.detectChanges();
     });
-    this.products.map((product) => {
-      console.log(product)
-    });
   }
 
   loadRivestimenti(): void {
@@ -479,8 +476,6 @@ export class HomeComponent implements OnInit {
         });
         return;
       }
-
-      console.log('Selected rivestimenti for listino:', this.selectedRivestimentiForListino); // Debug log
 
       this.showRivestimentoDialog = false;
       this.cdr.detectChanges();

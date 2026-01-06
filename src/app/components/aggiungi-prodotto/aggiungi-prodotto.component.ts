@@ -618,8 +618,6 @@ export class AggiungiProdottoComponent implements OnInit {
         v.price = v.customPrice;
       }
 
-      console.log(`Saving variant ${v.longName} with price: ${v.price}, mode: ${v.pricingMode}, customPrice: ${v.customPrice}`);
-
       return this.variantService.createVariant(v);
     });
     forkJoin(calls).subscribe(ids => {

@@ -468,10 +468,6 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   }
 
   editComponent(component: ComponentModel, index: number) {
-    console.log('Editing component:', component);
-    console.log('Component supplier:', component.supplier);
-    console.log('Component type before editing:', component.type);
-
     this.editingIndex = index;
     this.editingId = component.id;
 
@@ -489,10 +485,6 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.selectedComponentType = component.type !== undefined && component.type !== null
       ? component.type
       : null;
-
-    console.log('Selected component type for editing:', this.selectedComponentType);
-    console.log('Selected supplier for editing:', this.selectedSupplier);
-    console.log('Component sofa type for editing:', this.newComponent.sofaType);
 
     this.editingIndex = index;
 
@@ -972,14 +964,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   // Add method to handle supplier change
   onSupplierChange(event: any) {
-    console.log('onSupplierChange called with:', event);
-    console.log('Event value:', event.value);
-    console.log('Selected supplier before change:', this.selectedSupplier);
-
     // Make sure we're setting the correct supplier
     this.selectedSupplier = event.value;
-
-    console.log('Selected supplier after change:', this.selectedSupplier);
 
     // Update component name when supplier changes
     this.updateComponentName();
@@ -993,15 +979,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   // Update method to work with enum
   onComponentTypeChange(event: any) {
-    console.log('onComponentTypeChange called with:', event);
-    console.log('Event value:', event.value);
-    console.log('Selected component type before change:', this.selectedComponentType);
-
     // Make sure we're setting the correct enum value
     this.selectedComponentType = event.value;
-
-    console.log('Selected component type after change:', this.selectedComponentType);
-    console.log('Component type display name:', this.getComponentTypeDisplayName(this.selectedComponentType));
 
     // Update component name when type changes
     this.updateComponentName();
@@ -1176,8 +1155,6 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         console.log('No variants contain the updated components');
         return;
       }
-
-      console.log(`Found ${variantsToUpdate.length} variants to update`);
 
       // Update each variant's price
       const variantUpdatePromises = variantsToUpdate.map(async (variant: Variant) => {

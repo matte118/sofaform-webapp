@@ -288,7 +288,6 @@ export class VariantService {
   }
 
   private mapToVariant(data: any, id: string): Variant {
-    console.log('Mapping variant data from Firebase:', { id, data }); // Debug log
 
     const parsedComponents = (data.components || []).map((comp: any) => ({
       ...comp,
@@ -316,7 +315,6 @@ export class VariantService {
     // Preserve the price from database
     if (typeof data.price === 'number') {
       variant.price = data.price;
-      console.log(`Preserved price ${data.price} for variant ${data.longName}`); // Debug log
     } else {
       console.warn(`Missing or invalid price for variant ${data.longName}, calculating from components`); // Debug log
       variant.updatePrice(); // Calculate if not available
@@ -326,14 +324,6 @@ export class VariantService {
     if (variant.pricingMode === 'custom' && variant.customPrice !== undefined) {
       variant.price = variant.customPrice;
     }
-
-    console.log('Final variant object:', {
-      name: variant.longName,
-      price: variant.price,
-      pricingMode: variant.pricingMode,
-      customPrice: variant.customPrice
-    }); // Debug log
-
     return variant;
   }
 }

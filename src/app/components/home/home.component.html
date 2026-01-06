@@ -164,7 +164,7 @@
 
   <!-- Template modificato: Dialog Configura Rivestimenti con Dropdown per ogni variante -->
   <p-dialog appendTo="body" [(visible)]="showRivestimentoDialog" header="Configura Rivestimenti per Varianti"
-    [modal]="true" [closable]="false" [baseZIndex]="10000"
+    [modal]="true" [closable]="false"
     [style]="{ width: '900px', maxHeight: '90vh', overflow: 'visible' }" styleClass="rivestimenti-config-dialog"
     contentStyleClass="rivestimenti-dialog-content" [draggable]="false" [resizable]="false"
     (onHide)="onRivestimentoHide()">
@@ -173,7 +173,6 @@
       <div class="dialog-content-scrollable">
         <div class="p-fluid" *ngIf="selectedProduct">
           <div class="rivestimento-selection-section">
-            <h4>Seleziona rivestimenti per ogni variante</h4>
 
             <!-- Dropdown per selezionare la variante corrente -->
             <div class="p-field variant-selector-field">
@@ -278,7 +277,7 @@
 
   <!-- Dialog Materassi Extra (Listino) -->
   <p-dialog [(visible)]="showListinoExtraMattressDialog" header="Extra (Materassi e Meccanismi)" [modal]="true"
-    [closable]="false" [baseZIndex]="10000" [style]="{ width: '700px', maxHeight: '90vh' }" [draggable]="false"
+    [closable]="false" [style]="{ width: '700px', maxHeight: '90vh' }" [draggable]="false"
     [resizable]="false">
     <div class="p-fluid">
       <div class="extra-mattress-section">
@@ -356,7 +355,7 @@
 
   <!-- Dialog Configura Ricarico -->
   <p-dialog appendTo="body" [(visible)]="showMarkupDialog" header="Configurazione Listino" [modal]="true"
-    [closable]="false" [baseZIndex]="11000" [draggable]="false" [style]="{ width: '800px', maxHeight: '90vh' }"
+    [closable]="false" [draggable]="false" [style]="{ width: '800px', maxHeight: '90vh' }"
     [contentStyle]="{ overflow: 'visible', paddingBottom: '4.5rem' }" [resizable]="false" (onHide)="cancelMarkup()"
     [dismissableMask]="false" [closeOnEscape]="false">
     <div class="p-fluid">
@@ -371,7 +370,7 @@
         <label for="headerImageSelect">Immagine listino:</label>
         <p-dropdown id="headerImageSelect" [options]="availableHeaderImages" [(ngModel)]="selectedHeaderImage"
           optionLabel="name" placeholder="Seleziona immagine listino" [style]="{ width: '100%' }"
-          styleClass="header-image-dropdown" appendTo="body" [autoZIndex]="true" [baseZIndex]="12000"
+          styleClass="header-image-dropdown" appendTo="body"
           [panelStyle]="{ 'max-height': '40vh', 'overflow': 'auto' }">
           <ng-template let-headerImage pTemplate="item">
             <div class="header-image-option">
@@ -398,7 +397,7 @@
         <label for="languageSelect">Lingua del listino:</label>
         <p-dropdown id="languageSelect" [options]="availableLanguages" [(ngModel)]="selectedLanguage" optionLabel="name"
           placeholder="Seleziona lingua" [style]="{ width: '100%' }" styleClass="language-dropdown" appendTo="body"
-          [autoZIndex]="true" [baseZIndex]="12000" [panelStyle]="{ 'max-height': '40vh', 'overflow': 'auto' }">
+         [panelStyle]="{ 'max-height': '40vh', 'overflow': 'auto' }">
           <ng-template let-language pTemplate="item">
             <div class="language-option">
               <span class="language-name">{{ language.name }}</span>
@@ -423,9 +422,9 @@
       <p-button type="button" label="Annulla" styleClass="btn-dialog-no" (click)="cancelMarkup()"
         [disabled]="isTranslating"></p-button>
       <p-button type="button" label="Anteprima PDF" styleClass="btn-dialog-preview" (click)="previewListinoPdf()"
-        [disabled]="isTranslating"></p-button>
+        [disabled]="isTranslating" [icon]="'pi pi-eye'"></p-button>
       <p-button type="button" label="Genera PDF" styleClass="btn-dialog-yes" (click)="generateWithMarkup()"
-        [loading]="isTranslating" [disabled]="isTranslating"></p-button>
+        [loading]="isTranslating" [disabled]="isTranslating" [icon]="'pi pi-print'"></p-button>
     </ng-template>
   </p-dialog>
 
@@ -1067,7 +1066,7 @@
   </p-dialog>
 
   <p-toast></p-toast>
-  <p-confirmDialog [closable]="false" appendTo="body" [baseZIndex]="12000"></p-confirmDialog>
+  <p-confirmDialog [closable]="false" appendTo="body"></p-confirmDialog>
 
   <p-dialog header="Conferma Eliminazione" [(visible)]="displayConfirmDelete" [modal]="true" [closable]="false"
     [style]="{ width: '40%' }">

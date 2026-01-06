@@ -71,7 +71,6 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit() {
-    console.log('GestioneTessuti: Component initialized');
     this.loadTessuti();
     this.refresh$.subscribe(() => this.loadTessuti());
   }
@@ -85,22 +84,18 @@ export class GestioneTessutiComponent implements OnInit, AfterViewInit {
   }
 
   loadTessuti() {
-    console.log('GestioneTessuti: Starting to load tessuti');
     this.loading = true;
     this.dataLoaded = false;
 
     this.rivestimentoService.getRivestimenti().subscribe({
       next: (tessuti) => {
-        console.log('GestioneTessuti: Received tessuti:', tessuti);
         this.tessuti = tessuti;
         this.loading = false;
         this.dataLoaded = true;
         this.refreshNeeded = true;
         this.cd.detectChanges();
-        console.log('GestioneTessuti: Loading completed, tessuti count:', this.tessuti.length);
       },
       error: (error) => {
-        console.error('GestioneTessuti: Error loading tessuti:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
