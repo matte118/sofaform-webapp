@@ -1144,7 +1144,7 @@
 /* Raggruppiamo metri e subtotali in grid */
 ::ng-deep .p-dialog .rivestimento-meters-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: auto 2fr 1fr 1fr;
   gap: 1rem;
   align-items: center;
   padding: 0.75rem;
@@ -1159,6 +1159,32 @@
 
 ::ng-deep .p-dialog .rivestimento-meters-row p-inputNumber {
   justify-self: center;
+}
+
+::ng-deep .p-dialog .rivestimento-meters-row .include-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+}
+
+::ng-deep .p-dialog .rivestimento-meters-row .include-checkbox .p-checkbox-box {
+  width: 20px;
+  height: 20px;
+  border-color: var(--btn-confirm-bg);
+}
+
+::ng-deep .p-dialog .rivestimento-meters-row .include-checkbox .p-checkbox-icon {
+  font-size: 14px;
+}
+
+::ng-deep .p-dialog .rivestimento-meters-row .include-checkbox .p-checkbox-box.p-highlight {
+  background: var(--btn-confirm-bg);
+  border-color: var(--btn-confirm-bg);
+}
+
+::ng-deep .p-dialog .rivestimento-meters-row .include-checkbox .p-checkbox-box.p-highlight:hover {
+  background: var(--btn-confirm-hover);
+  border-color: var(--btn-confirm-hover);
 }
 
 ::ng-deep .p-dialog .rivestimento-meters-row .subtotal {

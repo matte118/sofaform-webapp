@@ -31,6 +31,7 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
+import { CheckboxModule } from 'primeng/checkbox';
 
 
 import { SofaProduct } from '../../../models/sofa-product.model';
@@ -84,7 +85,8 @@ interface EditGroupedComponent {
     MultiSelectModule,
     FloatLabelModule,
     TagModule,
-    DividerModule
+    DividerModule,
+    CheckboxModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -140,6 +142,7 @@ export class HomeComponent implements OnInit {
   // New properties for per-variant rivestimenti selection
   variantRivestimentiSelections: { [variantId: string]: Rivestimento[] } = {};
   variantRivestimentiMeters: { [variantId: string]: { [rivestimentoId: string]: number } } = {};
+  variantRivestimentiIncluded: { [variantId: string]: { [rivestimentoId: string]: boolean } } = {};
 
   // New property for uniform meters application
   uniformMetersForVariant: { [variantId: string]: number } = {};
@@ -365,6 +368,7 @@ export class HomeComponent implements OnInit {
     // Reset rivestimenti selections
     this.variantRivestimentiSelections = {};
     this.variantRivestimentiMeters = {};
+    this.variantRivestimentiIncluded = {};
     this.selectedRivestimentiForListino = [];
 
     // Initialize and load existing rivestimenti for each variant
@@ -375,6 +379,7 @@ export class HomeComponent implements OnInit {
         // Initialize empty arrays
         this.variantRivestimentiSelections[variant.id] = [];
         this.variantRivestimentiMeters[variant.id] = {};
+        this.variantRivestimentiIncluded[variant.id] = {};
 
         // Load existing rivestimenti from database
         const existingRivestimenti = await this.variantService.loadVariantRivestimenti(variant.id);
@@ -385,6 +390,7 @@ export class HomeComponent implements OnInit {
 
           existingRivestimenti.forEach(item => {
             this.variantRivestimentiMeters[variant.id][item.rivestimento.id] = item.metri;
+            this.variantRivestimentiIncluded[variant.id][item.rivestimento.id] = true;
           });
         }
       }
@@ -394,6 +400,7 @@ export class HomeComponent implements OnInit {
       variants.forEach(variant => {
         this.variantRivestimentiSelections[variant.id] = [];
         this.variantRivestimentiMeters[variant.id] = {};
+        this.variantRivestimentiIncluded[variant.id] = {};
       });
     }
 
@@ -418,11 +425,17 @@ export class HomeComponent implements OnInit {
     if (!this.variantRivestimentiMeters[variantId]) {
       this.variantRivestimentiMeters[variantId] = {};
     }
+    if (!this.variantRivestimentiIncluded[variantId]) {
+      this.variantRivestimentiIncluded[variantId] = {};
+    }
 
     // Add meters for newly selected rivestimenti (preserve existing meters)
     selectedRivestimenti.forEach(r => {
       if (!this.variantRivestimentiMeters[variantId][r.id]) {
         this.variantRivestimentiMeters[variantId][r.id] = 0.1;
+      }
+      if (this.variantRivestimentiIncluded[variantId][r.id] === undefined) {
+        this.variantRivestimentiIncluded[variantId][r.id] = true;
       }
     });
 
@@ -431,6 +444,7 @@ export class HomeComponent implements OnInit {
     Object.keys(this.variantRivestimentiMeters[variantId]).forEach(rivestimentoId => {
       if (!selectedIds.has(rivestimentoId)) {
         delete this.variantRivestimentiMeters[variantId][rivestimentoId];
+        delete this.variantRivestimentiIncluded[variantId][rivestimentoId];
       }
     });
 
@@ -451,7 +465,7 @@ export class HomeComponent implements OnInit {
         rivestimenti.forEach(r => {
           const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
 
-          if (meters > 0) {
+          if (meters > 0 && this.isVariantRivestimentoIncluded(variantId, r.id)) {
             variantRivestimentiData.push({ rivestimento: r, metri: meters });
 
             // Aggregate for listino - combine meters for same rivestimento across variants
@@ -645,7 +659,7 @@ export class HomeComponent implements OnInit {
 
         rivestimenti.forEach(r => {
           const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
-          if (meters > 0) {
+          if (meters > 0 && this.isVariantRivestimentoIncluded(variantId, r.id)) {
             variantRivestimentiData.push({ rivestimento: r, metri: meters });
           }
         });
@@ -742,6 +756,7 @@ export class HomeComponent implements OnInit {
     this.markupPercentage = 30;
     this.variantRivestimentiSelections = {};
     this.variantRivestimentiMeters = {};
+    this.variantRivestimentiIncluded = {};
     this.uniformMetersForVariant = {};
     this.selectedVariantForRivestimento = undefined;
     // Reset header image selection to default
@@ -1838,9 +1853,12 @@ export class HomeComponent implements OnInit {
       this.variantRivestimentiSelections[variantId] = this.variantRivestimentiSelections[variantId]
         .filter(r => r.id !== rivestimentoId);
 
-      if (this.variantRivestimentiMeters[variantId]) {
-        delete this.variantRivestimentiMeters[variantId][rivestimentoId];
-      }
+    if (this.variantRivestimentiMeters[variantId]) {
+      delete this.variantRivestimentiMeters[variantId][rivestimentoId];
+    }
+    if (this.variantRivestimentiIncluded[variantId]) {
+      delete this.variantRivestimentiIncluded[variantId][rivestimentoId];
+    }
 
       this.cdr.detectChanges();
     }
@@ -1856,6 +1874,21 @@ export class HomeComponent implements OnInit {
   getVariantRivestimentoMeters(variantId: string, rivestimentoId: string): number {
     if (!variantId || !rivestimentoId) return 0.1;
     return this.variantRivestimentiMeters[variantId]?.[rivestimentoId] || 0.1;
+  }
+
+  isVariantRivestimentoIncluded(variantId: string, rivestimentoId: string): boolean {
+    if (!variantId || !rivestimentoId) return true;
+    const included = this.variantRivestimentiIncluded[variantId]?.[rivestimentoId];
+    return included ?? true;
+  }
+
+  setVariantRivestimentoIncluded(variantId: string, rivestimentoId: string, included: boolean): void {
+    if (!variantId || !rivestimentoId) return;
+    if (!this.variantRivestimentiIncluded[variantId]) {
+      this.variantRivestimentiIncluded[variantId] = {};
+    }
+    this.variantRivestimentiIncluded[variantId][rivestimentoId] = included;
+    this.cdr.detectChanges();
   }
 
   // Set meters for variant rivestimento
@@ -1876,7 +1909,9 @@ export class HomeComponent implements OnInit {
       const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
       rivestimenti.forEach(r => {
         const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
-        total += r.mtPrice * meters;
+        if (this.isVariantRivestimentoIncluded(variantId, r.id)) {
+          total += r.mtPrice * meters;
+        }
       });
     });
     return total;
@@ -1889,6 +1924,9 @@ export class HomeComponent implements OnInit {
     const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
     return rivestimenti.reduce((sum, r) => {
       const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
+      if (!this.isVariantRivestimentoIncluded(variantId, r.id)) {
+        return sum;
+      }
       return sum + (r.mtPrice * meters);
     }, 0);
   }
@@ -1898,7 +1936,7 @@ export class HomeComponent implements OnInit {
       const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
       return rivestimenti.some(r => {
         const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
-        return meters > 0;
+        return meters > 0 && this.isVariantRivestimentoIncluded(variantId, r.id);
       });
     });
   }
