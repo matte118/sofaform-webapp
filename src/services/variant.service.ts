@@ -227,6 +227,8 @@ export class VariantService {
   }
 
   private prepareVariantForSave(variant: Variant): Variant {
+    const trimmedCustomName = (variant.customName || '').trim();
+    const isCustom = variant.longName === SofaType.CUSTOM && !!trimmedCustomName;
     const components = (variant.components || []).map((comp: any) => ({
       ...comp,
       type: this.toComponentTypeString(comp?.type),
@@ -235,6 +237,8 @@ export class VariantService {
 
     return {
       ...variant,
+      longName: isCustom ? trimmedCustomName : variant.longName,
+      customName: isCustom ? trimmedCustomName : undefined,
       components
     } as Variant;
   }
@@ -295,12 +299,30 @@ export class VariantService {
       sofaType: this.parseSofaType(comp?.sofaType)
     }));
 
-    const parsedLongName = this.parseSofaType(data.longName) ?? SofaType.DIVANO_3_PL;
+    const parsedLongName = this.parseSofaType(data.longName);
+    let resolvedLongName: SofaType = SofaType.DIVANO_3_PL;
+    let customName: string | undefined;
+
+    if (parsedLongName) {
+      resolvedLongName = parsedLongName;
+      if (parsedLongName === SofaType.CUSTOM) {
+        const rawCustomName = typeof data.customName === 'string' ? data.customName.trim() : '';
+        customName = rawCustomName || undefined;
+      }
+    } else {
+      const rawName = typeof data.longName === 'string' ? data.longName.trim() : '';
+      const rawCustomName = typeof data.customName === 'string' ? data.customName.trim() : '';
+      const fallbackName = rawName || rawCustomName;
+      if (fallbackName) {
+        resolvedLongName = SofaType.CUSTOM;
+        customName = fallbackName;
+      }
+    }
 
     const variant = new Variant(
       id,
       data.sofaId || '',
-      parsedLongName,
+      resolvedLongName,
       0, // Initialize with 0, will set properly below
       parsedComponents,
       data.seatsCount,
@@ -309,7 +331,8 @@ export class VariantService {
       data.height,
       data.rivestimenti,
       data.pricingMode || 'components',
-      data.customPrice
+      data.customPrice,
+      customName
     );
 
     // Preserve the price from database

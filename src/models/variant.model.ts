@@ -17,6 +17,7 @@ export class Variant {
   public rivestimenti?: { rivestimento: Rivestimento; metri: number }[];
   public pricingMode: PricingMode;
   public customPrice?: number;
+  public customName?: string;
 
   constructor(
     id: string,
@@ -30,7 +31,8 @@ export class Variant {
     height?: number,
     rivestimenti?: { rivestimento: Rivestimento; metri: number }[],
     pricingMode: PricingMode = 'components',
-    customPrice?: number
+    customPrice?: number,
+    customName?: string
   ) {
     this.id = id;
     this.sofaId = sofaId;
@@ -43,6 +45,7 @@ export class Variant {
     this.rivestimenti = rivestimenti;
     this.pricingMode = pricingMode;
     this.customPrice = customPrice;
+    this.customName = customName;
     
     // Set price correctly based on mode
     if (pricingMode === 'custom' && customPrice !== undefined) {

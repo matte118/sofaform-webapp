@@ -1141,6 +1141,25 @@
   padding: 0.75rem;
 }
 
+::ng-deep .p-dialog .p-multiselect-panel .p-multiselect-item .p-checkbox-box,
+::ng-deep .p-dialog .p-multiselect-panel .p-multiselect-item .p-checkbox-box:hover {
+  border-color: var(--btn-confirm-bg);
+}
+
+::ng-deep .p-dialog .p-multiselect-panel .p-multiselect-item .p-checkbox-box.p-highlight {
+  background: var(--btn-confirm-bg);
+  border-color: var(--btn-confirm-bg);
+}
+
+::ng-deep .p-dialog .p-multiselect-panel .p-multiselect-item .p-checkbox-box.p-highlight:hover {
+  background: var(--btn-confirm-hover);
+  border-color: var(--btn-confirm-hover);
+}
+
+::ng-deep .p-dialog .p-multiselect-panel .p-multiselect-item .p-checkbox-icon {
+  color: #fff;
+}
+
 /* Raggruppiamo metri e subtotali in grid */
 ::ng-deep .p-dialog .rivestimento-meters-row {
   display: grid;

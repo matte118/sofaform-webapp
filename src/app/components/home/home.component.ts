@@ -205,6 +205,7 @@ export class HomeComponent implements OnInit {
     { label: 'Divano 3 PL Maxi', value: SofaType.DIVANO_3_PL_MAXI },
     { label: 'Divano 3 PL', value: SofaType.DIVANO_3_PL },
     { label: 'Divano 2 PL', value: SofaType.DIVANO_2_PL },
+    { label: 'Custom', value: SofaType.CUSTOM },
   ];
 
   isBrowser: boolean;
@@ -1136,6 +1137,15 @@ export class HomeComponent implements OnInit {
       return;
     }
 
+    if (this.newVariant.longName === SofaType.CUSTOM && !this.newVariant.customName?.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'Inserisci il nome della variante custom'
+      });
+      return;
+    }
+
     if (this.editingVariantIndex >= 0) {
       const variant = new Variant(
         this.editingVariants[this.editingVariantIndex].id,
@@ -1146,7 +1156,11 @@ export class HomeComponent implements OnInit {
         this.newVariant.seatsCount,
         this.newVariant.mattressWidth,
         this.newVariant.depth,
-        this.newVariant.height
+        this.newVariant.height,
+        undefined,
+        undefined,
+        undefined,
+        this.newVariant.longName === SofaType.CUSTOM ? this.newVariant.customName : undefined
       );
       this.editingVariants[this.editingVariantIndex] = variant;
       this.editingVariantIndex = -1;
@@ -1155,7 +1169,7 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    this.variantComponentsDialogTitle = `Configura componenti per "${this.getSofaTypeLabel(this.newVariant.longName)}"`;
+    this.variantComponentsDialogTitle = `Configura componenti per "${this.getVariantLabel(this.newVariant)}"`;
     this.resetVariantComponentSelections();
     this.showVariantComponentsDialog = true;
   }
@@ -1238,7 +1252,11 @@ export class HomeComponent implements OnInit {
       this.newVariant.seatsCount,
       this.newVariant.mattressWidth,
       this.newVariant.depth,
-      this.newVariant.height
+      this.newVariant.height,
+      undefined,
+      undefined,
+      undefined,
+      this.newVariant.longName === SofaType.CUSTOM ? this.newVariant.customName : undefined
     );
 
     variant.updatePrice();
@@ -1250,7 +1268,7 @@ export class HomeComponent implements OnInit {
     this.messageService.add({
       severity: 'success',
       summary: 'Variante aggiunta',
-      detail: `Variante "${variant.longName}" aggiunta con successo`
+      detail: `Variante "${this.getVariantLabel(variant)}" aggiunta con successo`
     });
     this.cdr.detectChanges();
   }
@@ -1266,7 +1284,11 @@ export class HomeComponent implements OnInit {
       variant.seatsCount,
       variant.mattressWidth,
       variant.depth,
-      variant.height
+      variant.height,
+      undefined,
+      undefined,
+      undefined,
+      variant.customName
     );
     this.editingVariantIndex = index;
     this.cdr.detectChanges();
@@ -1794,6 +1816,7 @@ export class HomeComponent implements OnInit {
       [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
       [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
       [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+      [SofaType.CUSTOM]: 'Custom',
     };
     return map[type] ?? String(type);
   }
@@ -1804,8 +1827,21 @@ export class HomeComponent implements OnInit {
       [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
       [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
       [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+      [SofaType.CUSTOM]: 'Custom',
     };
     return map[type] ?? String(type);
+  }
+
+  getVariantLabel(variant?: Variant | null): string {
+    if (!variant) return '';
+    if (variant.longName === SofaType.CUSTOM) {
+      return (variant.customName || '').trim() || 'Custom';
+    }
+    return this.getSofaTypeLabel(variant.longName);
+  }
+
+  isCustomVariantType(): boolean {
+    return this.newVariant.longName === SofaType.CUSTOM;
   }
 
   cancelRivestimento() {

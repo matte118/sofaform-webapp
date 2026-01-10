@@ -191,10 +191,12 @@ export class AggiungiProdottoComponent implements OnInit {
   // Add pricing mode properties
   selectedPricingMode: PricingMode = 'components';
   customVariantPrice: number = 0;
+  customVariantName: string = '';
   sofaTypeOptions = [
     { label: 'Divano 3 PL Maxi', value: SofaType.DIVANO_3_PL_MAXI },
     { label: 'Divano 3 PL', value: SofaType.DIVANO_3_PL },
     { label: 'Divano 2 PL', value: SofaType.DIVANO_2_PL },
+    { label: 'Custom', value: SofaType.CUSTOM },
   ];
 
   constructor(
@@ -289,6 +291,11 @@ export class AggiungiProdottoComponent implements OnInit {
       this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Completa tutti i campi obbligatori' });
       return;
     }
+    if (this.newVariant.longName === SofaType.CUSTOM && !this.customVariantName.trim()) {
+      this.variantFormValid = false;
+      this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Inserisci il nome della variante custom' });
+      return;
+    }
 
     // Validate custom price if in custom mode
     if (this.selectedPricingMode === 'custom' && (this.customVariantPrice <= 0 || !this.customVariantPrice)) {
@@ -312,7 +319,8 @@ export class AggiungiProdottoComponent implements OnInit {
       this.newVariant.height,
       undefined,
       this.selectedPricingMode,
-      this.selectedPricingMode === 'custom' ? this.customVariantPrice : undefined
+      this.selectedPricingMode === 'custom' ? this.customVariantPrice : undefined,
+      this.newVariant.longName === SofaType.CUSTOM ? this.customVariantName.trim() : undefined
     );
 
     // Set the correct price based on pricing mode
@@ -336,9 +344,24 @@ export class AggiungiProdottoComponent implements OnInit {
   editVariant(index: number): void {
     this.editingVariantIndex = index;
     const v = this.variants[index];
-    this.newVariant = new Variant(v.id, v.sofaId, v.longName, v.price, v.components, v.seatsCount, v.mattressWidth);
+    this.newVariant = new Variant(
+      v.id,
+      v.sofaId,
+      v.longName,
+      v.price,
+      v.components,
+      v.seatsCount,
+      v.mattressWidth,
+      v.depth,
+      v.height,
+      undefined,
+      v.pricingMode,
+      v.customPrice,
+      v.customName
+    );
     this.selectedPricingMode = v.pricingMode;
     this.customVariantPrice = v.customPrice || 0;
+    this.customVariantName = v.customName || '';
   }
 
   deleteVariant(index: number): void {
@@ -365,6 +388,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.newVariant = new Variant('', '', SofaType.DIVANO_3_PL, 0);
     this.selectedPricingMode = 'components';
     this.customVariantPrice = 0;
+    this.customVariantName = '';
     this.variantFormSubmitted = false;
     this.editingVariantIndex = -1;
   }
@@ -494,7 +518,7 @@ export class AggiungiProdottoComponent implements OnInit {
       this.messageService.add({
         severity: 'success',
         summary: 'Componenti Applicati',
-        detail: `${this.selectedVariant.longName} aggiornato`
+        detail: `${this.getVariantDisplayName(this.selectedVariant)} aggiornato`
       });
     }
 
@@ -514,7 +538,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.messageService.add({
       severity: 'info',
       summary: 'Variante resettata',
-      detail: `${this.getSofaTypeDisplayName(variant.longName)} è stata ripulita`
+      detail: `${this.getVariantDisplayName(variant)} è stata ripulita`
     });
   }
 
@@ -963,8 +987,17 @@ export class AggiungiProdottoComponent implements OnInit {
       [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
       [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
       [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+      [SofaType.CUSTOM]: 'Custom',
     };
     return map[type] ?? String(type);
+  }
+
+  getVariantDisplayName(variant?: Variant | null): string {
+    if (!variant) return '';
+    if (variant.longName === SofaType.CUSTOM) {
+      return (variant.customName || '').trim() || 'Custom';
+    }
+    return this.getSofaTypeDisplayName(variant.longName);
   }
 
   getGroupedComponents() {
@@ -983,6 +1016,10 @@ export class AggiungiProdottoComponent implements OnInit {
   // Add helper methods
   isCustomPricingMode(): boolean {
     return this.selectedPricingMode === 'custom';
+  }
+
+  isCustomVariantType(): boolean {
+    return this.newVariant.longName === SofaType.CUSTOM;
   }
 
   isComponentsPricingMode(): boolean {
@@ -1172,7 +1209,7 @@ export class AggiungiProdottoComponent implements OnInit {
     this.messageService.add({
       severity: 'info',
       summary: 'Componente rimosso',
-      detail: `${this.getSofaTypeDisplayName(this.selectedVariant.longName)} aggiornato`
+      detail: `${this.getVariantDisplayName(this.selectedVariant)} aggiornato`
     });
   }
 
@@ -1206,6 +1243,7 @@ export class AggiungiProdottoComponent implements OnInit {
         height: v.height,
         pricingMode: v.pricingMode,
         customPrice: v.customPrice,
+        customName: v.customName,
         components: (v.components || []).map((c: any) => c?.id ?? null)
       })),
       selections: {
@@ -1229,6 +1267,7 @@ export class AggiungiProdottoComponent implements OnInit {
       ui: {
         selectedPricingMode: this.selectedPricingMode,
         customVariantPrice: this.customVariantPrice,
+        customVariantName: this.customVariantName,
         editingVariantIndex: this.editingVariantIndex
       }
     };
@@ -1260,7 +1299,8 @@ export class AggiungiProdottoComponent implements OnInit {
         v.height,
         undefined,
         v.pricingMode ?? 'components',
-        v.customPrice
+        v.customPrice,
+        v.customName
       );
 
       if (variant.pricingMode === 'custom' && typeof variant.customPrice === 'number') {
@@ -1271,6 +1311,7 @@ export class AggiungiProdottoComponent implements OnInit {
 
     this.selectedPricingMode = d.ui?.selectedPricingMode ?? 'components';
     this.customVariantPrice = d.ui?.customVariantPrice ?? 0;
+    this.customVariantName = d.ui?.customVariantName ?? '';
     this.editingVariantIndex = d.ui?.editingVariantIndex ?? -1;
 
     const mapById = (ids?: (string | null)[]) =>

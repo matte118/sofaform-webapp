@@ -41,6 +41,7 @@ export interface AddProductDraft {
   ui: {
     selectedPricingMode: 'components' | 'custom';
     customVariantPrice: number;
+    customVariantName?: string;
     editingVariantIndex: number;
   };
 }

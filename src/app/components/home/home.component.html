@@ -65,7 +65,7 @@
               <!-- Intestazione variante -->
               <div class="variant-header">
                 <div class="variant-info">
-                  <span class="variant-name">{{ getSofaTypeLabel(variant.longName) }}</span>
+                  <span class="variant-name">{{ getVariantLabel(variant) }}</span>
                   <!-- <span class="variant-pricing-mode" 
                     [class]="isCustomPricingVariant(variant) ? 'custom-pricing' : 'components-pricing'">
                     {{ isCustomPricingVariant(variant) ? 'Custom' : 'Componenti' }}
@@ -181,17 +181,17 @@
                 [(ngModel)]="selectedVariantForRivestimento" optionLabel="longName" placeholder="Scegli variante"
                 [showClear]="true" appendTo="body" [style]="{ width: '100%' }" styleClass="variant-dropdown">
                 <ng-template let-v pTemplate="item">
-                  {{ getSofaTypeLabel(v.longName) }}
+                  {{ getVariantLabel(v) }}
                 </ng-template>
                 <ng-template let-v pTemplate="selectedItem">
-                  {{ getSofaTypeLabel(v.longName) }}
+                  {{ getVariantLabel(v) }}
                 </ng-template>
               </p-dropdown>
             </div>
 
             <!-- Sezione per la variante selezionata -->
             <ng-container *ngIf="selectedVariantForRivestimento">
-              <h5 class="variant-title">{{ getSofaTypeLabel(selectedVariantForRivestimento.longName) }}</h5>
+              <h5 class="variant-title">{{ getVariantLabel(selectedVariantForRivestimento) }}</h5>
 
               <!-- Multi-select rivestimenti -->
               <div class="field">
@@ -623,7 +623,7 @@
                   <div class="variant-form-header">
                     <h4 class="editing-variant-title">
                       <i class="pi pi-pencil"></i>
-                      Modifica Variante: {{ getSofaTypeLabel(newVariant.longName) }}
+                      Modifica Variante: {{ getVariantLabel(newVariant) }}
                     </h4>
                     <!-- <p-button icon="pi pi-times" label="Annulla Modifica" styleClass="p-button-outlined cancel-edit-btn"
                       (click)="cancelVariantEdit()">
@@ -640,6 +640,14 @@
                           [(ngModel)]="newVariant.longName" name="variantName" class="modern-input w-100">
                         </p-dropdown>
                         <label for="variantName">Nome Variante</label>
+                      </p-floatLabel>
+                    </div>
+
+                    <div class="form-col double-col" *ngIf="isCustomVariantType()">
+                      <p-floatLabel class="pt-2">
+                        <input id="customVariantName" pInputText [(ngModel)]="newVariant.customName"
+                          name="customVariantName" class="modern-input w-100" />
+                        <label for="customVariantName">Nome Custom</label>
                       </p-floatLabel>
                     </div>
 
@@ -679,7 +687,8 @@
 
                     <div class="form-col action-col">
                       <p-button label="Salva Modifiche" icon="pi pi-check" (onClick)="addVariantToProduct()"
-                        [disabled]="!newVariant.longName" styleClass="modern-variant-btn">
+                        [disabled]="!newVariant.longName || (isCustomVariantType() && !newVariant.customName?.trim())"
+                        styleClass="modern-variant-btn">
                       </p-button>
                     </div>
                   </div>
@@ -713,7 +722,7 @@
                       <tr>
                         <td>
                           <div class="variant-name-cell">
-                            <span class="variant-title">{{ getSofaTypeLabel(variant.longName) }}</span>
+                            <span class="variant-title">{{ getVariantLabel(variant) }}</span>
                           </div>
                         </td>
                         <td>

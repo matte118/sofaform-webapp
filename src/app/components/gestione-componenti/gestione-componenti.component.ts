@@ -918,6 +918,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
       [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
       [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+      [SofaType.CUSTOM]: 'Custom',
     };
 
     return typeNames[type] || String(type);

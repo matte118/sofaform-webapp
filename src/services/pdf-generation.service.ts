@@ -101,7 +101,7 @@ export class PdfGenerationService {
     addText(this.productData.materasso);
 
     this.variantsData.forEach(v => {
-      const variantLabel = this.getVariantBaseLabel(v.longName);
+      const variantLabel = this.getVariantLabel(v);
       addText(variantLabel);
     });
 
@@ -371,7 +371,7 @@ export class PdfGenerationService {
     const tableBody: any[] = [headerRow];
 
     this.variantsData.forEach(variant => {
-      const variantLabel = this.getVariantBaseLabel(variant.longName);
+      const variantLabel = this.getVariantLabel(variant);
       const translatedVariantName = t(variantLabel);
       const row: any[] = [{ text: translatedVariantName, style: 'variantCell' }];
       const variantRivestimenti = this.rivestimentiByVariant[variant.id] || [];
@@ -524,6 +524,7 @@ export class PdfGenerationService {
       [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
       [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
       [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+      [SofaType.CUSTOM]: 'Custom',
     };
 
     if (map[value as SofaType]) {
@@ -535,5 +536,13 @@ export class PdfGenerationService {
     }
 
     return value;
+  }
+
+  private getVariantLabel(variant: Variant): string {
+    if (variant.longName === SofaType.CUSTOM) {
+      const customName = (variant.customName || '').trim();
+      if (customName) return customName;
+    }
+    return this.getVariantBaseLabel(variant.longName);
   }
 }
