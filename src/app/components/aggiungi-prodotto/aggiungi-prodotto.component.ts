@@ -22,8 +22,6 @@ import { MessageService } from 'primeng/api';
   import { FileUploadModule } from 'primeng/fileupload';
   import { MessagesModule } from 'primeng/messages';
   import { MessageModule } from 'primeng/message';
-import { OrderListModule } from 'primeng/orderlist';
-import { DragDropModule } from 'primeng/dragdrop';
 import { HttpClientModule } from '@angular/common/http';
 import { forkJoin, interval, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
@@ -68,9 +66,7 @@ import { SofaType } from '../../../models/sofa-type.model';
     MultiSelectModule,
     MessagesModule,
     MessageModule,
-    SelectButtonModule,
-    OrderListModule,
-    DragDropModule
+    SelectButtonModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './aggiungi-prodotto.component.html',
@@ -1367,8 +1363,6 @@ export class AggiungiProdottoComponent implements OnInit {
     }
   }
 }
-
-
 
 
 

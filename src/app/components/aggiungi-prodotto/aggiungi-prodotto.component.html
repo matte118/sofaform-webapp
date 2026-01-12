@@ -49,9 +49,13 @@
                 </div>
                 <div class="images-grid">
                   <div *ngFor="let preview of imagePreviews; let i = index" class="image-preview-item"
-                    pDraggable="images" pDroppable="images"
-                    (onDragStart)="onImageDragStart(i)" (onDragEnd)="onImageDragEnd()"
-                    (onDrop)="onImageDrop(i)" (onDragEnter)="onImageDragEnter(i)" (onDragLeave)="onImageDragLeave()"
+                    draggable="true"
+                    (dragstart)="onImageDragStart(i)"
+                    (dragend)="onImageDragEnd()"
+                    (drop)="onImageDrop(i); $event.preventDefault()"
+                    (dragenter)="onImageDragEnter(i); $event.preventDefault()"
+                    (dragleave)="onImageDragLeave()"
+                    (dragover)="$event.preventDefault()"
                     [ngClass]="{ 'drag-over': dragOverIndex === i, 'dragging': draggedImageIndex === i }">
                     <img [src]="preview" alt="Anteprima {{i+1}}" class="image-preview" />
                   </div>
@@ -835,4 +839,3 @@
     </ng-template>
   </p-dialog>
 </div>
-

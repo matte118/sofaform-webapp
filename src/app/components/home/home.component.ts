@@ -47,7 +47,7 @@ import { ComponentService } from '../../../services/component.service';
 import { ExtraMattress } from '../../../models/extra-mattress.model';
 import { ExtraMeccanismo } from '../../../models/extra-meccanismo.model';
 import { PdfGenerationService } from '../../../services/pdf-generation.service';
-import { TranslationService, LanguageOption } from '../../../services/translation.service';
+import { TranslationService, LanguageOption } from '../../../services/translation/translation.service';
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { SofaType } from '../../../models/sofa-type.model';
 
@@ -1889,12 +1889,12 @@ export class HomeComponent implements OnInit {
       this.variantRivestimentiSelections[variantId] = this.variantRivestimentiSelections[variantId]
         .filter(r => r.id !== rivestimentoId);
 
-    if (this.variantRivestimentiMeters[variantId]) {
-      delete this.variantRivestimentiMeters[variantId][rivestimentoId];
-    }
-    if (this.variantRivestimentiIncluded[variantId]) {
-      delete this.variantRivestimentiIncluded[variantId][rivestimentoId];
-    }
+      if (this.variantRivestimentiMeters[variantId]) {
+        delete this.variantRivestimentiMeters[variantId][rivestimentoId];
+      }
+      if (this.variantRivestimentiIncluded[variantId]) {
+        delete this.variantRivestimentiIncluded[variantId][rivestimentoId];
+      }
 
       this.cdr.detectChanges();
     }

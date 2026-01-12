@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, timer } from 'rxjs';
 import { catchError, map, timeout, retry } from 'rxjs/operators';
-import { LISTINO_STATIC_LABELS } from './i18n.service';
+import { LISTINO_STATIC_LABELS } from './fixed-translation.service';
 
 export interface TranslationResponse {
   translations: { [key: string]: string };
@@ -54,7 +54,7 @@ export class TranslationService {
       return of(translations);
     }
 
-    // Filter out static labels - they are handled by I18nService
+    // Filter out static labels
     const textsToTranslate = sanitizedTexts.filter(text => !this.STATIC_LABELS.includes(text));
 
     if (textsToTranslate.length === 0) {

@@ -5,8 +5,8 @@ import { SofaProduct } from '../models/sofa-product.model';
 import { Variant } from '../models/variant.model';
 import { Rivestimento } from '../models/rivestimento.model';
 import { SofaType } from '../models/sofa-type.model';
-import { TranslationService } from './translation.service';
-import { I18nService } from './i18n.service';
+import { TranslationService } from './translation/translation.service';
+import { I18nService } from './translation/fixed-translation.service';
 import { firstValueFrom } from 'rxjs';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
@@ -146,6 +146,10 @@ export class PdfGenerationService {
         techSpecs: { fontSize: 10, margin: [0, 10, 0, 10] },
         small: { fontSize: 7, color: '#718096', alignment: 'center' },
 
+        conditionsTitle: { fontSize: 18, bold: true, color: '#1a365d', alignment: 'center' },
+        conditionsSectionTitle: { fontSize: 11, bold: true, color: '#1a365d', margin: [0, 12, 0, 6] },
+        conditionsBody: { fontSize: 9, color: '#2d3748', alignment: 'left', lineHeight: 1.35 },
+
         quoteMark: { fontSize: 42, bold: true, color: '#000000', lineHeight: 0.8 },
         quoteText: { fontSize: 12, color: '#4a5568', italics: true, alignment: 'left' }
       },
@@ -184,6 +188,8 @@ export class PdfGenerationService {
       pageBreak: 'after'
     });
 
+    this.addCommercialConditionsPage(docDefinition, t);
+
     docDefinition.content.push({
       text: t(this.productData.name),
       style: 'productName',
@@ -193,9 +199,13 @@ export class PdfGenerationService {
 
 
 
-    await this.addProductImagesWithDescription(docDefinition, t);
+    const productImages = await this.getProductImagesBase64();
+    const hasExtras = this.extraMattressesData.length > 0 || this.extraMechanismsData.length > 0;
+    await this.addProductImagesWithDescription(docDefinition, t, productImages, !hasExtras);
     await this.addMatrixPricingTable(docDefinition, t);
-    if (this.extraMattressesData.length > 0 || this.extraMechanismsData.length > 0) await this.addExtraServices(docDefinition, t);
+    if (hasExtras) {
+      await this.addExtraServices(docDefinition, t, productImages);
+    }
 
     const filename = this.getFilename(productName, languageCode);
     const pdfInstance = pdfMake.createPdf(docDefinition);
@@ -222,8 +232,53 @@ export class PdfGenerationService {
     pdfInstance.download(filename);
   }
 
+  private addCommercialConditionsPage(docDefinition: any, t: (text: string) => string): void {
+    docDefinition.content.push({
+      stack: [
+        { text: t('Condizioni commerciali'), style: 'conditionsTitle', margin: [0, 0, 0, 14] },
+        {
+          text: [
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ',
+            'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ',
+            'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.'
+          ].join(''),
+          style: 'conditionsBody'
+        },
+        { text: t('Validità e prezzi'), style: 'conditionsSectionTitle' },
+        {
+          ul: [
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+            'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.'
+          ],
+          style: 'conditionsBody',
+          margin: [0, 0, 0, 6]
+        },
+        { text: t('Pagamento'), style: 'conditionsSectionTitle' },
+        {
+          ul: [
+            'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.',
+            'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+          ],
+          style: 'conditionsBody',
+          margin: [0, 0, 0, 6]
+        },
+        { text: t('Consegna e resi'), style: 'conditionsSectionTitle' },
+        {
+          ul: [
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.',
+            'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+          ],
+          style: 'conditionsBody'
+        }
+      ],
+      margin: [40, 40, 40, 40],
+      pageBreak: 'after'
+    });
+  }
 
-  private async addProductImagesWithDescription(docDefinition: any, t: (text: string) => string): Promise<void> {
+
+  private async getProductImagesBase64(): Promise<string[]> {
     const images: string[] = [];
 
     if (this.productData.photoUrl && Array.isArray(this.productData.photoUrl)) {
@@ -235,32 +290,40 @@ export class PdfGenerationService {
       const b64 = await this.urlToBase64(this.productData.photoUrl);
       if (b64) images.push(b64);
     }
+
+    return images;
+  }
+
+  private async addProductImagesWithDescription(
+    docDefinition: any,
+    t: (text: string) => string,
+    images: string[],
+    showAllImages: boolean
+  ): Promise<void> {
     if (images.length === 0) return;
 
     const R = 16 / 9;
-    const largeW = 280, largeH = Math.round(largeW / R);
-    const smallW = 132, smallH = Math.round(smallW / R);
+    const largeW = showAllImages ? 310 : 380;
+    const largeH = Math.round(largeW / R);
+    const smallW = 150;
+    const smallH = Math.round(smallW / R);
 
-    const innerGap = 10;
-    const betweenCols = -100;
+    const betweenCols = showAllImages ? 20 : 16;
 
     const leftSide = {
-      width: '45%',
+      width: showAllImages ? '45%' : '58%',
       stack: [
-        { image: images[0], width: largeW, height: largeH, alignment: 'left' }
+        { image: images[0], fit: [largeW, largeH], alignment: 'left' }
       ]
     };
 
-    const columnA = {
-      width: '36%',
-      stack: images.length === 2 ? [
-        { text: '', margin: [0, 0, 0, largeH - smallH] },
-        images[1] ? { image: images[1], width: smallW, height: smallH, alignment: 'center' } : { text: '' }
-      ] : [
-        images[1] ? { image: images[1], width: smallW, height: smallH, margin: [0, 0, 0, innerGap], alignment: 'center' } : { text: '' },
-        images[2] ? { image: images[2], width: smallW, height: smallH, alignment: 'center' } : { text: '' }
+    const extraImagesStack = showAllImages && images.length > 1 ? {
+      width: '17%',
+      stack: [
+        images[1] ? { image: images[1], fit: [smallW, smallH], alignment: 'center' } : { text: '' },
+        images[2] ? { image: images[2], fit: [smallW, smallH], alignment: 'center', margin: [0, 12, 0, 0] } : { text: '' }
       ]
-    };
+    } : null;
 
     const techSpecs = [
       ['Seduta', this.productData.seduta],
@@ -271,7 +334,6 @@ export class PdfGenerationService {
 
     const techSpecStack = techSpecs.length > 0
       ? {
-        width: '64%',
         // Usa una tabella per controllare meglio l'allineamento verticale
         table: {
           widths: ['*'],
@@ -303,13 +365,13 @@ export class PdfGenerationService {
                         fontSize: 10,
                         color: '#1a365d',
                         fillColor: '#f7fafc',
-                        margin: [8, 6, 8, 6]
+                        margin: [6, 6, 6, 6]
                       },
                       {
                         text: t(value || ''),
                         fontSize: 9,
                         color: '#4a5568',
-                        margin: [8, 6, 8, 6]
+                        margin: [6, 6, 6, 6]
                       }
                     ])
                   ]
@@ -330,23 +392,21 @@ export class PdfGenerationService {
           ]]
         },
         layout: 'noBorders',
-        margin: [6, 0, 0, 0]
+        margin: [0, 0, 0, 0]
       }
-      : { width: '64%', text: '' };
-
-    const rightSide = {
-      width: '55%',
-      columns: [
-        columnA,
-        techSpecStack
-      ],
-      columnGap: 6
-    };
+      : { text: '' };
 
     docDefinition.content.push({
-      columns: [leftSide, rightSide],
+      columns: showAllImages && extraImagesStack ? [
+        leftSide,
+        extraImagesStack,
+        { width: '38%', stack: [techSpecStack] }
+      ] : [
+        leftSide,
+        { width: '42%', stack: [techSpecStack] }
+      ],
       columnGap: betweenCols,
-      margin: [0, 0, 0, 50]
+      margin: [0, 0, 0, 30]
     });
   }
 
@@ -406,37 +466,75 @@ export class PdfGenerationService {
         paddingTop: () => 4,
         paddingBottom: () => 4
       },
-      margin: [0, 0, 0, 25]
+      margin: [0, 0, 0, 15]
     });
   }
 
-  private async addExtraServices(docDefinition: any, t: (text: string) => string): Promise<void> {
+  private async addExtraServices(
+    docDefinition: any,
+    t: (text: string) => string,
+    images: string[]
+  ): Promise<void> {
     const hasMattresses = this.extraMattressesData.length > 0;
     const hasMechanisms = this.extraMechanismsData.length > 0;
     if (!hasMattresses && !hasMechanisms) return;
 
-    const columnWidth = hasMattresses && hasMechanisms ? '50%' : '*';
+    const isSingleTable = hasMattresses !== hasMechanisms;
+    const columnWidth = hasMattresses && hasMechanisms ? '50%' : '60%';
     const tables: any[] = [];
+    const extraImages = images.slice(1, 3);
 
-    if (hasMattresses) {
-      tables.push({
-        width: columnWidth,
-        ...this.buildExtrasTable(this.extraMattressesData, t('Materassi Extra'), t)
+    if (isSingleTable) {
+      if (hasMattresses) {
+        tables.push({
+          width: columnWidth,
+          ...this.buildExtrasSection(this.extraMattressesData, t('Materassi Extra'), t)
+        });
+      } else {
+        tables.push({
+          width: columnWidth,
+          ...this.buildExtrasSection(this.extraMechanismsData, t('Meccanismi Extra'), t)
+        });
+      }
+
+      const imagesColumn = {
+        width: '40%',
+        stack: [
+          extraImages[0] ? { image: extraImages[0], fit: [260, 140], alignment: 'center' } : { text: '' },
+          extraImages[1] ? { image: extraImages[1], fit: [260, 140], alignment: 'center', margin: [0, 12, 0, 0] } : { text: '' }
+        ]
+      };
+
+      docDefinition.content.push({
+        columns: [...tables, imagesColumn],
+        columnGap: 16,
+        margin: [0, 0, 0, 6],
+        pageBreak: 'before',
+        unbreakable: true
+      });
+    } else {
+      if (hasMattresses) {
+        tables.push({
+          width: columnWidth,
+          ...this.buildExtrasSection(this.extraMattressesData, t('Materassi Extra'), t, extraImages[0])
+        });
+      }
+
+      if (hasMechanisms) {
+        tables.push({
+          width: columnWidth,
+          ...this.buildExtrasSection(this.extraMechanismsData, t('Meccanismi Extra'), t, extraImages[1])
+        });
+      }
+
+      docDefinition.content.push({
+        columns: tables,
+        columnGap: 16,
+        margin: [0, 0, 0, 6],
+        pageBreak: 'before',
+        unbreakable: true
       });
     }
-
-    if (hasMechanisms) {
-      tables.push({
-        width: columnWidth,
-        ...this.buildExtrasTable(this.extraMechanismsData, t('Meccanismi Extra'), t)
-      });
-    }
-
-    docDefinition.content.push({
-      columns: tables,
-      columnGap: 16,
-      margin: [0, 0, 0, 6]
-    });
 
     if (this.deliveryCost > 0) {
       docDefinition.content.push({
@@ -450,32 +548,49 @@ export class PdfGenerationService {
     }
   }
 
-  private buildExtrasTable(items: { name: string; price: number }[], title: string, t: (text: string) => string) {
+  private buildExtrasSection(
+    items: { name: string; price: number }[],
+    title: string,
+    t: (text: string) => string,
+    image?: string
+  ) {
     return {
-      table: {
-        headerRows: 1,
-        widths: ['70%', '30%'],
-        body: [
-          [
-            { text: title, style: 'matrixHeader' },
-            { text: t('Prezzo'), style: 'matrixHeader' }
-          ],
-          ...items.map(extra => ([
-            { text: t(extra.name), style: 'matrixCell', alignment: 'left' },
-            { text: this.formatCurrency(extra.price), style: 'priceCell' }
-          ]))
-        ]
-      },
-      layout: {
-        hLineWidth: (i: number, node: any) => (i === 0 || i === node.table.body.length ? 1.5 : 1),
-        vLineWidth: () => 1,
-        hLineColor: () => '#e2e8f0',
-        vLineColor: () => '#e2e8f0',
-        paddingLeft: () => 6,
-        paddingRight: () => 6,
-        paddingTop: () => 6,
-        paddingBottom: () => 6
-      }
+      stack: [
+        {
+          table: {
+            headerRows: 1,
+            widths: ['70%', '30%'],
+            keepWithHeaderRows: 1,
+            dontBreakRows: true,
+            body: [
+              [
+                { text: title, style: 'matrixHeader' },
+                { text: t('Prezzo'), style: 'matrixHeader' }
+              ],
+              ...items.map(extra => ([
+                { text: t(extra.name), style: 'matrixCell', alignment: 'left' },
+                { text: this.formatCurrency(extra.price), style: 'priceCell' }
+              ]))
+            ]
+          },
+          layout: {
+            hLineWidth: (i: number, node: any) => (i === 0 || i === node.table.body.length ? 1.5 : 1),
+            vLineWidth: () => 1,
+            hLineColor: () => '#e2e8f0',
+            vLineColor: () => '#e2e8f0',
+            paddingLeft: () => 6,
+            paddingRight: () => 6,
+            paddingTop: () => 6,
+            paddingBottom: () => 6
+          }
+        },
+        image ? {
+          image,
+          fit: [260, 140],
+          alignment: 'center',
+          margin: [0, 12, 0, 0]
+        } : { text: '' }
+      ]
     };
   }
 
