@@ -1106,6 +1106,25 @@
   }
 }
 
+::ng-deep .btn-dialog-save.p-button {
+  background-color: #6366f1 !important;
+  border-color: #6366f1 !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  padding: 12px 32px !important;
+  font-weight: 600 !important;
+
+  &:hover {
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+  }
+
+  &:active {
+    background-color: #4338ca !important;
+    border-color: #4338ca !important;
+  }
+}
+
 ::ng-deep .p-dialog .p-dialog-footer {
   display: flex !important;
   justify-content: center !important;
@@ -1285,23 +1304,79 @@
   padding: 0.75rem;
 }
 
-::ng-deep .p-dialog .p-multiselect-panel .p-multiselect-item .p-checkbox-box,
-::ng-deep .p-dialog .p-multiselect-panel .p-multiselect-item .p-checkbox-box:hover {
-  border-color: var(--btn-confirm-bg);
+/* Stile checkbox multiselect - blu come "Genera Listino" (#007bff) */
+::ng-deep .p-multiselect-panel .p-multiselect-item .p-checkbox .p-checkbox-box,
+::ng-deep .p-multiselect-panel .p-multiselect-item .p-checkbox .p-checkbox-box:hover,
+::ng-deep .p-multiselect-overlay .p-multiselect-item .p-checkbox .p-checkbox-box,
+::ng-deep .p-multiselect-overlay .p-multiselect-item .p-checkbox .p-checkbox-box:hover {
+  border-color: #007bff !important;
 }
 
-::ng-deep .p-dialog .p-multiselect-panel .p-multiselect-item .p-checkbox-box.p-highlight {
-  background: var(--btn-confirm-bg);
-  border-color: var(--btn-confirm-bg);
+::ng-deep .p-multiselect-panel .p-multiselect-item .p-checkbox .p-checkbox-box.p-highlight,
+::ng-deep .p-multiselect-overlay .p-multiselect-item .p-checkbox .p-checkbox-box.p-highlight {
+  background: #007bff !important;
+  border-color: #007bff !important;
 }
 
-::ng-deep .p-dialog .p-multiselect-panel .p-multiselect-item .p-checkbox-box.p-highlight:hover {
-  background: var(--btn-confirm-hover);
-  border-color: var(--btn-confirm-hover);
+::ng-deep .p-multiselect-panel .p-multiselect-item .p-checkbox .p-checkbox-box.p-highlight:hover,
+::ng-deep .p-multiselect-overlay .p-multiselect-item .p-checkbox .p-checkbox-box.p-highlight:hover {
+  background: #0056b3 !important;
+  border-color: #0056b3 !important;
 }
 
-::ng-deep .p-dialog .p-multiselect-panel .p-multiselect-item .p-checkbox-icon {
-  color: #fff;
+::ng-deep .p-multiselect-panel .p-multiselect-item .p-checkbox .p-checkbox-icon,
+::ng-deep .p-multiselect-overlay .p-multiselect-item .p-checkbox .p-checkbox-icon {
+  color: #fff !important;
+}
+
+/* Stile checkbox header "Seleziona tutto" */
+::ng-deep .p-multiselect-panel .p-multiselect-header .p-checkbox .p-checkbox-box,
+::ng-deep .p-multiselect-overlay .p-multiselect-header .p-checkbox .p-checkbox-box {
+  border-color: #007bff !important;
+}
+
+::ng-deep .p-multiselect-panel .p-multiselect-header .p-checkbox .p-checkbox-box.p-highlight,
+::ng-deep .p-multiselect-overlay .p-multiselect-header .p-checkbox .p-checkbox-box.p-highlight {
+  background: #007bff !important;
+  border-color: #007bff !important;
+}
+
+::ng-deep .p-multiselect-panel .p-multiselect-header .p-checkbox .p-checkbox-box.p-highlight:hover,
+::ng-deep .p-multiselect-overlay .p-multiselect-header .p-checkbox .p-checkbox-box.p-highlight:hover {
+  background: #0056b3 !important;
+  border-color: #0056b3 !important;
+}
+
+::ng-deep .p-multiselect-panel .p-multiselect-header .p-checkbox .p-checkbox-icon,
+::ng-deep .p-multiselect-overlay .p-multiselect-header .p-checkbox .p-checkbox-icon {
+  color: #fff !important;
+}
+
+/* Stile globale rivestimenti selector */
+.rivestimenti-global-selector {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Multiselect con bordo blu */
+::ng-deep .rivestimenti-multiselect-primary {
+  border-color: #007bff !important;
+
+  &:hover {
+    border-color: #0056b3 !important;
+  }
+
+  &.p-focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2) !important;
+  }
 }
 
 /* Raggruppiamo metri e subtotali in grid */

@@ -4,7 +4,8 @@
         "longName": "divano_3_pl_maxi",
         "seatsCount": 3,
         "mattressWidth": 238,
-        "depth": 104,
+        "closedDepth": 104,
+        "openDepth": 0,
         "height": 82,
         "price": 709.52,
         "components": [
@@ -132,7 +133,8 @@
         "longName": "divano_3_pl",
         "seatsCount": 3,
         "mattressWidth": 218,
-        "depth": 104,
+        "closedDepth": 104,
+        "openDepth": 0,
         "height": 82,
         "price": 668.12,
         "components": [
@@ -260,7 +262,8 @@
         "longName": "divano_2_pl",
         "seatsCount": 2,
         "mattressWidth": 198,
-        "depth": 104,
+        "closedDepth": 104,
+        "openDepth": 0,
         "height": 82,
         "price": 621.77,
         "components": [

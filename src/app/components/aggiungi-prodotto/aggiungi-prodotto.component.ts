@@ -311,7 +311,8 @@ export class AggiungiProdottoComponent implements OnInit {
       [],
       this.newVariant.seatsCount,
       this.newVariant.mattressWidth,
-      this.newVariant.depth,
+      this.newVariant.openDepth,
+      this.newVariant.closedDepth,
       this.newVariant.height,
       undefined,
       this.selectedPricingMode,
@@ -348,7 +349,8 @@ export class AggiungiProdottoComponent implements OnInit {
       v.components,
       v.seatsCount,
       v.mattressWidth,
-      v.depth,
+      v.openDepth,
+      v.closedDepth,
       v.height,
       undefined,
       v.pricingMode,
@@ -1235,7 +1237,8 @@ export class AggiungiProdottoComponent implements OnInit {
         price: v.price,
         seatsCount: v.seatsCount,
         mattressWidth: v.mattressWidth,
-        depth: v.depth,
+        openDepth: v.openDepth,
+        closedDepth: v.closedDepth,
         height: v.height,
         pricingMode: v.pricingMode,
         customPrice: v.customPrice,
@@ -1283,6 +1286,8 @@ export class AggiungiProdottoComponent implements OnInit {
     }
 
     this.variants = (d.variants || []).map(v => {
+      const openDepth = v.openDepth ?? 0;
+      const closedDepth = v.closedDepth ?? (typeof (v as any).depth === 'number' ? (v as any).depth : undefined);
       const variant = new Variant(
         v.id ?? '',
         v.sofaId ?? '',
@@ -1291,7 +1296,8 @@ export class AggiungiProdottoComponent implements OnInit {
         [],
         v.seatsCount,
         v.mattressWidth,
-        v.depth,
+        openDepth,
+        closedDepth,
         v.height,
         undefined,
         v.pricingMode ?? 'components',
@@ -1363,8 +1369,5 @@ export class AggiungiProdottoComponent implements OnInit {
     }
   }
 }
-
-
-
 
 

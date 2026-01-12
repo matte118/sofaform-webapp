@@ -327,7 +327,10 @@ export class VariantService {
       parsedComponents,
       data.seatsCount,
       data.mattressWidth,
-      data.depth,
+      typeof data.openDepth === 'number' ? data.openDepth : undefined,
+      typeof data.closedDepth === 'number'
+        ? data.closedDepth
+        : (typeof data.depth === 'number' ? data.depth : undefined),
       data.height,
       data.rivestimenti,
       data.pricingMode || 'components',

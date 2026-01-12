@@ -197,8 +197,14 @@
               </div>
               <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
                 <p-floatLabel>
-                  <p-inputNumber id="depth" [(ngModel)]="newVariant.depth" name="profondita"></p-inputNumber>
-                  <label>Profondità  (cm)</label>
+                  <p-inputNumber id="closedDepth" [(ngModel)]="newVariant.closedDepth" name="profonditaChiusa"></p-inputNumber>
+                  <label>Profondità chiuso (cm)</label>
+                </p-floatLabel>
+              </div>
+              <div class="p-field p-col-12 p-md-2" style="padding-top: 15px;">
+                <p-floatLabel>
+                  <p-inputNumber id="openDepth" [(ngModel)]="newVariant.openDepth" name="profonditaAperta"></p-inputNumber>
+                  <label>Profondità aperto (cm)</label>
                 </p-floatLabel>
               </div>
 

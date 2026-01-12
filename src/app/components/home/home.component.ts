@@ -162,6 +162,9 @@ export class HomeComponent implements OnInit {
   rivestimentiList: Rivestimento[] = [];
   selectedVariantForRivestimento?: Variant;
 
+  // Shared rivestimenti selection (same for all variants)
+  sharedRivestimentiSelection: Rivestimento[] = [];
+
   // New properties for per-variant rivestimenti selection
   variantRivestimentiSelections: { [variantId: string]: Rivestimento[] } = {};
   variantRivestimentiMeters: { [variantId: string]: { [rivestimentoId: string]: number } } = {};
@@ -822,7 +825,7 @@ export class HomeComponent implements OnInit {
     // Reset rivestimenti selections
     this.variantRivestimentiSelections = {};
     this.variantRivestimentiMeters = {};
-    this.variantRivestimentiIncluded = {};
+    this.sharedRivestimentiSelection = [];
     this.selectedRivestimentiForListino = [];
 
     // Initialize and load existing rivestimenti for each variant
@@ -833,7 +836,6 @@ export class HomeComponent implements OnInit {
         // Initialize empty arrays
         this.variantRivestimentiSelections[variant.id] = [];
         this.variantRivestimentiMeters[variant.id] = {};
-        this.variantRivestimentiIncluded[variant.id] = {};
 
         // Load existing rivestimenti from database
         const existingRivestimenti = await this.variantService.loadVariantRivestimenti(variant.id);
@@ -844,8 +846,12 @@ export class HomeComponent implements OnInit {
 
           existingRivestimenti.forEach(item => {
             this.variantRivestimentiMeters[variant.id][item.rivestimento.id] = item.metri;
-            this.variantRivestimentiIncluded[variant.id][item.rivestimento.id] = true;
           });
+
+          // Use first variant's rivestimenti as the shared selection
+          if (this.sharedRivestimentiSelection.length === 0) {
+            this.sharedRivestimentiSelection = [...this.variantRivestimentiSelections[variant.id]];
+          }
         }
       }
     } catch (error) {
@@ -854,8 +860,12 @@ export class HomeComponent implements OnInit {
       variants.forEach(variant => {
         this.variantRivestimentiSelections[variant.id] = [];
         this.variantRivestimentiMeters[variant.id] = {};
-        this.variantRivestimentiIncluded[variant.id] = {};
       });
+    }
+
+    // Auto-select first variant
+    if (variants.length > 0) {
+      this.selectedVariantForRivestimento = variants[0];
     }
 
     this.showRivestimentoDialog = true;
@@ -863,6 +873,42 @@ export class HomeComponent implements OnInit {
     // Prevent body scroll when dialog is open
     if (this.isBrowser) {
       document.body.style.overflow = 'hidden';
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  // Handle shared rivestimenti selection change - applies to all variants
+  onSharedRivestimentiChange(selectedRivestimenti: Rivestimento[]): void {
+    this.sharedRivestimentiSelection = [...selectedRivestimenti];
+
+    // Apply to all variants
+    if (this.selectedProduct) {
+      const variants = this.getProductVariants(this.selectedProduct.id);
+      for (const variant of variants) {
+        // Update selections for this variant
+        this.variantRivestimentiSelections[variant.id] = [...selectedRivestimenti];
+
+        // Initialize meters for new rivestimenti
+        if (!this.variantRivestimentiMeters[variant.id]) {
+          this.variantRivestimentiMeters[variant.id] = {};
+        }
+
+        // Add default meters for new ones
+        selectedRivestimenti.forEach(r => {
+          if (!this.variantRivestimentiMeters[variant.id][r.id]) {
+            this.variantRivestimentiMeters[variant.id][r.id] = 0.1;
+          }
+        });
+
+        // Remove meters for deselected rivestimenti
+        const selectedIds = new Set(selectedRivestimenti.map(r => r.id));
+        Object.keys(this.variantRivestimentiMeters[variant.id]).forEach(rivestimentoId => {
+          if (!selectedIds.has(rivestimentoId)) {
+            delete this.variantRivestimentiMeters[variant.id][rivestimentoId];
+          }
+        });
+      }
     }
 
     this.cdr.detectChanges();
@@ -961,6 +1007,69 @@ export class HomeComponent implements OnInit {
   // === Markup and PDF Generation ===
   async generateWithMarkup() {
     await this.processListinoGeneration(false);
+  }
+
+  async saveWithoutPdf() {
+    if (!this.selectedProduct) {
+      this.showMarkupDialog = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    try {
+      // Save rivestimenti for each variant
+      for (const variantId of Object.keys(this.variantRivestimentiSelections)) {
+        const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
+        const variantRivestimentiData: { rivestimento: Rivestimento; metri: number }[] = [];
+
+        rivestimenti.forEach(r => {
+          const meters = this.variantRivestimentiMeters[variantId]?.[r.id] || 0;
+          if (meters > 0) {
+            variantRivestimentiData.push({ rivestimento: r, metri: meters });
+          }
+        });
+
+        if (variantRivestimentiData.length > 0) {
+          await this.variantService.saveVariantRivestimenti(variantId, variantRivestimentiData);
+        }
+      }
+
+      // Save updated product
+      const updatedProduct: SofaProduct = {
+        ...this.selectedProduct,
+        materassiExtra: [...this.extraMattressesForListino],
+        meccanismiExtra: [...this.extraMechanismsForListino],
+        deliveryPrice: this.deliveryPriceListino,
+        ricarico: this.markupPercentage
+      };
+
+      await firstValueFrom(this.sofaProductService.updateSofaProduct(updatedProduct.id, updatedProduct));
+
+      // Update local product copy
+      const productIndex = this.products.findIndex(p => p.id === updatedProduct.id);
+      if (productIndex !== -1) {
+        this.products[productIndex] = { ...updatedProduct };
+      }
+
+      this.resetListinoWizard();
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Dati Salvati',
+        detail: 'I dati del listino sono stati salvati con successo'
+      });
+
+    } catch (error) {
+      console.error('Error saving data:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'Errore durante il salvataggio dei dati'
+      });
+    }
+
+    this.showMarkupDialog = false;
+    this.cdr.detectChanges();
   }
 
   async previewListinoPdf() {
@@ -1615,7 +1724,8 @@ export class HomeComponent implements OnInit {
         this.editingVariants[this.editingVariantIndex].components,
         this.newVariant.seatsCount,
         this.newVariant.mattressWidth,
-        this.newVariant.depth,
+        this.newVariant.openDepth,
+        this.newVariant.closedDepth,
         this.newVariant.height,
         undefined,
         undefined,
@@ -1711,7 +1821,8 @@ export class HomeComponent implements OnInit {
       components,
       this.newVariant.seatsCount,
       this.newVariant.mattressWidth,
-      this.newVariant.depth,
+      this.newVariant.openDepth,
+      this.newVariant.closedDepth,
       this.newVariant.height,
       undefined,
       undefined,
@@ -1743,7 +1854,8 @@ export class HomeComponent implements OnInit {
       [...variant.components],
       variant.seatsCount,
       variant.mattressWidth,
-      variant.depth,
+      variant.openDepth,
+      variant.closedDepth,
       variant.height,
       undefined,
       undefined,
@@ -2468,16 +2580,16 @@ export class HomeComponent implements OnInit {
   private initializeHeaderImages(): void {
     // Initialize with two identical options pointing to the current default header image
     // This matches the current PDF generation behavior
-    const defaultHeaderImageUrl = 'assets/images/default-header-image.png'; // Update this path to match your actual header image
+    const defaultHeaderImageUrl = 'assets/images/default-header-image.png';
 
     this.availableHeaderImages = [
       {
-        name: 'Logo Aziendale Standard',
+        name: 'SofaForm',
         description: 'Logo principale dell\'azienda per il listino',
         url: defaultHeaderImageUrl
       },
       {
-        name: 'Logo Aziendale Alternativo',
+        name: 'Convertibles Contemporains',
         description: 'Versione alternativa del logo aziendale',
         url: defaultHeaderImageUrl
       }

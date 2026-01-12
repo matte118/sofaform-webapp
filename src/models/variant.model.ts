@@ -12,7 +12,8 @@ export class Variant {
   public components: Component[];
   public seatsCount?: number;
   public mattressWidth?: number;
-  public depth?: number;
+  public openDepth?: number;
+  public closedDepth?: number;
   public height?: number;
   public rivestimenti?: { rivestimento: Rivestimento; metri: number }[];
   public pricingMode: PricingMode;
@@ -27,7 +28,8 @@ export class Variant {
     components: Component[] = [],
     seatsCount?: number,
     mattressWidth?: number,
-    depth?: number,
+    openDepth?: number,
+    closedDepth?: number,
     height?: number,
     rivestimenti?: { rivestimento: Rivestimento; metri: number }[],
     pricingMode: PricingMode = 'components',
@@ -40,7 +42,8 @@ export class Variant {
     this.components = components;
     this.seatsCount = seatsCount;
     this.mattressWidth = mattressWidth;
-    this.depth = depth;
+    this.openDepth = openDepth;
+    this.closedDepth = closedDepth;
     this.height = height;
     this.rivestimenti = rivestimenti;
     this.pricingMode = pricingMode;

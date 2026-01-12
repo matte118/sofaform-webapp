@@ -70,6 +70,13 @@ export class GestioneUtentiComponent implements OnInit {
     { label: 'Operatore', value: UserRole.OPERATOR },
   ];
 
+  get createUserRoleOptions() {
+    if (this.currentUserRole === UserRole.FOUNDER) return this.roleOptions;
+    if (this.currentUserRole === UserRole.MANAGER)
+      return this.roleOptions.filter((o) => o.value === UserRole.OPERATOR);
+    return this.roleOptions.filter((o) => o.value === UserRole.OPERATOR);
+  }
+
   loading = true;
 
   constructor(
@@ -146,6 +153,18 @@ export class GestioneUtentiComponent implements OnInit {
         severity: 'error',
         summary: 'Errore',
         detail: 'Email o password non validi',
+      });
+      return;
+    }
+
+    if (
+      this.currentUserRole === UserRole.MANAGER &&
+      this.newUser.role !== UserRole.OPERATOR
+    ) {
+      this.msg.add({
+        severity: 'error',
+        summary: 'Permesso negato',
+        detail: 'Un Manager può creare solo utenti Operatore',
       });
       return;
     }

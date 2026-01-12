@@ -11,6 +11,8 @@ import {
   UserCredential,
 } from '@angular/fire/auth';
 import { Database, ref, set, get, child, remove } from '@angular/fire/database';
+import { deleteApp, initializeApp as initializeFirebaseApp } from 'firebase/app';
+import { getAuth as getFirebaseAuth } from 'firebase/auth';
 import {
   Observable,
   from,
@@ -22,10 +24,12 @@ import {
   take,
   catchError,
   throwError,
+  finalize,
 } from 'rxjs';
 import { Router } from '@angular/router';
 import { User } from '../models/user.model';
 import { UserRole } from '../models/user-role.model';
+import { environment } from '../environments/environments';
 
 @Injectable({
   providedIn: 'root',
@@ -34,10 +38,6 @@ export class AuthService {
   private auth = inject(Auth);
   private db = inject(Database);
   private router = inject(Router);
-
-  // Memorizzo credenziali manager per ristabilire sessione
-  private managerEmail?: string;
-  private managerPassword?: string;
 
   currentUser$ = authState(this.auth);
   private currentUserRole$ = new BehaviorSubject<UserRole | null>(null);
@@ -56,13 +56,11 @@ export class AuthService {
       });
   }
 
-  /** Effettua login e memorizza credenziali manager */
+  /** Effettua login */
   login(email: string, password: string): Observable<UserCredential> {
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
       tap((cred) => {
         console.log('Login OK:', cred.user.uid);
-        this.managerEmail = email;
-        this.managerPassword = password;
         const lastLogin = new Date().toISOString();
         this.ensureUserProfileExists(cred.user, lastLogin);
       })
@@ -93,43 +91,35 @@ export class AuthService {
     displayName = '',
     role: UserRole = UserRole.OPERATOR
   ): Observable<void> {
-    if (!this.managerEmail || !this.managerPassword) {
-      return throwError(() => new Error('Sessione manager non valida'));
-    }
-    // 1) crea utente
+    // Create the user using a secondary Firebase app/auth instance so the main
+    // session (manager) is not affected.
+    const secondaryAppName = `secondary-auth-${Date.now()}-${Math.random()
+      .toString(16)
+      .slice(2)}`;
+    const secondaryApp = initializeFirebaseApp(
+      environment.firebase,
+      secondaryAppName
+    );
+    const secondaryAuth = getFirebaseAuth(secondaryApp);
+
     return from(
-      createUserWithEmailAndPassword(this.auth, email, password)
+      createUserWithEmailAndPassword(secondaryAuth, email, password)
     ).pipe(
-      // 2) imposta displayName
       switchMap((cred) =>
         from(updateProfile(cred.user, { displayName })).pipe(map(() => cred))
       ),
-      // 3) salva profilo in RealtimeDB
       switchMap((cred) => {
-        const u = new User(
-          cred.user.uid,
-          email,
-          displayName,
-          role,
-        );
+        const u = new User(cred.user.uid, email, displayName, role);
         return from(set(ref(this.db, `users/${u.id}`), u));
       }),
-      // 4) fai logout dall’utente appena creato
-      switchMap(() => from(signOut(this.auth))),
-      // 5) riloggati come manager
-      switchMap(() =>
-        from(
-          signInWithEmailAndPassword(
-            this.auth,
-            this.managerEmail!,
-            this.managerPassword!
-          )
-        )
-      ),
       map(() => void 0),
       catchError((err) => {
         console.error('createUserLocally error:', err);
         return throwError(() => err);
+      }),
+      finalize(() => {
+        void signOut(secondaryAuth).catch(() => undefined);
+        void deleteApp(secondaryApp).catch(() => undefined);
       })
     );
   }
@@ -227,6 +217,21 @@ export class AuthService {
   }
   getUserRole() {
     return this.currentUserRole$.asObservable();
+  }
+  /** Forza il fetch del profilo corrente dal DB e aggiorna il ruolo */
+  loadCurrentUserRole(): Observable<UserRole | null> {
+    return this.currentUser$.pipe(
+      take(1),
+      switchMap((u) => (u ? this.getUserProfile(u.uid).pipe(take(1)) : of(null))),
+      tap((profile) =>
+        this.currentUserRole$.next(profile?.role ?? null)
+      ),
+      map((profile) => profile?.role ?? null),
+      catchError((err) => {
+        console.error('loadCurrentUserRole error:', err);
+        return of(null);
+      })
+    );
   }
   isAuthenticated(): Observable<boolean> {
     return this.currentUser$.pipe(map((u) => !!u));
