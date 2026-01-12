@@ -1,15 +1,22 @@
 <div class="home">
-  <h1>Il nostro catalogo</h1>
+  <!-- Header Section -->
+  <div class="catalog-header">
+    <h1 class="catalog-title">Catalogo</h1>
+    <p class="catalog-subtitle">Sfoglia la collezione di divani, genera i listini per i clienti.</p>
+  </div>
 
-  <div class="filter-bar">
-    <div class="filter-card">
-      <div class="filter-control">
-        <span class="p-input-icon-left w-100">
-          <i class="pi pi-search"></i>
-          <input pInputText type="text" [(ngModel)]="searchTerm" placeholder="Cerca per nome prodotto" class="w-100" />
-        </span>
-      </div>
+  <!-- Search & Actions Row -->
+  <div class="catalog-toolbar">
+    <div class="search-wrapper">
+      <i class="pi pi-search"></i>
+      <input pInputText type="text" [(ngModel)]="searchTerm" placeholder="Cerca per nome modello..."
+        class="catalog-search" />
+      <button *ngIf="searchTerm" class="clear-search" (click)="searchTerm = ''">
+        <i class="pi pi-times"></i>
+      </button>
     </div>
+    <p-button label="Generazione Multi Listino" icon="pi pi-file-pdf" styleClass="multi-listino-btn"
+      (click)="openMultiListinoDialog()"></p-button>
   </div>
 
   <!-- Stato vuoto -->
@@ -164,10 +171,9 @@
 
   <!-- Template modificato: Dialog Configura Rivestimenti con Dropdown per ogni variante -->
   <p-dialog appendTo="body" [(visible)]="showRivestimentoDialog" header="Configura Rivestimenti per Varianti"
-    [modal]="true" [closable]="false"
-    [style]="{ width: '900px', maxHeight: '90vh', overflow: 'visible' }" styleClass="rivestimenti-config-dialog"
-    contentStyleClass="rivestimenti-dialog-content" [draggable]="false" [resizable]="false"
-    (onHide)="onRivestimentoHide()">
+    [modal]="true" [closable]="false" [style]="{ width: '900px', maxHeight: '90vh', overflow: 'visible' }"
+    styleClass="rivestimenti-config-dialog" contentStyleClass="rivestimenti-dialog-content" [draggable]="false"
+    [resizable]="false" (onHide)="onRivestimentoHide()">
 
     <div class="rivestimenti-dialog-body">
       <div class="dialog-content-scrollable">
@@ -247,12 +253,9 @@
                     (ngModelChange)="setVariantRivestimentoMeters(selectedVariantForRivestimento.id, r.id, $event)"
                     [min]="0.1" [step]="0.1" mode="decimal" [minFractionDigits]="1" [maxFractionDigits]="2" suffix=" mt"
                     placeholder="0.0" [style]="{ width: '140px' }"></p-inputNumber>
-                  <p-checkbox
-                    [ngModel]="isVariantRivestimentoIncluded(selectedVariantForRivestimento.id, r.id)"
+                  <p-checkbox [ngModel]="isVariantRivestimentoIncluded(selectedVariantForRivestimento.id, r.id)"
                     (onChange)="setVariantRivestimentoIncluded(selectedVariantForRivestimento.id, r.id, $event.checked)"
-                    [binary]="true"
-                    [ngModelOptions]="{ standalone: true }"
-                    styleClass="include-checkbox"></p-checkbox>
+                    [binary]="true" [ngModelOptions]="{ standalone: true }" styleClass="include-checkbox"></p-checkbox>
                   <div class="subtotal">
                     € {{ (r.mtPrice * getVariantRivestimentoMeters(selectedVariantForRivestimento.id, r.id)) |
                     number:'1.2-2' }}
@@ -280,11 +283,161 @@
     </div>
   </p-dialog>
 
+  <!-- Dialog Multi Listino -->
+  <p-dialog appendTo="body" [(visible)]="showMultiListinoDialog" [modal]="true" [closable]="true"
+    [style]="{ width: '1000px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false"
+    styleClass="multi-listino-dialog-v2" [showHeader]="false">
+
+    <div class="ml-dialog-container">
+      <!-- Header -->
+      <div class="ml-header">
+        <div class="ml-header-content">
+          <div class="ml-header-title">
+            <i class="pi pi-file-pdf"></i>
+            <div>
+              <h2>Generazione Multi Listino</h2>
+              <p>Seleziona i divani da includere nel listino PDF</p>
+            </div>
+          </div>
+          <button type="button" class="ml-close-btn" (click)="showMultiListinoDialog = false">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="ml-stats-bar">
+          <div class="ml-stat">
+            <span class="stat-value success">{{ multiListinoEligibleCount }}</span>
+            <span class="stat-label">Disponibili</span>
+          </div>
+          <div class="ml-stat">
+            <span class="stat-value primary">{{ multiListinoSelectedCount }}</span>
+            <span class="stat-label">Selezionati</span>
+          </div>
+          <div class="ml-stat">
+            <span class="stat-value warning">{{ multiListinoUnavailableCount }}</span>
+            <span class="stat-label">Non disponibili</span>
+          </div>
+          <div class="ml-stat">
+            <span class="stat-value muted">{{ multiListinoTotalCount }}</span>
+            <span class="stat-label">Totale</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="ml-toolbar">
+        <div class="ml-search">
+          <i class="pi pi-search"></i>
+          <input pInputText type="text" [(ngModel)]="multiListinoSearchTerm"
+            (ngModelChange)="onMultiListinoFilterChange($event)" placeholder="Cerca divani..." />
+        </div>
+        <div class="ml-toolbar-actions">
+          <p-button icon="pi pi-check-square" label="Seleziona tutti" [text]="true" size="small"
+            (click)="selectAllAvailableDivani()" [disabled]="!multiListinoEligibleCount"></p-button>
+          <p-button icon="pi pi-times" label="Deseleziona" [text]="true" size="small" severity="secondary"
+            (click)="clearMultiListinoSelection()" [disabled]="!multiListinoSelectedCount"></p-button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="ml-table-wrapper">
+        <div class="ml-loading-overlay" *ngIf="multiListinoLoading">
+          <p-progressBar mode="indeterminate" [style]="{ height: '4px' }"></p-progressBar>
+          <span>Caricamento divani...</span>
+        </div>
+
+        <p-table #divaniTable [value]="multiListinoDisplayRows" dataKey="id" [(selection)]="multiListinoSelected"
+          (selectionChange)="onDivaniSelectionChange($event)" [scrollable]="true" scrollHeight="400px" [rowHover]="true"
+          styleClass="ml-table-v2" *ngIf="!multiListinoLoading">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 4rem">
+                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+              </th>
+              <th>Divano</th>
+              <th style="width: 120px; text-align: right">Prezzo</th>
+              <th style="width: 140px">Stato</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-row>
+            <tr [class.ml-row-disabled]="!row.selezionabile">
+              <td>
+                <p-tableCheckbox [value]="row" [disabled]="!row.selezionabile"></p-tableCheckbox>
+              </td>
+              <td>
+                <div class="ml-product-cell">
+                  <span class="ml-product-name">{{ row.nome }}</span>
+                </div>
+              </td>
+              <td style="text-align: right">
+                <span class="ml-price">€ {{ row.prezzo | number:'1.2-2' }}</span>
+              </td>
+              <td>
+                <div class="ml-status-cell">
+                  <p-tag [severity]="row.selezionabile ? 'success' : 'warning'" [value]="row.stato"
+                    [rounded]="true"></p-tag>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4">
+                <div class="ml-empty-state">
+                  <i class="pi pi-inbox"></i>
+                  <p>Nessun divano trovato</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- Footer -->
+      <div class="ml-footer">
+        <div class="ml-language-select">
+          <label>Lingua:</label>
+          <p-dropdown [options]="availableLanguages" [(ngModel)]="multiListinoLanguage" optionLabel="name"
+            appendTo="body" [style]="{ width: '180px' }">
+            <ng-template let-lang pTemplate="item">
+              <div class="ml-lang-option">
+                <span class="flag">{{ lang.flag }}</span>
+                <span>{{ lang.name }}</span>
+              </div>
+            </ng-template>
+            <ng-template let-lang pTemplate="selectedItem">
+              <div class="ml-lang-option">
+                <span class="flag">{{ lang.flag }}</span>
+                <span>{{ lang.name }}</span>
+              </div>
+            </ng-template>
+          </p-dropdown>
+        </div>
+
+        <div class="ml-footer-actions">
+          <p-button label="Annulla" [outlined]="true" severity="secondary"
+            (click)="showMultiListinoDialog = false"></p-button>
+          <p-button label="Genera PDF" icon="pi pi-file-pdf" [disabled]="isMultiListinoActionDisabled"
+            (click)="generateMultiListino()">
+            <ng-template pTemplate="content">
+              <i class="pi pi-file-pdf"></i>
+              <span>Genera PDF</span>
+              <span class="ml-btn-badge" *ngIf="multiListinoSelectedCount > 0">{{ multiListinoSelectedCount }}</span>
+            </ng-template>
+          </p-button>
+        </div>
+      </div>
+    </div>
+  </p-dialog>
+
 
   <!-- Dialog Materassi Extra (Listino) -->
   <p-dialog [(visible)]="showListinoExtraMattressDialog" header="Extra (Materassi e Meccanismi)" [modal]="true"
-    [closable]="false" [style]="{ width: '700px', maxHeight: '90vh' }" [draggable]="false"
-    [resizable]="false">
+    [closable]="false" [style]="{ width: '700px', maxHeight: '90vh' }" [draggable]="false" [resizable]="false">
     <div class="p-fluid">
       <div class="extra-mattress-section">
         <h4 *ngIf="extraMattressesForListino.length === 0"
@@ -403,7 +556,7 @@
         <label for="languageSelect">Lingua del listino:</label>
         <p-dropdown id="languageSelect" [options]="availableLanguages" [(ngModel)]="selectedLanguage" optionLabel="name"
           placeholder="Seleziona lingua" [style]="{ width: '100%' }" styleClass="language-dropdown" appendTo="body"
-         [panelStyle]="{ 'max-height': '40vh', 'overflow': 'auto' }">
+          [panelStyle]="{ 'max-height': '40vh', 'overflow': 'auto' }">
           <ng-template let-language pTemplate="item">
             <div class="language-option">
               <span class="language-name">{{ language.name }}</span>
@@ -1078,6 +1231,49 @@
           (click)="applyComponentsToNewVariant()"></button>
       </div>
     </ng-template>
+  </p-dialog>
+
+  <!-- PDF Generation Progress Dialog -->
+  <p-dialog appendTo="body" [(visible)]="showPdfGeneratingDialog" [modal]="true" [closable]="false"
+    [style]="{ width: '480px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false"
+    styleClass="pdf-generating-dialog" [showHeader]="false">
+    <div class="pdf-gen-container">
+      <div class="pdf-gen-icon">
+        <i class="pi pi-file-pdf"></i>
+      </div>
+      <h2 class="pdf-gen-title">Generazione Listino in Corso</h2>
+      <p class="pdf-gen-subtitle">
+        {{ pdfGenLanguageCode === 'it' ? 'Preparazione del PDF...' : 'Traduzione e preparazione del PDF...' }}
+      </p>
+
+      <div class="pdf-gen-progress-section">
+        <div class="pdf-gen-progress-header">
+          <span class="progress-label">Progresso</span>
+          <span class="progress-value">{{ pdfGenProgress | number:'1.0-0' }}%</span>
+        </div>
+        <p-progressBar [value]="pdfGenProgress" [showValue]="false" styleClass="pdf-gen-progress-bar"></p-progressBar>
+        <div class="pdf-gen-eta">
+          <i class="pi pi-clock"></i>
+          <span>Tempo stimato: {{ pdfGenEstimateLabel }}</span>
+        </div>
+      </div>
+
+      <div class="pdf-gen-info">
+        <div class="info-item">
+          <i class="pi pi-globe"></i>
+          <span>Lingua: <strong>{{ pdfGenLanguageName }}</strong></span>
+        </div>
+        <div class="info-item" *ngIf="pdfGenProductName">
+          <i class="pi pi-tag"></i>
+          <span>Prodotto: <strong>{{ pdfGenProductName }}</strong></span>
+        </div>
+      </div>
+
+      <p class="pdf-gen-note">
+        <i class="pi pi-info-circle"></i>
+        Il PDF si aprirà automaticamente in una nuova scheda
+      </p>
+    </div>
   </p-dialog>
 
   <p-toast></p-toast>

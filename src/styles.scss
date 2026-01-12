@@ -260,15 +260,17 @@ body {
 }
 
 /* Override global per tutte le label “floating” di PrimeNG */
-.p-float-label > label {
-  font-weight: 300 !important;  /* thin */
-  font-size: 0.9rem !important;  /* leggermente più piccola */
+.p-float-label>label {
+  font-weight: 300 !important;
+  /* thin */
+  font-size: 0.9rem !important;
+  /* leggermente più piccola */
   color: #333 !important;
 }
 
 /* Override global per tutte le label nei form-group e nei .p-field */
 .form-group label,
-.p-field > label {
+.p-field>label {
   font-weight: 300 !important;
   font-size: 0.9rem !important;
   color: #333 !important;

@@ -8,6 +8,123 @@
     color: #333;
   }
 
+  // Catalog Header
+  .catalog-header {
+    text-align: center;
+    padding: 2rem 1rem 1.5rem;
+
+    .catalog-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .catalog-subtitle {
+      font-size: 1rem;
+      color: #64748b;
+      margin: 0.5rem 0 0;
+    }
+  }
+
+  // Catalog Toolbar
+  .catalog-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    padding: 0 1rem;
+    flex-wrap: wrap;
+
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 250px;
+      max-width: 400px;
+
+      >i.pi-search {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 1rem;
+        z-index: 1;
+      }
+
+      .catalog-search {
+        width: 100%;
+        padding: 0.875rem 2.5rem 0.875rem 2.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        background: #f8fafc;
+        transition: all 0.2s ease;
+
+        &:focus {
+          border-color: #3b82f6;
+          background: #ffffff;
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        &::placeholder {
+          color: #94a3b8;
+        }
+      }
+
+      .clear-search {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #e2e8f0;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        i {
+          font-size: 0.7rem;
+          color: #64748b;
+        }
+
+        &:hover {
+          background: #cbd5e1;
+        }
+      }
+    }
+
+    ::ng-deep .multi-listino-btn {
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+      border: none;
+      padding: 0.875rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+
+      &:hover {
+        background: linear-gradient(135deg, #0069d9 0%, #004085 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 123, 255, 0.35);
+      }
+
+      .pi {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
   .filter-bar {
     margin: 0 auto 1.5rem;
     max-width: 900px;
@@ -1014,6 +1131,33 @@
 
 @media (max-width: 768px) {
   .home {
+    .catalog-header {
+      padding: 1.5rem 1rem 1rem;
+
+      .catalog-title {
+        font-size: 1.75rem;
+      }
+
+      .catalog-subtitle {
+        font-size: 0.9rem;
+      }
+    }
+
+    .catalog-toolbar {
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .search-wrapper {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      ::ng-deep .multi-listino-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
     .p-grid {
       grid-template-columns: 1fr;
       gap: 1rem;
@@ -2252,4 +2396,639 @@
   flex-wrap: wrap;
   gap: 0.25rem;
   margin-top: 0.5rem;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+// ============================================
+// Multi Listino Dialog V2 - Modern Redesign
+// ============================================
+
+::ng-deep .multi-listino-dialog-v2 {
+  .p-dialog-content {
+    padding: 0 !important;
+    overflow: auto;
+    border-radius: 16px;
+    max-height: 85vh;
+  }
+
+  .p-dialog {
+    border-radius: 16px;
+    overflow: visible;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.ml-dialog-container {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  min-height: 100%;
+}
+
+// Header
+.ml-header {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: #ffffff;
+  padding: 1.5rem;
+
+  .ml-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+  }
+
+  .ml-header-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    >i {
+      font-size: 2rem;
+      color: #ffffff;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      margin: 0.25rem 0 0;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.9rem;
+    }
+  }
+
+  .ml-close-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    i {
+      font-size: 1rem;
+    }
+  }
+}
+
+// Stats Bar
+.ml-stats-bar {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.ml-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+
+    &.success {
+      color: #4ade80;
+    }
+
+    &.primary {
+      color: #ffffff;
+    }
+
+    &.warning {
+      color: #fbbf24;
+    }
+
+    &.muted {
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+}
+
+// Toolbar
+.ml-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+
+  .ml-search {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0 1rem;
+    flex: 1;
+    max-width: 400px;
+    transition: all 0.2s ease;
+
+    &:focus-within {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    i {
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    input {
+      border: none;
+      background: transparent;
+      padding: 0.75rem 0.75rem;
+      flex: 1;
+      font-size: 0.95rem;
+      outline: none;
+
+      &::placeholder {
+        color: #94a3b8;
+      }
+    }
+  }
+
+  .ml-toolbar-actions {
+    display: flex;
+    gap: 0.25rem;
+  }
+}
+
+// Table Wrapper
+.ml-table-wrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  padding: 0 1.5rem;
+}
+
+.ml-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  z-index: 10;
+
+  span {
+    color: #475569;
+    font-weight: 500;
+  }
+
+  ::ng-deep .p-progressbar {
+    width: 200px;
+    height: 4px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+}
+
+// Table Styles
+::ng-deep .ml-table-v2 {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+
+  .p-datatable-thead>tr>th {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.875rem 1rem;
+  }
+
+  .p-datatable-tbody>tr {
+    transition: background 0.15s ease;
+
+    &:hover:not(.ml-row-disabled) {
+      background: #f8fafc;
+    }
+
+    >td {
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+
+    &:last-child>td {
+      border-bottom: none;
+    }
+  }
+
+  .p-datatable-wrapper {
+    border-radius: 12px;
+  }
+}
+
+.ml-row-disabled {
+  opacity: 0.5;
+  background: #fafafa !important;
+
+  &:hover {
+    background: #fafafa !important;
+  }
+}
+
+.ml-product-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  .ml-product-name {
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .ml-product-id {
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+}
+
+.ml-model-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #f1f5f9;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.ml-price {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.ml-status-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .ml-status-reason {
+    color: #ef4444;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+}
+
+.ml-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: #94a3b8;
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    font-size: 1rem;
+  }
+}
+
+// Footer
+.ml-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.ml-language-select {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  label {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  ::ng-deep .p-dropdown {
+    border-radius: 10px;
+  }
+}
+
+.ml-lang-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .flag {
+    font-size: 1.1rem;
+  }
+}
+
+.ml-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  ::ng-deep .p-button {
+    border-radius: 10px;
+  }
+
+  // Genera PDF button styling
+  ::ng-deep .p-button:not(.p-button-outlined) {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #0069d9 0%, #004085 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+    }
+
+    &:disabled {
+      background: #94a3b8;
+      box-shadow: none;
+    }
+  }
+}
+
+.ml-btn-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  background: #ffffff;
+  color: #007bff;
+  border-radius: 11px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-left: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .ml-header {
+    padding: 1rem;
+
+    .ml-header-title {
+      h2 {
+        font-size: 1.25rem;
+      }
+
+      >i {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .ml-stats-bar {
+    gap: 1rem;
+
+    .ml-stat .stat-value {
+      font-size: 1.25rem;
+    }
+  }
+
+  .ml-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+
+    .ml-search {
+      max-width: 100%;
+    }
+
+    .ml-toolbar-actions {
+      justify-content: flex-end;
+    }
+  }
+
+  .ml-table-wrapper {
+    padding: 0 1rem;
+  }
+
+  .ml-footer {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+
+    .ml-footer-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+}
+
+// ============================================
+// PDF Generation Progress Dialog
+// ============================================
+
+::ng-deep .pdf-generating-dialog {
+  .p-dialog {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+  }
+
+  .p-dialog-content {
+    padding: 0 !important;
+    background: #ffffff;
+  }
+}
+
+.pdf-gen-container {
+  padding: 2.5rem 2rem;
+  text-align: center;
+
+  .pdf-gen-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+
+    i {
+      font-size: 2.25rem;
+      color: #ffffff;
+    }
+  }
+
+  @keyframes pulse {
+
+    0%,
+    100% {
+      transform: scale(1);
+      box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+    }
+
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 15px 40px rgba(239, 68, 68, 0.4);
+    }
+  }
+
+  .pdf-gen-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .pdf-gen-subtitle {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin: 0 0 2rem;
+  }
+
+  .pdf-gen-progress-section {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+
+    .pdf-gen-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+
+      .progress-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .progress-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e3a5f;
+      }
+    }
+
+    ::ng-deep .pdf-gen-progress-bar {
+      height: 12px;
+      border-radius: 6px;
+      background: #e2e8f0;
+      overflow: hidden;
+
+      .p-progressbar-value {
+        background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+        border-radius: 6px;
+        transition: width 0.2s ease;
+      }
+    }
+
+    .pdf-gen-eta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: #64748b;
+
+      i {
+        font-size: 0.9rem;
+        color: #94a3b8;
+      }
+    }
+  }
+
+  .pdf-gen-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #475569;
+
+      i {
+        color: #94a3b8;
+      }
+
+      strong {
+        color: #1e293b;
+      }
+    }
+  }
+
+  .pdf-gen-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0;
+    padding: 1rem;
+    background: #f1f5f9;
+    border-radius: 10px;
+
+    i {
+      color: #3b82f6;
+    }
+  }
 }

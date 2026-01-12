@@ -24,6 +24,7 @@ import { ToastModule } from 'primeng/toast';
 import { FileUploadModule } from 'primeng/fileupload';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { TableModule } from 'primeng/table';
+import { Table } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -32,6 +33,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ToolbarModule } from 'primeng/toolbar';
 
 
 import { SofaProduct } from '../../../models/sofa-product.model';
@@ -63,6 +65,24 @@ interface EditGroupedComponent {
   indices: number[];
 }
 
+interface MultiListinoRow {
+  product: SofaProduct;
+  variants: Variant[];
+  rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] };
+  eligible: boolean;
+  reason?: string;
+}
+
+interface MultiListinoTableRow {
+  id: string;
+  nome: string;
+  modello: string;
+  prezzo: number;
+  stato: string;
+  selezionabile: boolean;
+  source?: MultiListinoRow;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -86,7 +106,8 @@ interface EditGroupedComponent {
     FloatLabelModule,
     TagModule,
     DividerModule,
-    CheckboxModule
+    CheckboxModule,
+    ToolbarModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -98,6 +119,7 @@ export class HomeComponent implements OnInit {
   @ViewChild('fileUpload') fileUpload?: any;
   @ViewChild('hiddenFileInput') hiddenFileInput?: ElementRef;
   @ViewChild('variantFormSection') variantFormSection?: ElementRef<HTMLElement>;
+  @ViewChild('divaniTable') divaniTable?: Table;
 
   products: SofaProduct[] = [];
   productVariants: Map<string, Variant[]> = new Map();
@@ -117,6 +139,7 @@ export class HomeComponent implements OnInit {
 
   // Dialog states
   showMarkupDialog = false;
+  showMultiListinoDialog = false;
   showRivestimentoDialog = false;
   showEditProductDialog = false;
   showAddComponentDialog = false;
@@ -175,6 +198,40 @@ export class HomeComponent implements OnInit {
   saving = false;
 
   showPdfTemplate = false;
+
+  // Multi listino
+  multiListinoRows: MultiListinoRow[] = [];
+  multiListinoDisplayRows: MultiListinoTableRow[] = [];
+  multiListinoDivaniEsempio: MultiListinoTableRow[] = [
+    { id: 'SOF-001', nome: 'Divano Aurora', modello: 'Aurora Comfort', prezzo: 1890, stato: 'Disponibile', selezionabile: true },
+    { id: 'SOF-002', nome: 'Divano Notte', modello: 'Notte Queen', prezzo: 1590, stato: 'In lavorazione', selezionabile: true },
+    { id: 'SOF-003', nome: 'Divano Sera', modello: 'Sera Slim', prezzo: 1290, stato: 'Non selezionabile', selezionabile: false },
+    { id: 'SOF-004', nome: 'Divano Porto', modello: 'Porto Maxi', prezzo: 2140, stato: 'Disponibile', selezionabile: true }
+  ];
+  multiListinoSelected: MultiListinoTableRow[] = [];
+  multiListinoSearchTerm = '';
+  multiListinoLoading = false;
+  multiListinoGenerating = false;
+  multiListinoProgress = 0;
+  multiListinoLanguage: LanguageOption = { code: 'it', name: 'Italiano', flag: '🇮🇹' };
+  private multiListinoProgressTimer: any;
+
+  // PDF Generation Dialog
+  showPdfGeneratingDialog = false;
+  pdfGenProgress = 0;
+  pdfGenLanguageCode = 'it';
+  pdfGenLanguageName = 'Italiano';
+  pdfGenProductName = '';
+  private pdfGenProgressTimer: any;
+  private pdfGenTotalSeconds = 3;
+
+  get pdfGenEstimateLabel(): string {
+    const remaining = Math.ceil((100 - this.pdfGenProgress) * this.pdfGenTotalSeconds / 100);
+    if (remaining <= 0) return 'Quasi pronto...';
+    if (remaining < 60) return `~${remaining}s`;
+    const mins = Math.ceil(remaining / 60);
+    return `~${mins} min`;
+  }
 
   // Component management
   availableComponents: ComponentModel[] = [];
@@ -251,6 +308,7 @@ export class HomeComponent implements OnInit {
           this.cdr.detectChanges();
         });
       });
+      this.multiListinoLanguage = this.selectedLanguage;
       this.cdr.detectChanges();
     });
   }
@@ -327,6 +385,401 @@ export class HomeComponent implements OnInit {
       return Array.isArray(product.photoUrl) ? product.photoUrl : [product.photoUrl];
     }
     return [];
+  }
+
+  // === Multi Listino ===
+  async openMultiListinoDialog(): Promise<void> {
+    this.showMultiListinoDialog = true;
+    this.multiListinoSelected = [];
+    this.multiListinoSearchTerm = '';
+    this.multiListinoDisplayRows = [...this.multiListinoDivaniEsempio];
+    await this.prepareMultiListinoRows();
+    this.buildMultiListinoTableRows();
+    this.cdr.detectChanges();
+  }
+
+  private async prepareMultiListinoRows(): Promise<void> {
+    this.multiListinoLoading = true;
+    const rows: MultiListinoRow[] = [];
+
+    for (const product of this.products) {
+      const variants = this.getProductVariants(product.id);
+      const rivMap: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] } = {};
+      let eligible = !!product.ricarico && product.ricarico >= 0 && variants.length > 0;
+      let reason = '';
+
+      for (const variant of variants) {
+        const rivs = await this.variantService.loadVariantRivestimenti(variant.id);
+        if (rivs && rivs.length) {
+          rivMap[variant.id] = rivs;
+        } else {
+          eligible = false;
+          reason = reason || 'Non Disponibile';
+        }
+      }
+
+      if (!product.ricarico && !reason) {
+        eligible = false;
+        reason = 'ricarico non salvato';
+      }
+
+      rows.push({ product, variants, rivestimentiByVariant: rivMap, eligible, reason });
+    }
+
+    this.multiListinoRows = rows;
+    this.multiListinoLoading = false;
+    this.buildMultiListinoTableRows();
+    this.cdr.detectChanges();
+  }
+
+  private buildMultiListinoTableRows(): void {
+    if (!this.multiListinoRows.length) {
+      this.multiListinoDisplayRows = [...this.multiListinoDivaniEsempio];
+      return;
+    }
+
+    const previousSelection = new Set(this.multiListinoSelected.map(s => s.id));
+
+    this.multiListinoDisplayRows = this.multiListinoRows.map(row => ({
+      id: row.product.id,
+      nome: row.product.name,
+      modello: row.product.description || 'Modello standard',
+      prezzo: this.getDivanoPrice(row),
+      stato: row.eligible ? 'Disponibile' : (row.reason || 'Non selezionabile'),
+      selezionabile: row.eligible,
+      source: row
+    }));
+
+    this.multiListinoSelected = this.multiListinoDisplayRows.filter(
+      item => previousSelection.has(item.id) && item.selezionabile
+    );
+  }
+
+  onMultiListinoFilterChange(term: string): void {
+    this.multiListinoSearchTerm = term;
+    this.applyMultiListinoFilter();
+  }
+
+  private applyMultiListinoFilter(): void {
+    const term = this.multiListinoSearchTerm?.toLowerCase().trim() || '';
+
+    if (!term) {
+      // No filter - rebuild all rows
+      this.buildMultiListinoTableRows();
+      return;
+    }
+
+    // Filter the display rows based on the search term
+    const allRows = this.multiListinoRows.map(row => ({
+      id: row.product.id,
+      nome: row.product.name || '',
+      modello: row.product.description || 'Modello standard',
+      prezzo: this.getDivanoPrice(row),
+      stato: row.eligible ? 'Disponibile' : (row.reason || 'Non selezionabile'),
+      selezionabile: row.eligible,
+      source: row
+    }));
+
+    this.multiListinoDisplayRows = allRows.filter(row =>
+      row.nome.toLowerCase().includes(term) ||
+      row.modello.toLowerCase().includes(term) ||
+      row.stato.toLowerCase().includes(term)
+    );
+  }
+
+  private getDivanoPrice(row: MultiListinoRow): number {
+    if (!row?.variants?.length) {
+      return row.product.ricarico ?? 0;
+    }
+    const variant = row.variants[0];
+    return variant?.price ?? variant?.customPrice ?? 0;
+  }
+
+  get selectedMultiListinoProducts(): MultiListinoRow[] {
+    const unique = new Map<string, MultiListinoRow>();
+    this.multiListinoSelected.forEach(item => {
+      if (item.source) {
+        unique.set(item.source.product.id, item.source);
+      }
+    });
+    return Array.from(unique.values());
+  }
+
+  onDivaniSelectionChange(selection: MultiListinoTableRow[]): void {
+    this.multiListinoSelected = selection.filter(item => item.selezionabile);
+    this.cdr.detectChanges();
+  }
+
+  get isMultiListinoActionDisabled(): boolean {
+    return this.multiListinoGenerating || this.multiListinoSelected.length === 0;
+  }
+
+  get multiListinoEstimateSeconds(): number {
+    const languageCode = this.multiListinoLanguage?.code || 'it';
+    const perItem = languageCode === 'it' ? 3 : 12;
+    return this.multiListinoSelected.length * perItem;
+  }
+
+  get multiListinoEstimateLabel(): string {
+    const secs = this.multiListinoEstimateSeconds;
+    if (!secs) return '—';
+    if (secs < 60) return `${secs}s`;
+    const mins = Math.ceil(secs / 60);
+    return `${mins} min`;
+  }
+
+  get multiListinoSelectedCount(): number {
+    return this.multiListinoSelected.length;
+  }
+
+  get multiListinoEligibleCount(): number {
+    if (!this.multiListinoRows.length) {
+      return this.multiListinoDisplayRows.filter(r => r.selezionabile).length;
+    }
+    return this.multiListinoRows.filter(r => r.eligible).length;
+  }
+
+  get multiListinoTotalCount(): number {
+    return this.multiListinoRows.length || this.multiListinoDisplayRows.length;
+  }
+
+  get multiListinoUnavailableCount(): number {
+    return Math.max(0, this.multiListinoTotalCount - this.multiListinoEligibleCount);
+  }
+
+  selectAllAvailableDivani(): void {
+    this.multiListinoSelected = this.multiListinoDisplayRows.filter(r => r.selezionabile);
+    this.cdr.detectChanges();
+  }
+
+  clearMultiListinoSelection(): void {
+    this.multiListinoSelected = [];
+    this.cdr.detectChanges();
+  }
+
+  private startMultiListinoProgress(totalSeconds: number): void {
+    this.multiListinoProgress = 0;
+    const intervalMs = 200;
+    const steps = Math.max(1, Math.floor((totalSeconds * 1000) / intervalMs));
+    const increment = 100 / steps;
+
+    this.multiListinoProgressTimer = setInterval(() => {
+      this.multiListinoProgress = Math.min(99, this.multiListinoProgress + increment);
+      this.cdr.detectChanges();
+    }, intervalMs);
+  }
+
+  private stopMultiListinoProgress(): void {
+    if (this.multiListinoProgressTimer) {
+      clearInterval(this.multiListinoProgressTimer);
+      this.multiListinoProgressTimer = null;
+    }
+    this.multiListinoProgress = 100;
+    this.cdr.detectChanges();
+  }
+
+  // PDF Generation Progress Dialog Methods
+  private startPdfGenProgress(totalSeconds: number, languageCode: string, languageName: string, productName?: string): void {
+    this.pdfGenProgress = 0;
+    this.pdfGenTotalSeconds = totalSeconds;
+    this.pdfGenLanguageCode = languageCode;
+    this.pdfGenLanguageName = languageName;
+    this.pdfGenProductName = productName || '';
+    this.showPdfGeneratingDialog = true;
+
+    const intervalMs = 200;
+    const steps = Math.max(1, Math.floor((totalSeconds * 1000) / intervalMs));
+    const increment = 100 / steps;
+
+    this.pdfGenProgressTimer = setInterval(() => {
+      this.pdfGenProgress = Math.min(99, this.pdfGenProgress + increment);
+      this.cdr.detectChanges();
+    }, intervalMs);
+
+    this.cdr.detectChanges();
+  }
+
+  private stopPdfGenProgress(): void {
+    if (this.pdfGenProgressTimer) {
+      clearInterval(this.pdfGenProgressTimer);
+      this.pdfGenProgressTimer = null;
+    }
+    this.pdfGenProgress = 100;
+    this.cdr.detectChanges();
+
+    // Hide dialog after a short delay
+    setTimeout(() => {
+      this.showPdfGeneratingDialog = false;
+      this.cdr.detectChanges();
+    }, 500);
+  }
+
+  stampaPDF(): void {
+    // Placeholder per la generazione del multi listino PDF
+  }
+
+  async generateMultiListino(): Promise<void> {
+    if (this.multiListinoSelected.length === 0 || this.multiListinoGenerating) return;
+
+    const selectedRows = this.selectedMultiListinoProducts;
+    if (!selectedRows.length) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Nessun divano selezionabile',
+        detail: 'Seleziona almeno un divano disponibile per generare il PDF'
+      });
+      return;
+    }
+
+    const languageCode = this.multiListinoLanguage?.code || 'it';
+
+    const totalSeconds = this.multiListinoEstimateSeconds || (selectedRows.length * (languageCode === 'it' ? 3 : 12));
+    const previewWindow = this.isBrowser ? window.open('', '_blank') : null;
+    if (previewWindow && !previewWindow.closed) {
+      previewWindow.document.open();
+      const loadingHtml = `
+        <!DOCTYPE html>
+        <html lang="it">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Generazione Multi Listino</title>
+            <style>
+              :root {
+                --bg: #f7fafc;
+                --card: #ffffff;
+                --accent: #007bff;
+                --accent-dark: #0056b3;
+                --muted: #4a5568;
+              }
+              * { box-sizing: border-box; }
+              body {
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: radial-gradient(circle at 20% 20%, #e3f2fd 0, #f7fafc 45%, #e2e8f0 100%);
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: var(--accent-dark);
+              }
+              .card {
+                width: min(520px, 90vw);
+                background: var(--card);
+                box-shadow: 0 20px 60px rgba(0, 123, 255, 0.15);
+                border-radius: 18px;
+                padding: 32px 28px;
+                text-align: center;
+                border: 1px solid #e2e8f0;
+              }
+              .pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 14px;
+                border-radius: 999px;
+                background: #e3f2fd;
+                color: #0056b3;
+                font-weight: 600;
+                font-size: 12px;
+                letter-spacing: 0.3px;
+                text-transform: uppercase;
+              }
+              .spinner {
+                width: 64px;
+                height: 64px;
+                margin: 28px auto 18px;
+                border-radius: 50%;
+                border: 6px solid #e3f2fd;
+                border-top-color: var(--accent);
+                animation: spin 1s linear infinite;
+              }
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+              h1 {
+                margin: 0 0 10px;
+                font-size: 22px;
+                letter-spacing: -0.2px;
+                color: var(--accent-dark);
+              }
+              p {
+                margin: 0;
+                color: var(--muted);
+                font-size: 14px;
+                line-height: 1.5;
+              }
+              .count {
+                margin-top: 16px;
+                padding: 10px 16px;
+                background: #f0f9ff;
+                border-radius: 8px;
+                font-size: 13px;
+                color: #0056b3;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <div class="pill">Multi Listino PDF</div>
+              <div class="spinner" aria-label="Caricamento"></div>
+              <h1>Generazione Multi Listino in corso</h1>
+              <p>Stiamo preparando il PDF con ${selectedRows.length} prodott${selectedRows.length === 1 ? 'o' : 'i'}. Questa finestra si aggiorner&agrave; automaticamente quando il file &egrave; pronto.</p>
+              <div class="count">
+                <strong>${selectedRows.length}</strong> divan${selectedRows.length === 1 ? 'o' : 'i'} selezionat${selectedRows.length === 1 ? 'o' : 'i'}
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+      previewWindow.document.write(loadingHtml);
+      previewWindow.document.close();
+    }
+
+    this.multiListinoGenerating = true;
+    this.startMultiListinoProgress(totalSeconds);
+
+    try {
+      const entries = await Promise.all(selectedRows.map(async row => {
+        const rivMap = row.rivestimentiByVariant;
+        return {
+          product: row.product,
+          variants: row.variants,
+          rivestimentiByVariant: rivMap,
+          extraMattresses: row.product.materassiExtra || [],
+          extraMechanisms: row.product.meccanismiExtra || [],
+          markup: row.product.ricarico || 0,
+          delivery: row.product.deliveryPrice || 0
+        };
+      }));
+
+      await this.pdfService.generateMultiListinoPdf(
+        entries,
+        languageCode,
+        true,
+        previewWindow || undefined
+      );
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Multi listino generato',
+        detail: 'Il PDF è stato generato e aperto in una nuova scheda'
+      });
+    } catch (error) {
+      console.error('Errore generazione multi listino:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'Errore durante la generazione del multi listino'
+      });
+    } finally {
+      this.stopMultiListinoProgress();
+      this.multiListinoGenerating = false;
+      this.showMultiListinoDialog = false;
+      this.multiListinoSelected = [];
+      this.buildMultiListinoTableRows();
+      this.cdr.detectChanges();
+    }
   }
 
   hasProductImage(productId: string): boolean {
@@ -611,13 +1064,20 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    try {
-      this.messageService.add({
-        severity: 'info',
-        summary: preview ? 'Anteprima PDF' : 'Generazione PDF',
-        detail: 'Generazione listino in corso'
-      });
+    // Calculate timing based on language (Italian ~3s, foreign ~12s)
+    const languageCode = this.selectedLanguage?.code || 'it';
+    const totalSeconds = languageCode === 'it' ? 3 : 12;
 
+    // Start progress dialog
+    this.showMarkupDialog = false;
+    this.startPdfGenProgress(
+      totalSeconds,
+      languageCode,
+      this.selectedLanguage?.name || 'Italiano',
+      this.selectedProduct.name
+    );
+
+    try {
       // Save rivestimenti for each variant
       for (const variantId of Object.keys(this.variantRivestimentiSelections)) {
         const rivestimenti = this.variantRivestimentiSelections[variantId] || [];
@@ -683,7 +1143,7 @@ export class HomeComponent implements OnInit {
 
       await this.pdfService.generateListinoPdf(updatedProduct.name, this.selectedLanguage.code, preview, previewWindow);
       this.showPdfTemplate = false;
-      this.cdr.detectChanges();
+      this.stopPdfGenProgress();
 
       // Update local product copy
       const productIndex = this.products.findIndex(p => p.id === updatedProduct.id);
@@ -701,6 +1161,7 @@ export class HomeComponent implements OnInit {
 
     } catch (error) {
       console.error('Error generating PDF:', error);
+      this.stopPdfGenProgress();
       this.messageService.add({
         severity: 'error',
         summary: 'Errore',
@@ -708,7 +1169,6 @@ export class HomeComponent implements OnInit {
       });
     }
 
-    this.showMarkupDialog = false;
     this.cdr.detectChanges();
   }
 

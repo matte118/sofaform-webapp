@@ -131,63 +131,10 @@ export class PdfGenerationService {
       return dynamicTranslations[text] || text;
     };
 
-    const docDefinition: any = {
-      pageSize: 'A4',
-      pageOrientation: 'landscape',
-      defaultStyle: { fontSize: 9, lineHeight: 1.2, color: '#2d3748' },
-      styles: {
-        coverTitle: { fontSize: 32, bold: true, color: '#1a365d', alignment: 'center' },
-        productName: { fontSize: 24, bold: true, color: '#2d3748', alignment: 'center', margin: [0, 0, 0, 15] },
-        description: { fontSize: 11, color: '#718096', alignment: 'center', italics: true, margin: [0, 5, 0, 5] },
-        matrixHeader: { bold: true, fillColor: '#1a365d', color: '#ffffff', fontSize: 9, alignment: 'center', margin: [3, 6, 3, 6] },
-        matrixCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4] },
-        variantCell: { fontSize: 8, bold: true, alignment: 'left', margin: [8, 4, 3, 4], color: '#1a365d' },
-        priceCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4], bold: true, color: '#1a365d' },
-        techSpecs: { fontSize: 10, margin: [0, 10, 0, 10] },
-        small: { fontSize: 7, color: '#718096', alignment: 'center' },
-
-        conditionsTitle: { fontSize: 18, bold: true, color: '#1a365d', alignment: 'center' },
-        conditionsSectionTitle: { fontSize: 11, bold: true, color: '#1a365d', margin: [0, 12, 0, 6] },
-        conditionsBody: { fontSize: 9, color: '#2d3748', alignment: 'left', lineHeight: 1.35 },
-
-        quoteMark: { fontSize: 42, bold: true, color: '#000000', lineHeight: 0.8 },
-        quoteText: { fontSize: 12, color: '#4a5568', italics: true, alignment: 'left' }
-      },
-      footer: (currentPage: number, pageCount: number) => ({
-        columns: [{ text: `${currentPage} / ${pageCount}`, style: 'small', margin: [0, 10, 0, 0] }]
-      }),
-      content: []
-    };
+    const docDefinition: any = this.createBaseDocDefinition();
 
     const logoBase64 = await this.getLogoBase64();
-    const PAGE_H = 595.28;
-    const V_MARGINS = 60;
-    const IMG_H = 250;
-    const available = PAGE_H - V_MARGINS;
-
-    const EPS = 5;
-    const spacerTop = Math.max(0, Math.floor((available - IMG_H - EPS) / 2));
-    const spacerBottom = Math.max(0, available - IMG_H - EPS - spacerTop);
-
-    docDefinition.content.push({
-      table: {
-        widths: ['*'],
-        heights: [spacerTop, IMG_H, spacerBottom],
-        body: [
-          [{ text: '' }],
-          [{
-            image: logoBase64,
-            width: 500,
-            height: IMG_H,
-            alignment: 'center',
-            margin: [0, 0, 0, 0],
-          }],
-        ]
-      },
-      layout: 'noBorders',
-      pageBreak: 'after'
-    });
-
+    this.addCoverPage(docDefinition, logoBase64);
     this.addCommercialConditionsPage(docDefinition, t);
 
     docDefinition.content.push({
@@ -208,6 +155,116 @@ export class PdfGenerationService {
     }
 
     const filename = this.getFilename(productName, languageCode);
+    const pdfInstance = pdfMake.createPdf(docDefinition);
+
+    if (preview) {
+      pdfInstance.getBlob(blob => {
+        const url = URL.createObjectURL(blob);
+
+        if (previewWindow && !previewWindow.closed) {
+          previewWindow.location.href = url;
+          previewWindow.focus();
+          return;
+        }
+
+        try {
+          window.open(url, '_blank');
+        } catch (openError) {
+          console.warn('PDF preview blocked; cannot open new window.', openError);
+        }
+      });
+      return;
+    }
+
+    pdfInstance.download(filename);
+  }
+
+  async generateMultiListinoPdf(
+    entries: {
+      product: SofaProduct;
+      variants: Variant[];
+      rivestimentiByVariant: { [variantId: string]: { rivestimento: Rivestimento; metri: number }[] };
+      extraMattresses: { name: string; price: number }[];
+      extraMechanisms: { name: string; price: number }[];
+      markup: number;
+      delivery: number;
+    }[],
+    languageCode: string = 'it',
+    preview = false,
+    previewWindow?: Window | null
+  ) {
+    if (!entries || entries.length === 0) return;
+
+    this.currentLang = languageCode || 'it';
+    const staticTranslations = this.i18nService.getListinoTranslations(languageCode);
+
+    const uniqueTexts = new Set<string>();
+    const addText = (text?: string | null) => { if (text) uniqueTexts.add(text); };
+
+    entries.forEach(entry => {
+      addText(entry.product.name);
+      addText(entry.product.description);
+      addText(entry.product.seduta);
+      addText(entry.product.schienale);
+      addText(entry.product.meccanica);
+      addText(entry.product.materasso);
+
+      entry.variants.forEach(v => addText(this.getVariantLabel(v)));
+      Object.values(entry.rivestimentiByVariant || {}).forEach(rivs => rivs.forEach(r => addText(r.rivestimento.name)));
+      entry.extraMattresses.forEach(extra => addText(extra.name));
+      entry.extraMechanisms.forEach(extra => addText(extra.name));
+    });
+
+    let dynamicTranslations: { [key: string]: string } = {};
+    if (languageCode !== 'it' && uniqueTexts.size > 0) {
+      try {
+        dynamicTranslations = await firstValueFrom(this.translationService.translateTexts(Array.from(uniqueTexts), languageCode)) || {};
+      } catch (error) {
+        console.warn('Dynamic translation failed, using original texts:', error);
+        Array.from(uniqueTexts).forEach(t => dynamicTranslations[t] = t);
+      }
+    } else {
+      Array.from(uniqueTexts).forEach(t => dynamicTranslations[t] = t);
+    }
+
+    const t = (text: string) => {
+      if (staticTranslations[text] !== undefined) return staticTranslations[text];
+      return dynamicTranslations[text] || text;
+    };
+
+    const docDefinition: any = this.createBaseDocDefinition();
+    const logoBase64 = await this.getLogoBase64();
+    this.addCoverPage(docDefinition, logoBase64);
+    this.addCommercialConditionsPage(docDefinition, t);
+
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      this.productData = entry.product;
+      this.variantsData = entry.variants;
+      this.rivestimentiByVariant = entry.rivestimentiByVariant || {};
+      this.extraMattressesData = entry.extraMattresses || [];
+      this.extraMechanismsData = entry.extraMechanisms || [];
+      this.markupPerc = entry.markup || 0;
+      this.deliveryCost = entry.delivery || 0;
+
+      const productImages = await this.getProductImagesBase64();
+      const hasExtras = this.extraMattressesData.length > 0 || this.extraMechanismsData.length > 0;
+
+      docDefinition.content.push({
+        text: t(entry.product.name),
+        style: 'productName',
+        margin: [0, 20, 0, 30],
+        pageBreak: i === 0 ? undefined : 'before'
+      });
+
+      await this.addProductImagesWithDescription(docDefinition, t, productImages, !hasExtras);
+      await this.addMatrixPricingTable(docDefinition, t);
+      if (hasExtras) {
+        await this.addExtraServices(docDefinition, t, productImages);
+      }
+    }
+
+    const filename = this.getFilename('Multi_Listino', languageCode);
     const pdfInstance = pdfMake.createPdf(docDefinition);
 
     if (preview) {
@@ -273,6 +330,64 @@ export class PdfGenerationService {
         }
       ],
       margin: [40, 40, 40, 40],
+      pageBreak: 'after'
+    });
+  }
+
+  private createBaseDocDefinition(): any {
+    return {
+      pageSize: 'A4',
+      pageOrientation: 'landscape',
+      defaultStyle: { fontSize: 9, lineHeight: 1.2, color: '#2d3748' },
+      styles: {
+        coverTitle: { fontSize: 32, bold: true, color: '#1a365d', alignment: 'center' },
+        productName: { fontSize: 24, bold: true, color: '#2d3748', alignment: 'center', margin: [0, 0, 0, 15] },
+        description: { fontSize: 11, color: '#718096', alignment: 'center', italics: true, margin: [0, 5, 0, 5] },
+        matrixHeader: { bold: true, fillColor: '#1a365d', color: '#ffffff', fontSize: 9, alignment: 'center', margin: [3, 6, 3, 6] },
+        matrixCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4] },
+        variantCell: { fontSize: 8, bold: true, alignment: 'left', margin: [8, 4, 3, 4], color: '#1a365d' },
+        priceCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4], bold: true, color: '#1a365d' },
+        techSpecs: { fontSize: 10, margin: [0, 10, 0, 10] },
+        small: { fontSize: 7, color: '#718096', alignment: 'center' },
+        conditionsTitle: { fontSize: 18, bold: true, color: '#1a365d', alignment: 'center' },
+        conditionsSectionTitle: { fontSize: 11, bold: true, color: '#1a365d', margin: [0, 12, 0, 6] },
+        conditionsBody: { fontSize: 9, color: '#2d3748', alignment: 'left', lineHeight: 1.35 },
+        quoteMark: { fontSize: 42, bold: true, color: '#000000', lineHeight: 0.8 },
+        quoteText: { fontSize: 12, color: '#4a5568', italics: true, alignment: 'left' }
+      },
+      footer: (currentPage: number, pageCount: number) => ({
+        columns: [{ text: `${currentPage} / ${pageCount}`, style: 'small', margin: [0, 10, 0, 0] }]
+      }),
+      content: []
+    };
+  }
+
+  private addCoverPage(docDefinition: any, logoBase64: string): void {
+    const PAGE_H = 595.28;
+    const V_MARGINS = 60;
+    const IMG_H = 250;
+    const available = PAGE_H - V_MARGINS;
+
+    const EPS = 5;
+    const spacerTop = Math.max(0, Math.floor((available - IMG_H - EPS) / 2));
+    const spacerBottom = Math.max(0, available - IMG_H - EPS - spacerTop);
+
+    docDefinition.content.push({
+      table: {
+        widths: ['*'],
+        heights: [spacerTop, IMG_H, spacerBottom],
+        body: [
+          [{ text: '' }],
+          [{
+            image: logoBase64,
+            width: 500,
+            height: IMG_H,
+            alignment: 'center',
+            margin: [0, 0, 0, 0],
+          }],
+        ]
+      },
+      layout: 'noBorders',
       pageBreak: 'after'
     });
   }
