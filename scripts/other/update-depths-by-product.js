@@ -23,7 +23,7 @@ if (numericDepths.some((n) => Number.isNaN(n))) {
   process.exit(1);
 }
 
-const serviceAccountPath = path.resolve(__dirname, 'serviceAccountKey.json');
+const serviceAccountPath =  "../serviceAccountKey.json"
 if (!fs.existsSync(serviceAccountPath)) {
   console.error(`❌ File serviceAccountKey.json non trovato: ${serviceAccountPath}`);
   process.exit(1);

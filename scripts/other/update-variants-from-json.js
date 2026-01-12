@@ -10,7 +10,7 @@ const path = require('path');
 
 const jsonArgPath = process.argv[2];
 const jsonPath = path.resolve(__dirname, jsonArgPath || 'json/variants.json');
-const serviceAccountPath = path.resolve(__dirname, 'serviceAccountKey.json');
+const serviceAccountPath =  "../serviceAccountKey.json"
 
 if (!fs.existsSync(serviceAccountPath)) {
   console.error(`❌ File non trovato: ${serviceAccountPath}`);

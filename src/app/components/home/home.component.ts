@@ -1005,10 +1005,6 @@ export class HomeComponent implements OnInit {
   }
 
   // === Markup and PDF Generation ===
-  async generateWithMarkup() {
-    await this.processListinoGeneration(false);
-  }
-
   async saveWithoutPdf() {
     if (!this.selectedProduct) {
       this.showMarkupDialog = false;
@@ -1163,10 +1159,10 @@ export class HomeComponent implements OnInit {
       previewWindow.document.close();
     }
 
-    await this.processListinoGeneration(true, previewWindow as Window | null);
+    await this.processListinoGeneration(previewWindow as Window | null);
   }
 
-  private async processListinoGeneration(preview: boolean, previewWindow?: Window | null) {
+  private async processListinoGeneration(previewWindow?: Window | null) {
     if (!this.selectedProduct) {
       this.showMarkupDialog = false;
       this.cdr.detectChanges();
@@ -1247,10 +1243,16 @@ export class HomeComponent implements OnInit {
         this.extraMattressesForListino,
         this.extraMechanismsForListino,
         this.markupPercentage,
-        this.deliveryPriceListino
+        this.deliveryPriceListino,
+        this.selectedHeaderImage?.url
       );
 
-      await this.pdfService.generateListinoPdf(updatedProduct.name, this.selectedLanguage.code, preview, previewWindow);
+      await this.pdfService.generateListinoPdf(
+        updatedProduct.name,
+        this.selectedLanguage.code,
+        true,
+        previewWindow
+      );
       this.showPdfTemplate = false;
       this.stopPdfGenProgress();
 
@@ -1263,9 +1265,9 @@ export class HomeComponent implements OnInit {
       this.resetListinoWizard();
 
       this.messageService.add({
-        severity: preview ? 'info' : 'success',
-        summary: preview ? 'Anteprima aperta' : 'PDF Generato',
-        detail: preview ? 'Anteprima del listino aperta in una nuova scheda' : 'Listino generato e dati salvati con successo'
+        severity: 'info',
+        summary: 'Anteprima aperta',
+        detail: 'Anteprima del listino aperta in una nuova scheda'
       });
 
     } catch (error) {
@@ -2578,20 +2580,19 @@ export class HomeComponent implements OnInit {
   }
 
   private initializeHeaderImages(): void {
-    // Initialize with two identical options pointing to the current default header image
-    // This matches the current PDF generation behavior
-    const defaultHeaderImageUrl = 'assets/images/default-header-image.png';
+    const sofaFormImageUrl = '/sofaform-logo.png';
+    const convertibleImageUrl = '/convertible-logo.png';
 
     this.availableHeaderImages = [
       {
         name: 'SofaForm',
         description: 'Logo principale dell\'azienda per il listino',
-        url: defaultHeaderImageUrl
+        url: sofaFormImageUrl
       },
       {
-        name: 'Convertibles Contemporains',
+        name: 'Convertible Contemporains',
         description: 'Versione alternativa del logo aziendale',
-        url: defaultHeaderImageUrl
+        url: convertibleImageUrl
       }
     ];
 

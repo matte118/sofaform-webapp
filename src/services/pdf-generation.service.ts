@@ -21,6 +21,7 @@ export class PdfGenerationService {
   private markupPerc = 0;
   private deliveryCost = 0;
   private currentLang = 'it';
+  private headerLogoUrl = '/sofaform-logo.png';
 
   constructor(
     private translationService: TranslationService,
@@ -34,7 +35,8 @@ export class PdfGenerationService {
     extraMattresses: { name: string; price: number }[],
     extraMechanisms: { name: string; price: number }[],
     markup: number,
-    delivery: number
+    delivery: number,
+    headerLogoUrl?: string
   ): void {
     this.productData = product;
     this.variantsData = variants;
@@ -43,6 +45,7 @@ export class PdfGenerationService {
     this.extraMechanismsData = extraMechanisms;
     this.markupPerc = markup;
     this.deliveryCost = delivery;
+    this.headerLogoUrl = headerLogoUrl || '/sofaform-logo.png';
   }
 
   private async urlToBase64(url: string): Promise<string | null> {
@@ -63,20 +66,42 @@ export class PdfGenerationService {
   }
 
   private async getLogoBase64(): Promise<string> {
-    try {
-      const response = await fetch('/logo_sofaform_pdf.png');
-      const blob = await response.blob();
+    const candidates = this.buildLogoCandidates();
 
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Errore nel caricamento logo'));
-        reader.readAsDataURL(blob);
-      });
-    } catch (error) {
-      console.warn('Impossibile caricare il logo:', error);
-      return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+    for (const url of candidates) {
+      const base64 = await this.urlToBase64(url);
+      if (base64) return base64;
     }
+
+    console.warn('Impossibile caricare il logo selezionato, uso fallback trasparente');
+    return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+  }
+
+  private buildLogoCandidates(): string[] {
+    const defaultUrl = '/sofaform-logo.png';
+    let selected = (this.headerLogoUrl || defaultUrl).replace(/^\.\//, '');
+
+    // Rimuovi il prefisso 'public/' se presente (i file sono serviti dalla root)
+    if (selected.startsWith('public/')) {
+      selected = '/' + selected.replace(/^public\//, '');
+    }
+
+    const trimmed = selected.replace(/^\/+/, '');
+    const candidates: string[] = [];
+
+    const pushUnique = (val: string) => {
+      if (val && !candidates.includes(val)) candidates.push(val);
+    };
+
+    // Prima prova con lo slash iniziale (percorso assoluto)
+    pushUnique('/' + trimmed);
+    pushUnique(selected);
+
+    // Fallback ai loghi standard
+    pushUnique('/logo_sofaform.png');
+    pushUnique('/sofaform-logo.png');
+
+    return candidates;
   }
 
   async generateListinoPdf(

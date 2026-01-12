@@ -4,14 +4,14 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "node scripts/generate-env.js && ng build --configuration=vercel",
+    "build": "scripts/other/generate-env.js && ng build --configuration=vercel",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:sofaform-webapp": "node dist/sofaform-webapp/server/server.mjs",
-    "suppliers": "node ./scripts/seed-suppliers.js",
-    "components": "node ./scripts/seed-components.js",
-    "variants": "node ./scripts/seed-variants.js",
-    "sofaProduct": "node ./scripts/seed-sofa-product.js"
+    "suppliers": "node ./scripts/seed-x/seed-suppliers.js",
+    "components": "node ./scripts/seed-x/seed-components.js",
+    "variants": "node ./scripts/seed-x/seed-variants.js",
+    "sofaProduct": "node ./scripts/seed-x/seed-sofa-product.js"
   },
   "private": true,
   "dependencies": {

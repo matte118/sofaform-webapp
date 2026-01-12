@@ -581,10 +581,8 @@
         [disabled]="isTranslating"></p-button>
       <p-button type="button" label="Salva Senza PDF" styleClass="btn-dialog-save" (click)="saveWithoutPdf()"
         [disabled]="isTranslating" [icon]="'pi pi-save'"></p-button>
-      <p-button type="button" label="Anteprima PDF" styleClass="btn-dialog-preview" (click)="previewListinoPdf()"
+      <p-button type="button" label="Genera PDF" styleClass="btn-dialog-preview" (click)="previewListinoPdf()"
         [disabled]="isTranslating" [icon]="'pi pi-eye'"></p-button>
-      <p-button type="button" label="Genera PDF" styleClass="btn-dialog-yes" (click)="generateWithMarkup()"
-        [loading]="isTranslating" [disabled]="isTranslating" [icon]="'pi pi-print'"></p-button>
     </ng-template>
   </p-dialog>
 
@@ -1240,49 +1238,6 @@
           (click)="applyComponentsToNewVariant()"></button>
       </div>
     </ng-template>
-  </p-dialog>
-
-  <!-- PDF Generation Progress Dialog -->
-  <p-dialog appendTo="body" [(visible)]="showPdfGeneratingDialog" [modal]="true" [closable]="false"
-    [style]="{ width: '480px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false"
-    styleClass="pdf-generating-dialog" [showHeader]="false">
-    <div class="pdf-gen-container">
-      <div class="pdf-gen-icon">
-        <i class="pi pi-file-pdf"></i>
-      </div>
-      <h2 class="pdf-gen-title">Generazione Listino in Corso</h2>
-      <p class="pdf-gen-subtitle">
-        {{ pdfGenLanguageCode === 'it' ? 'Preparazione del PDF...' : 'Traduzione e preparazione del PDF...' }}
-      </p>
-
-      <div class="pdf-gen-progress-section">
-        <div class="pdf-gen-progress-header">
-          <span class="progress-label">Progresso</span>
-          <span class="progress-value">{{ pdfGenProgress | number:'1.0-0' }}%</span>
-        </div>
-        <p-progressBar [value]="pdfGenProgress" [showValue]="false" styleClass="pdf-gen-progress-bar"></p-progressBar>
-        <div class="pdf-gen-eta">
-          <i class="pi pi-clock"></i>
-          <span>Tempo stimato: {{ pdfGenEstimateLabel }}</span>
-        </div>
-      </div>
-
-      <div class="pdf-gen-info">
-        <div class="info-item">
-          <i class="pi pi-globe"></i>
-          <span>Lingua: <strong>{{ pdfGenLanguageName }}</strong></span>
-        </div>
-        <div class="info-item" *ngIf="pdfGenProductName">
-          <i class="pi pi-tag"></i>
-          <span>Prodotto: <strong>{{ pdfGenProductName }}</strong></span>
-        </div>
-      </div>
-
-      <p class="pdf-gen-note">
-        <i class="pi pi-info-circle"></i>
-        Il PDF si aprirà automaticamente in una nuova scheda
-      </p>
-    </div>
   </p-dialog>
 
   <p-toast></p-toast>

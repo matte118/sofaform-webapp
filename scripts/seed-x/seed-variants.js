@@ -5,7 +5,7 @@ const fs    = require('fs');
 const path  = require('path');
 
 // 1) INIZIALIZZA ADMIN SDK con il tuo serviceAccountKey.json
-const serviceAccountPath = path.resolve(__dirname, 'serviceAccountKey.json');
+const serviceAccountPath =  "../serviceAccountKey.json"
 const serviceAccount     = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf-8'));
 
 admin.initializeApp({
