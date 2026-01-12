@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const outputPath = path.join(__dirname, '..', 'src', 'environments', 'environments.ts');
+// Write to the Angular environments file under the project root
+const outputPath = path.join(__dirname, '..', '..', 'src', 'environments', 'environments.ts');
 
 const requiredVars = [
   'FIREBASE_API_KEY',
