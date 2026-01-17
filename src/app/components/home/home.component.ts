@@ -13,6 +13,8 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -107,7 +109,9 @@ interface MultiListinoTableRow {
     TagModule,
     DividerModule,
     CheckboxModule,
-    ToolbarModule
+    ToolbarModule,
+    IconFieldModule,
+    InputIconModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './home.component.html',
@@ -130,7 +134,7 @@ export class HomeComponent implements OnInit {
 
   // Translation
   availableLanguages: LanguageOption[] = [];
-  selectedLanguage: LanguageOption = { code: 'it', name: 'Italiano', flag: '🇮🇹' };
+  selectedLanguage: LanguageOption = { code: 'it', name: 'Italiano'};
   isTranslating = false;
 
   // Header image selection for PDF
@@ -216,7 +220,7 @@ export class HomeComponent implements OnInit {
   multiListinoLoading = false;
   multiListinoGenerating = false;
   multiListinoProgress = 0;
-  multiListinoLanguage: LanguageOption = { code: 'it', name: 'Italiano', flag: '🇮🇹' };
+  multiListinoLanguage: LanguageOption = { code: 'it', name: 'Italiano'};
   private multiListinoProgressTimer: any;
 
   // PDF Generation Dialog

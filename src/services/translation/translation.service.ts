@@ -13,7 +13,6 @@ export interface TranslationResponse {
 export interface LanguageOption {
   code: string;
   name: string;
-  flag: string;
 }
 
 @Injectable({
@@ -30,12 +29,12 @@ export class TranslationService {
 
   getAvailableLanguages(): LanguageOption[] {
     return [
-      { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-      { code: 'en', name: 'English', flag: '🇬🇧' },
-      { code: 'fr', name: 'Français', flag: '🇫🇷' },
-      { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-      { code: 'es', name: 'Español', flag: '🇪🇸' },
-      { code: 'pt', name: 'Português', flag: '🇵🇹' }
+      { code: 'it', name: 'Italiano'},
+      { code: 'en', name: 'English'},
+      { code: 'fr', name: 'Français'},
+      { code: 'de', name: 'Deutsch'},
+      { code: 'es', name: 'Español'},
+      { code: 'pt', name: 'Português'}
     ];
   }
 

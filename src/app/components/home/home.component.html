@@ -401,7 +401,8 @@
         <div class="ml-language-select">
           <label>Lingua:</label>
           <p-dropdown [options]="availableLanguages" [(ngModel)]="multiListinoLanguage" optionLabel="name"
-            appendTo="body" [style]="{ width: '180px' }">
+            appendTo="body" [style]="{ width: '180px' }" styleClass="ml-language-dropdown"
+            panelStyleClass="ml-language-dropdown-panel">
             <ng-template let-lang pTemplate="item">
               <div class="ml-lang-option">
                 <span class="flag">{{ lang.flag }}</span>
