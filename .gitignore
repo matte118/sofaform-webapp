@@ -48,3 +48,6 @@ src/environments/environments.ts
 
 # serviceAccountKey.json
 scripts/serviceAccountKey.json
+
+# db data
+sofaform-59f6f-default-rtdb-export.json
