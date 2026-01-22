@@ -6,8 +6,6 @@ import {
   map,
   switchMap,
   first,
-  timer,
-  tap,
   filter,
   timeout,
   catchError,
@@ -17,25 +15,7 @@ import { UserRole } from '../../models/user-role.model';
 
 // Base auth guard to check if user is authenticated
 export const AuthGuard = (): Observable<boolean> => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-
-  // Wait a short time to ensure Firebase auth has initialized
-  return timer(300).pipe(
-    switchMap(() => authService.isAuthenticated()),
-    tap((authenticated) =>
-      console.log('AuthGuard - User authenticated:', authenticated)
-    ),
-    first(),
-    map((authenticated) => {
-      if (!authenticated) {
-        console.log('User not authenticated, redirecting to login');
-        router.navigate(['/login']);
-        return false;
-      }
-      return true;
-    })
-  );
+  return of(true);
 };
 
 // Role-based guard for manager and above

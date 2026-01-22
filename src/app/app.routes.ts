@@ -1,21 +1,12 @@
 import { Routes } from '@angular/router';
-import { AuthGuard, ManagerGuard } from './guards/auth.guard';
-import { LoginGuard } from './guards/login.guard';
+import { ManagerGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  {
-    path: 'login',
-    loadComponent: () =>
-      import('./components/login/login.component').then(
-        (m) => m.LoginComponent
-      ),
-    canActivate: [() => LoginGuard()], // Add the login guard
-  },
+  { path: 'login', redirectTo: '/home', pathMatch: 'full' },
   {
     path: 'home',
     loadComponent: () =>
       import('./components/home/home.component').then((m) => m.HomeComponent),
-    canActivate: [() => AuthGuard()],
   },
   {
     path: 'aggiungi-prodotto',
@@ -23,7 +14,6 @@ export const routes: Routes = [
       import('./components/aggiungi-prodotto/aggiungi-prodotto.component').then(
         (m) => m.AggiungiProdottoComponent
       ),
-    canActivate: [() => AuthGuard()],
   },
   {
     path: 'gestione-componenti',
@@ -31,7 +21,6 @@ export const routes: Routes = [
       import(
         './components/gestione-componenti/gestione-componenti.component'
       ).then((m) => m.GestioneComponentiComponent),
-    canActivate: [() => AuthGuard()],
   },
   {
     path: 'gestione-fornitori',
@@ -39,7 +28,6 @@ export const routes: Routes = [
       import(
         './components/gestione-fornitori/gestione-fornitori.component'
       ).then((m) => m.GestioneFornitoriComponent),
-    canActivate: [() => AuthGuard()],
   },
   {
     path: 'gestione-tessuti',
@@ -47,7 +35,6 @@ export const routes: Routes = [
       import('./components/gestione-tessuti/gestione-tessuti.component').then(
         (m) => m.GestioneTessutiComponent
       ),
-    canActivate: [() => AuthGuard()],
   },
   {
     path: 'gestione-utenti',
@@ -55,7 +42,7 @@ export const routes: Routes = [
       import('./components/gestione-utenti/gestione-utenti.component').then(
         (m) => m.GestioneUtentiComponent
       ),
-    canActivate: [() => AuthGuard(), () => ManagerGuard()], // Require manager role
+    canActivate: [() => ManagerGuard()], // Require manager role
   },
   {
     path: 'access-denied',

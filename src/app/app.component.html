@@ -1,4 +1,4 @@
-<div class="app-layout" *ngIf="isLoggedIn; else loginPage">
+<div class="app-layout">
   <aside class="sidebar">
     <div class="sidebar-content">
       <div class="sidebar-header">
@@ -39,7 +39,3 @@
 
   <p-toast></p-toast>
 </div>
-
-<ng-template #loginPage>
-  <router-outlet></router-outlet>
-</ng-template>

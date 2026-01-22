@@ -51,6 +51,7 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     // Check if user is already authenticated
+    
     this.authService
       .isAuthenticated()
       .pipe(take(1)) // Take only the first emission

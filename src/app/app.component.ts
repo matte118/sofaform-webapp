@@ -32,7 +32,6 @@ import { UserRole } from '../models/user-role.model';
 export class AppComponent implements OnInit {
   title = 'sofaform-webapp';
   items: MenuItem[] = [];
-  isLoggedIn = false;
   userEmail: string | null = null;
   userRole: UserRole | null = null;
   isLoggingOut = false;
@@ -46,7 +45,6 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     // Listen for authentication state changes
     this.authService.currentUser$.subscribe((user) => {
-      this.isLoggedIn = !!user;
       this.userEmail = user?.email || null;
       this.cdr.detectChanges();
     });
