@@ -68,6 +68,20 @@
             </div>
           </div>
 
+          <div class="form-row" style="padding-top: 20px;" *ngIf="isCustomSofaType(newComponent.sofaType)">
+            <div class="form-group">
+              <p-floatLabel>
+                <input pInputText id="componentSofaTypeCustomName" type="text"
+                  [(ngModel)]="newComponent.sofaTypeCustomName" name="sofaTypeCustomName"
+                  (ngModelChange)="onCustomSofaTypeNameChange()" />
+                <label for="componentSofaTypeCustomName">Nome Custom</label>
+              </p-floatLabel>
+              <small *ngIf="shouldShowCustomSofaTypeNameError()" class="p-error">
+                Nome obbligatorio
+              </small>
+            </div>
+          </div>
+
           <!-- Terza riga: prezzo -->
           <div class="form-row" style="padding-top: 20px;">
             <div class="form-group">
@@ -169,6 +183,20 @@
                 </div>
               </div>
 
+              <div class="form-row" style="padding-top: 20px;" *ngIf="isCustomSofaType(variableData.sofaType)">
+                <div class="form-group">
+                  <p-floatLabel>
+                    <input pInputText [id]="'bulkSofaTypeCustomName_' + i" type="text"
+                      [(ngModel)]="variableData.sofaTypeCustomName" [name]="'bulkSofaTypeCustomName_' + i"
+                      (ngModelChange)="onBulkCustomSofaTypeNameChange(i)" />
+                    <label [for]="'bulkSofaTypeCustomName_' + i">Nome Custom</label>
+                  </p-floatLabel>
+                  <small *ngIf="shouldShowBulkCustomSofaTypeNameError(variableData.sofaTypeCustomName, variableData.sofaType)" class="p-error">
+                    Nome obbligatorio
+                  </small>
+                </div>
+              </div>
+
               <!-- Nome generato automaticamente per questa variante -->
               <div class="form-row" style="padding-top: 20px;">
                 <div class="form-group">
@@ -210,7 +238,7 @@
                 <span class="preview-details">
                   - {{ getComponentTypeDisplayName(bulkFixedData.type) }}
                   - {{ bulkFixedData.supplier.name }}
-                  <span *ngIf="variableData.sofaType"> - {{ getSofaTypeDisplayName(variableData.sofaType) }}</span>
+                  <span *ngIf="variableData.sofaType"> - {{ getSofaTypeDisplayName(variableData.sofaType, variableData.sofaTypeCustomName) }}</span>
                   - {{ variableData.price | currency:'EUR' }}
                 </span>
               </div>

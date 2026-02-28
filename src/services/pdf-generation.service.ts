@@ -163,9 +163,11 @@ export class PdfGenerationService {
     this.addCommercialConditionsPage(docDefinition, t);
 
     docDefinition.content.push({
-      text: t(this.productData.name),
-      style: 'productName',
-      margin: [0, 20, 0, 30] // Increased bottom margin from 15 to 30
+      stack: [
+        { image: logoBase64, fit: [160, 40], alignment: 'center', margin: [0, 0, 0, 8] },
+        { text: t(this.productData.name), fontSize: 23, bold: true, color: '#2d3748', alignment: 'center' }
+      ],
+      margin: [0, 10, 0, 16]
     });
 
 
@@ -276,9 +278,11 @@ export class PdfGenerationService {
       const hasExtras = this.extraMattressesData.length > 0 || this.extraMechanismsData.length > 0;
 
       docDefinition.content.push({
-        text: t(entry.product.name),
-        style: 'productName',
-        margin: [0, 20, 0, 30],
+        stack: [
+          { image: logoBase64, fit: [160, 40], alignment: 'center', margin: [0, 0, 0, 8] },
+          { text: t(entry.product.name), fontSize: 23, bold: true, color: '#2d3748', alignment: 'center' }
+        ],
+        margin: [0, 10, 0, 16],
         pageBreak: i === 0 ? undefined : 'before'
       });
 
@@ -363,22 +367,22 @@ export class PdfGenerationService {
     return {
       pageSize: 'A4',
       pageOrientation: 'landscape',
-      defaultStyle: { fontSize: 9, lineHeight: 1.2, color: '#2d3748' },
+      defaultStyle: { fontSize: 7, lineHeight: 1.2, color: '#2d3748' },
       styles: {
-        coverTitle: { fontSize: 32, bold: true, color: '#1a365d', alignment: 'center' },
-        productName: { fontSize: 24, bold: true, color: '#2d3748', alignment: 'center', margin: [0, 0, 0, 15] },
-        description: { fontSize: 11, color: '#718096', alignment: 'center', italics: true, margin: [0, 5, 0, 5] },
-        matrixHeader: { bold: true, fillColor: '#1a365d', color: '#ffffff', fontSize: 9, alignment: 'center', margin: [3, 6, 3, 6] },
-        matrixCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4] },
-        variantCell: { fontSize: 8, bold: true, alignment: 'left', margin: [8, 4, 3, 4], color: '#1a365d' },
-        priceCell: { fontSize: 8, alignment: 'center', margin: [3, 4, 3, 4], bold: true, color: '#1a365d' },
-        techSpecs: { fontSize: 10, margin: [0, 10, 0, 10] },
-        small: { fontSize: 7, color: '#718096', alignment: 'center' },
-        conditionsTitle: { fontSize: 18, bold: true, color: '#1a365d', alignment: 'center' },
-        conditionsSectionTitle: { fontSize: 11, bold: true, color: '#1a365d', margin: [0, 12, 0, 6] },
-        conditionsBody: { fontSize: 9, color: '#2d3748', alignment: 'left', lineHeight: 1.35 },
-        quoteMark: { fontSize: 42, bold: true, color: '#000000', lineHeight: 0.8 },
-        quoteText: { fontSize: 12, color: '#4a5568', italics: true, alignment: 'left' }
+        coverTitle: { fontSize: 30, bold: true, color: '#1a365d', alignment: 'center' },
+        productName: { fontSize: 22, bold: true, color: '#2d3748', alignment: 'center', margin: [0, 0, 0, 13] },
+        description: { fontSize: 9, color: '#718096', alignment: 'center', italics: true, margin: [0, 5, 0, 5] },
+        matrixHeader: { bold: true, fillColor: '#1a365d', color: '#ffffff', fontSize: 7, alignment: 'center', margin: [3, 5, 3, 5] },
+        matrixCell: { fontSize: 6, alignment: 'center', margin: [3, 3, 3, 3] },
+        variantCell: { fontSize: 6, bold: true, alignment: 'left', margin: [8, 3, 3, 3], color: '#1a365d' },
+        priceCell: { fontSize: 6, alignment: 'center', margin: [3, 3, 3, 3], bold: true, color: '#1a365d' },
+        techSpecs: { fontSize: 8, margin: [0, 10, 0, 10] },
+        small: { fontSize: 5, color: '#718096', alignment: 'center' },
+        conditionsTitle: { fontSize: 16, bold: true, color: '#1a365d', alignment: 'center' },
+        conditionsSectionTitle: { fontSize: 9, bold: true, color: '#1a365d', margin: [0, 12, 0, 6] },
+        conditionsBody: { fontSize: 7, color: '#2d3748', alignment: 'left', lineHeight: 1.35 },
+        quoteMark: { fontSize: 40, bold: true, color: '#000000', lineHeight: 0.8 },
+        quoteText: { fontSize: 10, color: '#4a5568', italics: true, alignment: 'left' }
       },
       footer: (currentPage: number, pageCount: number) => ({
         columns: [{ text: `${currentPage} / ${pageCount}`, style: 'small', margin: [0, 10, 0, 0] }]
@@ -390,23 +394,22 @@ export class PdfGenerationService {
   private addCoverPage(docDefinition: any, logoBase64: string): void {
     const PAGE_H = 595.28;
     const V_MARGINS = 60;
-    const IMG_H = 250;
+    const LOGO_MAX_W = 500;
+    const LOGO_MAX_H = 200;
     const available = PAGE_H - V_MARGINS;
 
-    const EPS = 5;
-    const spacerTop = Math.max(0, Math.floor((available - IMG_H - EPS) / 2));
-    const spacerBottom = Math.max(0, available - IMG_H - EPS - spacerTop);
+    const spacerTop = Math.max(0, Math.floor((available - LOGO_MAX_H) / 2));
+    const spacerBottom = Math.max(0, available - LOGO_MAX_H - spacerTop);
 
     docDefinition.content.push({
       table: {
         widths: ['*'],
-        heights: [spacerTop, IMG_H, spacerBottom],
+        heights: [spacerTop, LOGO_MAX_H, spacerBottom],
         body: [
           [{ text: '' }],
           [{
             image: logoBase64,
-            width: 500,
-            height: IMG_H,
+            fit: [LOGO_MAX_W, LOGO_MAX_H],
             alignment: 'center',
             margin: [0, 0, 0, 0],
           }],
@@ -443,9 +446,9 @@ export class PdfGenerationService {
     if (images.length === 0) return;
 
     const R = 16 / 9;
-    const largeW = showAllImages ? 310 : 380;
+    const largeW = showAllImages ? 260 : 320;
     const largeH = Math.round(largeW / R);
-    const smallW = 150;
+    const smallW = 120;
     const smallH = Math.round(smallW / R);
 
     const betweenCols = showAllImages ? 20 : 16;
@@ -453,7 +456,7 @@ export class PdfGenerationService {
     const leftSide = {
       width: showAllImages ? '45%' : '58%',
       stack: [
-        { image: images[0], fit: [largeW, largeH], alignment: 'left' }
+        { image: images[0], fit: [largeW, largeH], alignment: 'center' }
       ]
     };
 
@@ -493,8 +496,8 @@ export class PdfGenerationService {
                         bold: true,
                         color: '#ffffff',
                         fillColor: '#1a365d',
-                        margin: [0, 8, 0, 8],
-                        fontSize: 12
+                        margin: [0, 6, 0, 6],
+                        fontSize: 10
                       },
                       {}
                     ],
@@ -502,16 +505,16 @@ export class PdfGenerationService {
                       {
                         text: t(label || ''),
                         bold: true,
-                        fontSize: 10,
+                        fontSize: 8,
                         color: '#1a365d',
                         fillColor: '#f7fafc',
-                        margin: [6, 6, 6, 6]
+                        margin: [5, 5, 5, 5]
                       },
                       {
                         text: t(value || ''),
-                        fontSize: 9,
+                        fontSize: 7,
                         color: '#4a5568',
-                        margin: [6, 6, 6, 6]
+                        margin: [5, 5, 5, 5]
                       }
                     ])
                   ]
@@ -546,7 +549,8 @@ export class PdfGenerationService {
         { width: '42%', stack: [techSpecStack] }
       ],
       columnGap: betweenCols,
-      margin: [0, 0, 0, 30]
+      alignment: 'center',
+      margin: [0, 0, 0, 20]
     });
   }
 
@@ -562,8 +566,9 @@ export class PdfGenerationService {
     const rivestimentiArray = Array.from(allRivestimenti.values());
     if (rivestimentiArray.length === 0 || this.variantsData.length === 0) return;
 
-    const variantColWidth = '25%';
-    const rivestimentoColWidth = `${75 / rivestimentiArray.length}%`;
+    const totalCols = rivestimentiArray.length + 1;
+    const variantColWidth = '20%';
+    const rivestimentoColWidth = `${80 / rivestimentiArray.length}%`;
 
     const headerRow: any[] = [{ text: t('Modello'), style: 'matrixHeader' }];
     rivestimentiArray.forEach(riv => headerRow.push({ text: t(riv.name), style: 'matrixHeader' }));
@@ -779,6 +784,15 @@ export class PdfGenerationService {
       [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
       [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
       [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+      [SofaType.CHAISE_LONGUE]: 'Chaise Longue',
+      [SofaType.POUF_50_X_50]: 'Pouf 50 x 50',
+      [SofaType.POUF_60_X_60]: 'Pouf 60 x 60',
+      [SofaType.POUF_70_X_70]: 'Pouf 70 x 70',
+      [SofaType.ELEMENTO_SENZA_BRACCIOLO]: 'Elemento senza bracciolo',
+      [SofaType.ELEMENTO_CON_BRACCIOLO]: 'Elemento con bracciolo',
+      [SofaType.POLTRONA_90_CM]: 'Poltrona 90 cm',
+      [SofaType.POLTRONA_80_CM]: 'Poltrona 80 cm',
+      [SofaType.POLTRONA_70_CM]: 'Poltrona 70 cm',
       [SofaType.CUSTOM]: 'Custom',
     };
 

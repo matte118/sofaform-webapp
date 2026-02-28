@@ -97,7 +97,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
 
   components: ComponentModel[] = [];
-  newComponent: ComponentModel = new ComponentModel('', '', null as any);
+  newComponent: ComponentModel = new ComponentModel('', '', null as any, undefined, undefined, undefined, '');
 
   availableSuppliers: Supplier[] = [];
   selectedSupplier: Supplier | null = null;
@@ -129,7 +129,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     supplier: null
   };
   bulkVariableData: BulkComponentVariableData[] = [
-    { sofaType: null, price: null as any, name: '' }
+    { sofaType: null, sofaTypeCustomName: '', price: null as any, name: '' }
   ];
 
   bulkFormSubmitted = false;
@@ -256,7 +256,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         ...c,
         supplierName: c.supplier?.name ?? 'Nessuno',
         typeLabel: this.getComponentTypeDisplayName(c.type ?? null),
-        sofaTypeLabel: this.getSofaTypeDisplayName(c.sofaType ?? null),
+        sofaTypeLabel: this.getSofaTypeDisplayName(c.sofaType ?? null, c.sofaTypeCustomName),
         priceText,
         priceTextComma
       };
@@ -288,6 +288,16 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       { value: SofaType.DIVANO_3_PL_MAXI, label: 'Divano 3 PL Maxi' },
       { value: SofaType.DIVANO_3_PL, label: 'Divano 3 PL' },
       { value: SofaType.DIVANO_2_PL, label: 'Divano 2 PL' },
+      { value: SofaType.CHAISE_LONGUE, label: 'Chaise Longue' },
+      { value: SofaType.POUF_50_X_50, label: 'Pouf 50 x 50' },
+      { value: SofaType.POUF_60_X_60, label: 'Pouf 60 x 60' },
+      { value: SofaType.POUF_70_X_70, label: 'Pouf 70 x 70' },
+      { value: SofaType.ELEMENTO_SENZA_BRACCIOLO, label: 'Elemento senza bracciolo' },
+      { value: SofaType.ELEMENTO_CON_BRACCIOLO, label: 'Elemento con bracciolo' },
+      { value: SofaType.POLTRONA_90_CM, label: 'Poltrona 90 cm' },
+      { value: SofaType.POLTRONA_80_CM, label: 'Poltrona 80 cm' },
+      { value: SofaType.POLTRONA_70_CM, label: 'Poltrona 70 cm' },
+      { value: SofaType.CUSTOM, label: 'Custom' },
     ];
     this.cd.detectChanges();
   }
@@ -320,7 +330,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       this.newComponent.price ?? 0,
       this.selectedSupplier || undefined,
       this.selectedComponentType !== null ? this.selectedComponentType : undefined,
-      this.newComponent.sofaType ?? null
+      this.newComponent.sofaType ?? null,
+      this.normalizeSofaTypeCustomName(this.newComponent.sofaType ?? null, this.newComponent.sofaTypeCustomName)
     );
 
     const op$ = this.isEditing
@@ -360,11 +371,17 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     this.newComponent.name = this.generateComponentName(
       this.selectedComponentType,
       this.selectedSupplier,
-      this.newComponent.sofaType ?? null
+      this.newComponent.sofaType ?? null,
+      this.newComponent.sofaTypeCustomName
     );
   }
 
-  generateComponentName(type: ComponentType | null, supplier: Supplier | null, sofaType?: SofaType | null): string {
+  generateComponentName(
+    type: ComponentType | null,
+    supplier: Supplier | null,
+    sofaType?: SofaType | null,
+    sofaTypeCustomName?: string
+  ): string {
     const parts: string[] = [];
 
     if (type !== null) {
@@ -376,7 +393,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     }
 
     if (sofaType) {
-      parts.push(this.getSofaTypeDisplayName(sofaType));
+      parts.push(this.getSofaTypeDisplayName(sofaType, sofaTypeCustomName));
     }
 
     return parts.join(' ') || '';
@@ -477,7 +494,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
       component.price,
       component.supplier ? JSON.parse(JSON.stringify(component.supplier)) : undefined,
       component.type,
-      component.sofaType ?? null
+      component.sofaType ?? null,
+      component.sofaTypeCustomName || ''
     );
 
     this.selectedSupplier = component.supplier || null;
@@ -613,6 +631,10 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   onBulkSofaTypeChange(index: number): void {
     // Update the specific variant name when sofa type changes
+    const variableData = this.bulkVariableData[index];
+    if (variableData && !this.isCustomSofaType(variableData.sofaType)) {
+      variableData.sofaTypeCustomName = '';
+    }
     this.updateVariantName(index);
     setTimeout(() => this.cd.detectChanges(), 0);
   }
@@ -633,7 +655,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     variableData.name = this.generateComponentName(
       this.bulkFixedData.type,
       this.bulkFixedData.supplier,
-      variableData.sofaType ?? null
+      variableData.sofaType ?? null,
+      variableData.sofaTypeCustomName
     );
   }
 
@@ -656,7 +679,9 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     const baseName = this.getBulkBaseName();
     if (!baseName) return '';
 
-    const sofaTypeLabel = variableData.sofaType ? this.getSofaTypeDisplayName(variableData.sofaType) : '';
+    const sofaTypeLabel = variableData.sofaType
+      ? this.getSofaTypeDisplayName(variableData.sofaType, variableData.sofaTypeCustomName)
+      : '';
     if (sofaTypeLabel) {
       return `${baseName} ${sofaTypeLabel}`;
     }
@@ -705,7 +730,8 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
         vd.price,                     // prezzo
         this.bulkFixedData.supplier!, // fornitore (sicuro non nullo, validato sopra)
         this.bulkFixedData.type,      // tipo
-        vd.sofaType ?? null           // sofa type (obbligatorio in questo flusso)
+        vd.sofaType ?? null,          // sofa type (obbligatorio in questo flusso)
+        this.normalizeSofaTypeCustomName(vd.sofaType ?? null, vd.sofaTypeCustomName)
       );
 
       return this.componentService.addComponent(component).toPromise();
@@ -730,6 +756,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   addVariableDataEntry() {
     const newVariant = {
       sofaType: null as SofaType | null,
+      sofaTypeCustomName: '',
       price: 0,
       name: this.generateComponentName(this.bulkFixedData.type, this.bulkFixedData.supplier, null)
     };
@@ -745,7 +772,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   resetBulkForm() {
     this.bulkFixedData = { name: '', type: ComponentType.FUSTO, supplier: null };
     this.bulkVariableData = [
-      { sofaType: null, price: null as any, name: '' }
+      { sofaType: null, sofaTypeCustomName: '', price: null as any, name: '' }
     ];
     this.bulkFormSubmitted = false;
   }
@@ -753,6 +780,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   resetForm() {
     this.newComponent = new ComponentModel('', '', null as any);
+    this.newComponent.sofaTypeCustomName = '';
     this.selectedSupplier = null;
     this.selectedComponentType = null;
     this.editingIndex = -1;
@@ -785,6 +813,10 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     for (const vd of validVariants) {
       if (!vd.name?.trim()) {
         this.addError('Il nome di ogni variante è obbligatorio', 'Errore di Validazione');
+        return false;
+      }
+      if (this.isCustomSofaType(vd.sofaType) && !vd.sofaTypeCustomName?.trim()) {
+        this.addError('Il nome custom per il tipo divano è obbligatorio', 'Errore di Validazione');
         return false;
       }
     }
@@ -833,6 +865,11 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   private validateForm(): boolean {
     if (!this.newComponent.name?.trim()) {
       this.addError('Il nome del componente è obbligatorio', 'Errore di Validazione');
+      return false;
+    }
+
+    if (this.isCustomSofaType(this.newComponent.sofaType) && !this.newComponent.sofaTypeCustomName?.trim()) {
+      this.addError('Il nome custom per il tipo divano è obbligatorio', 'Errore di Validazione');
       return false;
     }
 
@@ -911,13 +948,26 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     return typeNames[type] || 'Sconosciuto';
   }
 
-  getSofaTypeDisplayName(type: SofaType | null): string {
+  getSofaTypeDisplayName(type: SofaType | null, customName?: string): string {
     if (!type) return '-';
+    if (type === SofaType.CUSTOM) {
+      const cleaned = (customName || '').trim();
+      if (cleaned) return cleaned;
+    }
 
     const typeNames: Record<SofaType, string> = {
       [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
       [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
       [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+      [SofaType.CHAISE_LONGUE]: 'Chaise Longue',
+      [SofaType.POUF_50_X_50]: 'Pouf 50 x 50',
+      [SofaType.POUF_60_X_60]: 'Pouf 60 x 60',
+      [SofaType.POUF_70_X_70]: 'Pouf 70 x 70',
+      [SofaType.ELEMENTO_SENZA_BRACCIOLO]: 'Elemento senza bracciolo',
+      [SofaType.ELEMENTO_CON_BRACCIOLO]: 'Elemento con bracciolo',
+      [SofaType.POLTRONA_90_CM]: 'Poltrona 90 cm',
+      [SofaType.POLTRONA_80_CM]: 'Poltrona 80 cm',
+      [SofaType.POLTRONA_70_CM]: 'Poltrona 70 cm',
       [SofaType.CUSTOM]: 'Custom',
     };
 
@@ -949,6 +999,14 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
     return this.bulkFormSubmitted && price < 0;
   }
 
+  shouldShowCustomSofaTypeNameError(): boolean {
+    return this.formSubmitted && this.isCustomSofaType(this.newComponent.sofaType) && !this.newComponent.sofaTypeCustomName?.trim();
+  }
+
+  shouldShowBulkCustomSofaTypeNameError(customName: string | undefined, sofaType: SofaType | null | undefined): boolean {
+    return this.bulkFormSubmitted && this.isCustomSofaType(sofaType) && !customName?.trim();
+  }
+
   // Add missing onGlobalFilter method
   onGlobalFilter(event: Event) {
     const target = event.target as HTMLInputElement;
@@ -974,8 +1032,29 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
 
   onSofaTypeChange(event: any) {
     this.newComponent.sofaType = event.value;
+    if (!this.isCustomSofaType(this.newComponent.sofaType)) {
+      this.newComponent.sofaTypeCustomName = '';
+    }
     this.updateComponentName();
     this.updateAllVariantNames();
+  }
+
+  onCustomSofaTypeNameChange(): void {
+    this.updateComponentName();
+  }
+
+  onBulkCustomSofaTypeNameChange(index: number): void {
+    this.updateVariantName(index);
+  }
+
+  isCustomSofaType(type?: SofaType | null): boolean {
+    return type === SofaType.CUSTOM;
+  }
+
+  private normalizeSofaTypeCustomName(type?: SofaType | null, customName?: string): string | undefined {
+    if (type !== SofaType.CUSTOM) return undefined;
+    const trimmed = (customName || '').trim();
+    return trimmed ? trimmed : undefined;
   }
 
   // Update method to work with enum

@@ -27,7 +27,8 @@ export class ComponentService {
       price: component.price,
       supplier: component.supplier || null,
       type: typeToSave,
-      sofaType: component.sofaType ?? null
+      sofaType: component.sofaType ?? null,
+      sofaTypeCustomName: this.normalizeSofaTypeCustomName(component.sofaType, component.sofaTypeCustomName)
     };
 
     return from(this.dbService.addComponent(componentData));
@@ -37,15 +38,21 @@ export class ComponentService {
     return new Observable((observer) => {
       this.dbService.getComponents((components) => {
         const mappedComponents = components.map(
-          (c) =>
-            new Component(
+          (c) => {
+            const rawSofaType = c.data.sofaType ?? c.data.measure;
+            const parsedCustomName = this.parseSofaTypeCustomName(c.data.sofaTypeCustomName, rawSofaType);
+            const parsedSofaType = this.parseSofaType(rawSofaType);
+            const resolvedSofaType = parsedSofaType ?? (parsedCustomName ? SofaType.CUSTOM : null);
+            return new Component(
               c.id,
               c.data.name,
               c.data.price,
               c.data.supplier || undefined,
               this.parseComponentType(c.data.type),
-              this.parseSofaType(c.data.sofaType ?? c.data.measure)
-            )
+              resolvedSofaType,
+              parsedCustomName
+            );
+          }
         );
         observer.next(mappedComponents);
       });
@@ -57,15 +64,21 @@ export class ComponentService {
       this.dbService.getComponents(
         (components: { id: string; data: any }[]) => {
           const mappedComponents = components.map(
-            (c) =>
-              new Component(
+            (c) => {
+              const rawSofaType = c.data.sofaType ?? c.data.measure;
+              const parsedCustomName = this.parseSofaTypeCustomName(c.data.sofaTypeCustomName, rawSofaType);
+              const parsedSofaType = this.parseSofaType(rawSofaType);
+              const resolvedSofaType = parsedSofaType ?? (parsedCustomName ? SofaType.CUSTOM : null);
+              return new Component(
                 c.id,
                 c.data.name,
                 c.data.price,
                 c.data.supplier || undefined,
                 this.parseComponentType(c.data.type),
-                this.parseSofaType(c.data.sofaType ?? c.data.measure)
-              )
+                resolvedSofaType,
+                parsedCustomName
+              );
+            }
           );
           observer.next(mappedComponents);
           observer.complete();
@@ -89,7 +102,8 @@ export class ComponentService {
       price: component.price,
       supplier: component.supplier || null,
       type: typeToSave,
-      sofaType: component.sofaType ?? null
+      sofaType: component.sofaType ?? null,
+      sofaTypeCustomName: this.normalizeSofaTypeCustomName(component.sofaType, component.sofaTypeCustomName)
     };
 
     return from(this.dbService.updateComponent(id, componentData));
@@ -155,6 +169,34 @@ export class ComponentService {
     return match ? (match as SofaType) : null;
   }
 
+  private parseSofaTypeCustomName(raw: any, fallbackRaw?: any): string | undefined {
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      if (trimmed) return trimmed;
+    }
+
+    if (typeof fallbackRaw === 'string') {
+      const fallback = fallbackRaw.trim();
+      if (fallback && !this.isSofaTypeValue(fallback)) {
+        return fallback;
+      }
+    }
+
+    return undefined;
+  }
+
+  private isSofaTypeValue(value: string): boolean {
+    return (Object.values(SofaType) as string[]).some(
+      v => v.toLowerCase() === value.toLowerCase()
+    );
+  }
+
+  private normalizeSofaTypeCustomName(type?: SofaType | null, customName?: string): string | undefined {
+    if (type !== SofaType.CUSTOM) return undefined;
+    const trimmed = (customName || '').trim();
+    return trimmed ? trimmed : undefined;
+  }
+
 
   deleteComponent(id: string): Observable<void> {
     return new Observable((observer) => {
@@ -184,15 +226,21 @@ export class ComponentService {
         });
 
         const mappedComponents = componentsWithSupplier.map(
-          (c) =>
-            new Component(
+          (c) => {
+            const rawSofaType = c.data.sofaType ?? c.data.measure;
+            const parsedCustomName = this.parseSofaTypeCustomName(c.data.sofaTypeCustomName, rawSofaType);
+            const parsedSofaType = this.parseSofaType(rawSofaType);
+            const resolvedSofaType = parsedSofaType ?? (parsedCustomName ? SofaType.CUSTOM : null);
+            return new Component(
               c.id,
               c.data.name,
               c.data.price,
               c.data.supplier || undefined,
               this.parseComponentType(c.data.type),
-              this.parseSofaType(c.data.sofaType ?? c.data.measure)
-            )
+              resolvedSofaType,
+              parsedCustomName
+            );
+          }
         );
 
         observer.next(mappedComponents);
@@ -213,7 +261,10 @@ export class ComponentService {
       // Generate component name: Type + Supplier + SofaType
       const typeName = this.getComponentTypeDisplayName(bulkData.fixedData.type);
       const supplierName = bulkData.fixedData.supplier?.name || '';
-      const sofaTypeLabel = this.getSofaTypeDisplayName(variableData.sofaType ?? null);
+      const sofaTypeLabel = this.getSofaTypeDisplayName(
+        variableData.sofaType ?? null,
+        variableData.sofaTypeCustomName
+      );
 
       const componentName = [typeName, supplierName, sofaTypeLabel]
         .filter(part => part)
@@ -226,7 +277,8 @@ export class ComponentService {
         variableData.price,
         bulkData.fixedData.supplier || undefined, // Convert null to undefined
         bulkData.fixedData.type,
-        variableData.sofaType ?? null
+        variableData.sofaType ?? null,
+        this.normalizeSofaTypeCustomName(variableData.sofaType ?? null, variableData.sofaTypeCustomName)
       );
 
       // Create plain object for database storage
@@ -236,7 +288,8 @@ export class ComponentService {
         price: component.price,
         supplier: component.supplier || undefined,
         type: component.type !== undefined ? ComponentType[component.type] : undefined,
-        sofaType: component.sofaType ?? null
+        sofaType: component.sofaType ?? null,
+        sofaTypeCustomName: this.normalizeSofaTypeCustomName(component.sofaType, component.sofaTypeCustomName)
       };
 
       return this.dbService.addComponent(componentData);
@@ -266,12 +319,25 @@ export class ComponentService {
     return typeNames[type] || 'Sconosciuto';
   }
 
-  private getSofaTypeDisplayName(type: SofaType | null): string {
+  private getSofaTypeDisplayName(type: SofaType | null, customName?: string): string {
     if (!type) return '';
+    if (type === SofaType.CUSTOM) {
+      const trimmed = (customName || '').trim();
+      if (trimmed) return trimmed;
+    }
     const map: Record<SofaType, string> = {
       [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
       [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
       [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+      [SofaType.CHAISE_LONGUE]: 'Chaise Longue',
+      [SofaType.POUF_50_X_50]: 'Pouf 50 x 50',
+      [SofaType.POUF_60_X_60]: 'Pouf 60 x 60',
+      [SofaType.POUF_70_X_70]: 'Pouf 70 x 70',
+      [SofaType.ELEMENTO_SENZA_BRACCIOLO]: 'Elemento senza bracciolo',
+      [SofaType.ELEMENTO_CON_BRACCIOLO]: 'Elemento con bracciolo',
+      [SofaType.POLTRONA_90_CM]: 'Poltrona 90 cm',
+      [SofaType.POLTRONA_80_CM]: 'Poltrona 80 cm',
+      [SofaType.POLTRONA_70_CM]: 'Poltrona 70 cm',
       [SofaType.CUSTOM]: 'Custom',
     };
     return map[type] ?? type;
@@ -310,7 +376,8 @@ export class ComponentService {
           price: newPrice,
           supplier: component.supplier || null,
           type: component.type !== null && component.type !== undefined ? ComponentType[component.type] : null,
-          sofaType: component.sofaType ?? null
+          sofaType: component.sofaType ?? null,
+          sofaTypeCustomName: this.normalizeSofaTypeCustomName(component.sofaType, component.sofaTypeCustomName)
         };
 
         return this.dbService.updateComponent(component.id, updatedComponentData);

@@ -11,6 +11,7 @@ export interface BulkComponentFixedData {
 
 export interface BulkComponentVariableData {
   sofaType?: SofaType | null;
+  sofaTypeCustomName?: string;
   price: number;
   name: string;
 }

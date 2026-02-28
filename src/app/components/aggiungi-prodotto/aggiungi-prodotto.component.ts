@@ -16,12 +16,12 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-  import { DialogModule } from 'primeng/dialog';
-  import { ProgressSpinnerModule } from 'primeng/progressspinner';
-  import { MultiSelectModule } from 'primeng/multiselect';
-  import { FileUploadModule } from 'primeng/fileupload';
-  import { MessagesModule } from 'primeng/messages';
-  import { MessageModule } from 'primeng/message';
+import { DialogModule } from 'primeng/dialog';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { FileUploadModule } from 'primeng/fileupload';
+import { MessagesModule } from 'primeng/messages';
+import { MessageModule } from 'primeng/message';
 import { HttpClientModule } from '@angular/common/http';
 import { forkJoin, interval, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
@@ -192,6 +192,15 @@ export class AggiungiProdottoComponent implements OnInit {
     { label: 'Divano 3 PL Maxi', value: SofaType.DIVANO_3_PL_MAXI },
     { label: 'Divano 3 PL', value: SofaType.DIVANO_3_PL },
     { label: 'Divano 2 PL', value: SofaType.DIVANO_2_PL },
+    { label: 'Chaise Longue', value: SofaType.CHAISE_LONGUE },
+    { label: 'Pouf 50 x 50', value: SofaType.POUF_50_X_50 },
+    { label: 'Pouf 60 x 60', value: SofaType.POUF_60_X_60 },
+    { label: 'Pouf 70 x 70', value: SofaType.POUF_70_X_70 },
+    { label: 'Elemento senza bracciolo', value: SofaType.ELEMENTO_SENZA_BRACCIOLO },
+    { label: 'Elemento con bracciolo', value: SofaType.ELEMENTO_CON_BRACCIOLO },
+    { label: 'Poltrona 90 cm', value: SofaType.POLTRONA_90_CM },
+    { label: 'Poltrona 80 cm', value: SofaType.POLTRONA_80_CM },
+    { label: 'Poltrona 70 cm', value: SofaType.POLTRONA_70_CM },
     { label: 'Custom', value: SofaType.CUSTOM },
   ];
 
@@ -259,7 +268,9 @@ export class AggiungiProdottoComponent implements OnInit {
 
   private buildNameMeasureKey(c: ComponentModel): string {
     const name = (c.name || '').trim().toLowerCase();
-    const sofaType = c.sofaType ? this.getSofaTypeDisplayName(c.sofaType).toLowerCase() : '';
+    const sofaType = c.sofaType
+      ? this.getSofaTypeDisplayName(c.sofaType, c.sofaTypeCustomName).toLowerCase()
+      : '';
     return `${name}|${sofaType}`;
   }
 
@@ -932,7 +943,9 @@ export class AggiungiProdottoComponent implements OnInit {
   formatComponentName(component: ComponentModel): string {
     if (!component) return '';
 
-    const sofaTypeLabel = component.sofaType ? this.getSofaTypeDisplayName(component.sofaType) : '';
+    const sofaTypeLabel = component.sofaType
+      ? this.getSofaTypeDisplayName(component.sofaType, component.sofaTypeCustomName)
+      : '';
     const hasSofaType = !!sofaTypeLabel.trim();
     const key = this.buildNameMeasureKey(component);
 
@@ -979,12 +992,25 @@ export class AggiungiProdottoComponent implements OnInit {
     return typeNames[type] || 'Sconosciuto';
   }
 
-  getSofaTypeDisplayName(type: SofaType | null): string {
+  getSofaTypeDisplayName(type: SofaType | null, customName?: string): string {
     if (!type) return '';
+    if (type === SofaType.CUSTOM) {
+      const cleaned = (customName || '').trim();
+      if (cleaned) return cleaned;
+    }
     const map: Record<SofaType, string> = {
       [SofaType.DIVANO_3_PL_MAXI]: 'Divano 3 PL Maxi',
       [SofaType.DIVANO_3_PL]: 'Divano 3 PL',
       [SofaType.DIVANO_2_PL]: 'Divano 2 PL',
+      [SofaType.CHAISE_LONGUE]: 'Chaise Longue',
+      [SofaType.POUF_50_X_50]: 'Pouf 50 x 50',
+      [SofaType.POUF_60_X_60]: 'Pouf 60 x 60',
+      [SofaType.POUF_70_X_70]: 'Pouf 70 x 70',
+      [SofaType.ELEMENTO_SENZA_BRACCIOLO]: 'Elemento senza bracciolo',
+      [SofaType.ELEMENTO_CON_BRACCIOLO]: 'Elemento con bracciolo',
+      [SofaType.POLTRONA_90_CM]: 'Poltrona 90 cm',
+      [SofaType.POLTRONA_80_CM]: 'Poltrona 80 cm',
+      [SofaType.POLTRONA_70_CM]: 'Poltrona 70 cm',
       [SofaType.CUSTOM]: 'Custom',
     };
     return map[type] ?? String(type);
@@ -1369,5 +1395,3 @@ export class AggiungiProdottoComponent implements OnInit {
     }
   }
 }
-
-

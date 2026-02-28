@@ -10,5 +10,6 @@ export class Component {
     public supplier?: Supplier,
     public type?: ComponentType,
     public sofaType?: SofaType | null,
-  ) {}
+    public sofaTypeCustomName?: string,
+  ) { }
 }
