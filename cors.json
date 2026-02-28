@@ -2,7 +2,7 @@
     {
         "origin": [
             "http://localhost:4200",
-            "https://www.tuo-dominio-prod.it"
+            "https://sofaform-webapp-1chz.vercel.app"
         ],
         "method": [
             "GET",

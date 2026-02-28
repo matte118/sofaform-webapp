@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, Injector } from '@angular/core';
 import {
   Auth,
   signInWithEmailAndPassword,
@@ -37,7 +37,7 @@ import { environment } from '../environments/environments';
 export class AuthService {
   private auth = inject(Auth);
   private db = inject(Database);
-  private router = inject(Router);
+  private injector = inject(Injector);
 
   currentUser$ = authState(this.auth);
   private currentUserRole$ = new BehaviorSubject<UserRole | null>(null);
@@ -72,7 +72,9 @@ export class AuthService {
     return from(signOut(this.auth)).pipe(
       tap(() => {
         this.currentUserRole$.next(null);
-        this.router.navigate(['/login']);
+        // Lazy inject Router to avoid circular dependency
+        const router = this.injector.get(Router);
+        router.navigate(['/login']);
       }),
       catchError((err) => {
         console.error('Logout error:', err);
