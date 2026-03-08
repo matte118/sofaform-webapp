@@ -9,7 +9,7 @@ import { TranslationService } from './translation/translation.service';
 import { I18nService } from './translation/fixed-translation.service';
 import { firstValueFrom } from 'rxjs';
 
-(pdfMake as any).vfs = pdfFonts.vfs;
+(pdfMake as any)['vfs'] = (pdfFonts as any)['vfs'];
 
 @Injectable({ providedIn: 'root' })
 export class PdfGenerationService {
@@ -318,45 +318,56 @@ export class PdfGenerationService {
     pdfInstance.download(filename);
   }
 
+  private getCommercialConditionsTemplate(): {
+    title: string;
+    intro: string;
+    sections: { title: string; bullets: string[] }[];
+  } {
+    return {
+      title: 'Condizioni commerciali',
+      intro: 'Il presente listino e riservato ai clienti professionali e sostituisce eventuali versioni precedenti salvo diversi accordi scritti.',
+      sections: [
+        {
+          title: 'Validita e prezzi',
+          bullets: [
+            'I prezzi sono espressi in euro e si intendono al netto di eventuali promozioni o accordi personalizzati.',
+            "L'azienda si riserva il diritto di aggiornare il listino in qualsiasi momento, comunicando tempestivamente eventuali variazioni.",
+            'Le immagini e le descrizioni hanno valore illustrativo e possono subire modifiche tecniche non sostanziali.'
+          ]
+        },
+        {
+          title: 'Pagamento',
+          bullets: [
+            "Le condizioni di pagamento vengono concordate in fase d'ordine e riportate nella conferma commerciale.",
+            'Eventuali ritardi di pagamento possono comportare la sospensione delle forniture successive.'
+          ]
+        },
+        {
+          title: 'Consegna e resi',
+          bullets: [
+            "I tempi di consegna sono indicativi e decorrono dalla conferma d'ordine e dalla disponibilita dei materiali.",
+            'Eventuali contestazioni devono essere comunicate entro i termini previsti dalle condizioni generali di vendita.'
+          ]
+        }
+      ]
+    };
+  }
+
   private addCommercialConditionsPage(docDefinition: any, t: (text: string) => string): void {
+    const template = this.getCommercialConditionsTemplate();
+
     docDefinition.content.push({
       stack: [
-        { text: t('Condizioni commerciali'), style: 'conditionsTitle', margin: [0, 0, 0, 14] },
-        {
-          text: [
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ',
-            'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ',
-            'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.'
-          ].join(''),
-          style: 'conditionsBody'
-        },
-        { text: t('Validità e prezzi'), style: 'conditionsSectionTitle' },
-        {
-          ul: [
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-            'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.'
-          ],
-          style: 'conditionsBody',
-          margin: [0, 0, 0, 6]
-        },
-        { text: t('Pagamento'), style: 'conditionsSectionTitle' },
-        {
-          ul: [
-            'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.',
-            'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
-          ],
-          style: 'conditionsBody',
-          margin: [0, 0, 0, 6]
-        },
-        { text: t('Consegna e resi'), style: 'conditionsSectionTitle' },
-        {
-          ul: [
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.',
-            'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
-          ],
-          style: 'conditionsBody'
-        }
+        { text: t(template.title), style: 'conditionsTitle', margin: [0, 0, 0, 14] },
+        { text: t(template.intro), style: 'conditionsBody' },
+        ...template.sections.flatMap(section => ([
+          { text: t(section.title), style: 'conditionsSectionTitle' },
+          {
+            ul: section.bullets.map(bullet => t(bullet)),
+            style: 'conditionsBody',
+            margin: [0, 0, 0, 6]
+          }
+        ]))
       ],
       margin: [40, 40, 40, 40],
       pageBreak: 'after'
@@ -814,4 +825,5 @@ export class PdfGenerationService {
     }
     return this.getVariantBaseLabel(variant.longName);
   }
+
 }

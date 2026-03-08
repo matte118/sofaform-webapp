@@ -1288,7 +1288,7 @@ export class GestioneComponentiComponent implements OnInit, AfterViewInit {
   // === PDF Export ===
   private ensurePdfReady(): void {
     if (this.pdfInitialized) return;
-    (pdfMake as any).vfs = pdfFonts.vfs;
+    (pdfMake as any)['vfs'] = (pdfFonts as any)['vfs'];
     this.pdfInitialized = true;
   }
 
